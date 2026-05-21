@@ -6,6 +6,11 @@ import { supabase } from './lib/db/client';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Redirect root to login
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('sb-access-token')?.value;

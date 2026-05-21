@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 3.2
+**Versi:** 4.0
 **Status:** Draft
 **Tanggal:** 21 Mei 2026
 
@@ -44,9 +44,10 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | Bundler | Turbopack |
 | Bahasa | TypeScript |
 | Styling | Tailwind CSS |
-| UI Komponen | shadcn/ui + lucide-react |
+| UI Komponen | shadcn/ui + lucide-react + Radix UI primitives |
 | State Management | Zustand + TanStack React Query |
-| Form | react-hook-form + Zod |
+| Form | react-hook-form + @hookform/resolvers + Zod |
+| API Documentation | next-openapi-gen (auto-generate) + @scalar/nextjs-api-reference |
 | Database | Supabase (PostgreSQL) |
 | ORM | Drizzle ORM |
 | Auth | Supabase Auth |
@@ -63,12 +64,95 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | Deploy | Vercel |
 | Platform | Web Browser (Responsive: Mobile, Tablet, Desktop) |
 
-## 4. Storage & File Management
+## 4. UI/UX Design System
 
-### 4.1 Supabase Storage Strategy
+### 4.1 Component Library: shadcn/ui
+
+Menggunakan **shadcn/ui** — library komponen berbasis Radix UI + Tailwind CSS. Bukan npm package, melainkan kode sumber yang di-copy ke project (`/components/ui/`) sehingga bisa dimodifikasi penuh.
+
+**Komponen yang digunakan:**
+- `Sidebar` — navigasi utama dashboard
+- `Table` — data tables untuk list master data
+- `Dialog` — modal konfirmasi hapus/approve
+- `Form` — form dengan react-hook-form integration
+- `Card` — kartu informasi dashboard
+- `Badge` — status indicator (Active/Non-Active)
+- `Button`, `Input`, `Select`, `Textarea` — form elements
+- `Toast` (via sonner) — notifikasi aksi sukses/gagal
+- `Tabs` — navigasi tab dalam halaman
+- `DropdownMenu` — action menu per item
+
+### 4.2 Design Theme: "Accessible & Ethical"
+
+Tema dirancang untuk enterprise/government — fokus pada accessibility, high contrast, dan profesional.
+
+**Color Palette:**
+
+| Role | Hex | Usage |
+|------|-----|-------|
+| Primary | `#0F172A` | Navbar, sidebar, heading utama |
+| Secondary | `#334155` | Sub-heading, secondary text |
+| CTA / Aksi | `#0369A1` | Tombol submit, link, aksi utama |
+| Background | `#F8FAFC` | Latar halaman utama |
+| Card BG | `#FFFFFF` | Kartu, tabel, form |
+| Text | `#020617` | Body text — high contrast |
+| Muted | `#475569` | Label, placeholder, secondary info |
+| Success | `#22C55E` | Status active/berhasil |
+| Danger | `#DC2626` | Hapus, error, status non-active |
+| Border | `#E2E8F0` | Garis pemisah, border card |
+
+**Styling Approach:**
+- **Light mode first** — cocok untuk kantor dengan pencahayaan siang
+- **High contrast** — WCAG AAA compliance
+- **Navy + Blue scheme** — korporat, terpercaya, tidak norak
+- **Minimum 16px font** untuk body text — readability di semua umur
+- **Focus rings 3-4px** — keyboard navigation visible
+
+### 4.3 Typography
+
+| Role | Font | Weight |
+|------|------|--------|
+| Heading | **Lexend** | 400, 500, 600, 700 |
+| Body | **Source Sans 3** | 300, 400, 500, 600, 700 |
+
+- **Lexend** — clean, modern, highly readable untuk heading
+- **Source Sans 3** — terbukti legible di berbagai ukuran layar
+
+### 4.4 Ikon
+
+- **Heroicons** atau **Lucide** — SVG icon set yang konsisten (viewBox 24x24)
+- **Dilarang** menggunakan emoji sebagai ikon UI
+- Semua ikon menggunakan ukuran `w-5 h-5` atau `w-6 h-6`
+- Semua tombol/elemen interaktif wajib `cursor-pointer`
+- Transisi hover menggunakan `transition-colors duration-200`
+
+### 4.5 Anti-Patterns (Dihindari)
+
+| Praktik Buruk | Solusi |
+|---------------|--------|
+| Emoji sebagai ikon UI | Gunakan Heroicons/Lucide SVG |
+| Custom sidebar dari `<div>` | Pakai `Sidebar` component dari shadcn |
+| Custom table dari `<div grid>` | Pakai `Table` component dari shadcn |
+| Hover state pake scale transform | Pakai color/shadow transition |
+| Low contrast text (gray-400) | Minimal `#475569` (slate-600) |
+| Transparansi berlebihan di light mode | `bg-white/80` atau lebih solid |
+| Motion efek berlebihan | Respect `prefers-reduced-motion` |
+
+### 4.6 Responsive Breakpoints
+
+| Device | Breakpoint | Target |
+|--------|-----------|--------|
+| Mobile | 375px | Minimal support |
+| Tablet | 768px | iPad, Galaxy Tab |
+| Desktop | 1024px | Laptop standar |
+| Wide | 1440px | Monitor eksternal |
+
+## 5. Storage & File Management
+
+### 5.1 Supabase Storage Strategy
 Menggunakan Supabase Storage dengan bucket terstruktur dan optimasi penyimpanan untuk menghemat biaya.
 
-### 4.2 Struktur Bucket
+### 5.2 Struktur Bucket
 
 ```
 avatars/                  → Foto profil user/karyawan
@@ -86,7 +170,7 @@ temporary/                → File sementara (auto-delete setelah 24 jam)
   └── export/{sessionId}/laporan.xlsx
 ```
 
-### 4.3 Optimasi Penyimpanan (Hemat Biaya)
+### 5.3 Optimasi Penyimpanan (Hemat Biaya)
 
 | Teknik | Implementasi | Manfaat |
 |---|---|---|
@@ -100,7 +184,7 @@ temporary/                → File sementara (auto-delete setelah 24 jam)
 | **Blur placeholder** | Gambar ditampilkan dengan blur placeholder saat loading — UX tetap mulus tanpa harus download full resolution dulu | User experience |
 | **Sliced** | Sliced images via URL params if premium features enabled | Optional |
 
-### 4.4 Alur Upload File
+### 5.4 Alur Upload File
 
 ```
 User pilih file
@@ -120,7 +204,7 @@ Simpan public URL ke database
 Tampilkan ke user
 ```
 
-### 4.5 Rekomendasi Tambahan untuk Profesionalisme
+### 5.5 Rekomendasi Tambahan untuk Profesionalisme
 
 | Rekomendasi | Keterangan |
 |---|---|
@@ -130,9 +214,9 @@ Tampilkan ke user
 | **Auto-cleanup Temporary** | Bucket `temporary/` di-cleanup otomatis setiap 24 jam via Supabase cron atau trigger. File cocok untuk auto-cleanup: Export laporan (Excel/PDF), preview dokumen, import bulk Excel, hasil screenshot AI Search, file upload gagal/cancel, cache generate PDF | Tidak ada file sampah menumpuk |
 | **File Naming Convention** | `{modul}/{id}/{timestamp}-{originalName}.webp` — tidak ada nama file yang bentrok |
 
-## 5. Scalability & Arsitektur
+## 6. Scalability & Arsitektur
 
-### 5.1 Background Jobs
+### 6.1 Background Jobs
 Proses berat dijalankan di background agar tidak memblokir user:
 - AI Search Harga (Playwright scraping)
 - AI OCR Kontrak
@@ -141,14 +225,14 @@ Proses berat dijalankan di background agar tidak memblokir user:
 
 Teknologi: **Inngest** atau **Trigger.dev** — terintegrasi native dengan Next.js.
 
-### 5.2 Caching dengan Redis (Upstash)
+### 6.2 Caching dengan Redis (Upstash)
 Data yang sering diakses di-cache untuk performa optimal:
 - Daftar barang & harga
 - Data customer & kontrak
 - Hasil AI Search (TTL 1 jam)
 - Session & rate limiting
 
-### 5.3 Database Indexing
+### 6.3 Database Indexing
 Semua foreign key dan kolom yang sering di-query diberi index sejak awal:
 - `barang.kategori_id`, `barang.kode`
 - `customer_po.customer_id`, `customer_po.status`
@@ -156,7 +240,7 @@ Semua foreign key dan kolom yang sering di-query diberi index sejak awal:
 - `stok.barang_id`, `stok.gudang_id`
 - Semua kolom `created_at`, `deleted_at`
 
-### 5.4 API Versioning
+### 6.4 API Versioning
 ```
 /api/v1/master/barang
 /api/v1/pre-sales/quotation
@@ -164,29 +248,29 @@ Semua foreign key dan kolom yang sering di-query diberi index sejak awal:
 ```
 Ketika ada perubahan besar, API lama tetap jalan — client tidak broken.
 
-### 5.5 Pagination Wajib
+### 6.5 Pagination Wajib
 Semua list data menggunakan pagination (offset-based atau cursor-based). Tidak ada `SELECT *` tanpa `LIMIT`.
 
-### 5.6 Soft Delete
+### 6.6 Soft Delete
 Data tidak pernah dihapus permanen dari database. Setiap tabel memiliki kolom `deleted_at`:
 ```sql
 deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 ```
 Data yang "dihapus" hanya di-filter di query level. Data tetap utuh untuk audit trail.
 
-### 5.7 Database Backup
+### 6.7 Database Backup
 - **Supabase Point-in-Time Recovery (PITR)** — restore ke detik kapanpun dalam 7 hari terakhir (termasuk di free tier)
 - **Daily automated backup** — Supabase backup otomatis setiap 24 jam
 - **Manual backup** — export database via `pg_dump` bisa dijadwalkan via cron job
 - **Storage backup** — file di Supabase Storage di-replicate secara otomatis
 
-### 5.8 Database Archiving
+### 6.8 Database Archiving
 Data lama (>1 tahun) bisa di-archive ke tabel khusus atau bucket storage khusus untuk mengoptimasi performa query utama. Proses archiving bisa dijadwalkan bulan sekali.
 
-### 5.9 System Health Monitoring
+### 6.9 System Health Monitoring
 Monitoring gratis menggunakan UptimeRobot (uptime kunjungan) + Sentry.io (error tracking gratis tier) + LogRocket (session replay free tier). Alternatif self-hosted: Grafana + Prometheus + Loki.
 
-## 6. Modul Aplikasi
+## 7. Modul Aplikasi
 
 ### A. Master Data
 
@@ -353,9 +437,9 @@ Format dokumen akan mengikuti template yang akan disediakan customer di direktor
 | Dashboard Finance | Finance — AP/AR, cashflow, jurnal, PPN masa, faktur pajak |
 | Semua data bisa di-export ke Excel/CSV | Semua role |
 
-## 7. Automation & Smart Workflow
+## 8. Automation & Smart Workflow
 
-### 7.1 Rantai Otomatisasi
+### 8.1 Rantai Otomatisasi
 ```
 Quotation deal
   → Auto-generate Sales Order
@@ -375,11 +459,11 @@ Invoice jatuh tempo
   → Escalasi ke Manager jika H+7 belum dibayar
 ```
 
-### 7.2 Approval Escalation
+### 8.2 Approval Escalation
 - PR/PO pending > 24 jam → notifikasi Manager
 - Invoice pending > 7 hari → escalation ke Owner
 
-### 7.3 Smart Document Numbering
+### 8.3 Smart Document Numbering
 Nomor dokumen digenerate otomatis — tidak perlu input manual:
 ```
 Quotation:  SPH/RRI/26/05/0001
@@ -388,7 +472,7 @@ Invoice:    INV/RRI/26/05/0001
 Kwitansi:   KWT/RRI/26/05/0001
 ```
 
-### 7.4 WhatsApp Notification Integration
+### 8.4 WhatsApp Notification Integration
 
 Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi dengan Customer & Supplier.
 
@@ -408,7 +492,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi
 
 **Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Tersedia juga opsi `whatsapp-web.js` yang sepenuhnya gratis tapi memerlukan session WhatsApp Web aktif.
 
-## 8. Professional Features
+## 9. Professional Features
 
 | Fitur | Deskripsi |
 |---|---|
@@ -430,7 +514,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi
 | **Data Archiving** | Data lama (>1 tahun) bisa di-archive ke tabel khusus atau bucket storage khusus untuk mengoptimasi performa query utama. Proses archiving bisa dijadwalkan bulan sekali. |
 | **System Health Monitoring** | Monitoring gratis menggunakan UptimeRobot (uptime kunjungan) + Sentry.io (error tracking gratis tier) + LogRocket (session rocket free tier). Alternatif self-hosted: Grafana + Prometheus + Loki. |
 
-## 9. User Roles & Hak Akses
+## 10. User Roles & Hak Akses
 
 | Role | Akses Utama |
 |---|---|
@@ -443,7 +527,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi
 | **Finance** | Invoice, AP/AR, PPN, Faktur Pajak, pembayaran, jurnal, laporan keuangan |
 | **HR** | Data karyawan, absensi, penggajian |
 
-## 10. Alur Bisnis End-to-End
+## 11. Alur Bisnis End-to-End
 
 ### Jalur A — Kontrak (Fixed Price)
 
@@ -559,109 +643,240 @@ Stok keluar (retur)
 END
 ```
 
-## 11. Arsitektur Aplikasi
+## 12. Arsitektur Aplikasi
 
-### 11.1 Struktur Folder
+### 12.1 Struktur Folder
 
 ```
 src/
 ├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Login, Forgot Password
-│   ├── (dashboard)/              # Protected pages
+│   ├── layout.tsx                # Root layout (<html><body>)
+│   ├── page.tsx                  # (tidak ada — root / di-handle middleware)
+│   ├── middleware.ts             # Auth middleware (protects /dashboard routes)
+│   ├── (auth)/                   # Public pages (login, register)
+│   ├── dashboard/                # Protected pages (BUKAN route group)
+│   │   ├── layout.tsx            # Dashboard layout (sidebar navigasi)
+│   │   ├── page.tsx              # Dashboard home (menu cards ke semua modul)
 │   │   ├── master/
-│   │   │   ├── barang/
-│   │   │   ├── kategori-barang/
-│   │   │   ├── supplier/
-│   │   │   ├── customer/
-│   │   │   ├── pic-customer/
-│   │   │   ├── karyawan/
-│   │   │   ├── coa/
-│   │   │   ├── kontrak/
-│   │   │   └── harga/
-│   │   ├── pre-sales/
-│   │   │   ├── rfq/
-│   │   │   ├── quotation/
-│   │   │   ├── negosiasi/
-│   │   │   ├── di/
-│   │   │   └── kontrak-ocr/
-│   │   ├── sales/
-│   │   │   ├── sales-order/
-│   │   │   ├── delivery-order/
-│   │   │   └── tracking/
-│   │   ├── procurement/
-│   │   │   ├── purchase-request/
-│   │   │   ├── ai-search/
-│   │   │   ├── purchase-order/
-│   │   │   ├── receiving/
-│   │   │   └── grn/
-│   │   ├── inventory/
-│   │   │   ├── stok-masuk/
-│   │   │   = stok-keluar/
-│   │   │   = opname/
-│   │   │   = mutasi/
-│   │   │   = kartu-stok/
-│   │   │   = alert/
-│   │   ├── finance/
-│   │   │   = ar/
-│   │   │   = ap/
-│   │   │   = cash-bank/
-│   │   │   = jurnal/
-│   │   │   = laba-rugi/
-│   │   │   = neraca/
-│   │   │   = arus-kas/
-│   │   ├── hr/
-│   │   │   = absensi/
-│   │   │   = penggajian/
-│   │   ├── ai/
-│   │   │   = search/
-│   │   │   = ocr/
-│   │   ├── dokumen/
-│   │   │   = invoice/
-│   │   │   = quotation/
-│   │   │   = do/
-│   │   │   = grn/
-│   │   │   = kwitansi/
-│   │   ├── laporan/
-│   │   └── settings/
-│   │       └── users/
+│   │   │   ├── barang/           # List, tambah, edit
+│   │   │   ├── kategori-barang/  # (future)
+│   │   │   ├── supplier/         # (future)
+│   │   │   ├── customer/         # (future)
+│   │   │   ├── pic-customer/     # (future)
+│   │   │   ├── karyawan/         # (future)
+│   │   │   ├── coa/              # (future)
+│   │   │   ├── kontrak/          # (future)
+│   │   │   └── harga/            # (future)
+│   │   ├── pre-sales/            # (future)
+│   │   ├── sales/                # (future)
+│   │   ├── procurement/          # (future)
+│   │   ├── inventory/            # (future)
+│   │   ├── finance/              # (future)
+│   │   ├── hr/                   # (future)
+│   │   ├── ai/                   # (future)
+│   │   ├── dokumen/              # (future)
+│   │   ├── laporan/              # (future)
+│   │   └── settings/             # (future)
 │   └── api/
+│       ├── api-docs/             # Scalar UI documentation
+│       │   └── route.ts
 │       └── v1/
-│           ├── auth/
-│           ├── master/
-│           ├── pre-sales/
-│           ├── sales/
-│           ├── procurement/
-│           ├── inventory/
-│           ├── finance/
-│           ├── hr/
-│           ├── ai/
-│           ├── dokumen/
-│           └── laporan/
+│           ├── master/           # Route handlers per entity
+│           │   ├── barang/route.ts + [id]/route.ts
+│           │   ├── supplier/route.ts + [id]/route.ts
+│           │   ├── customer/route.ts + [id]/route.ts
+│           │   ├── pic-customer/route.ts + [id]/route.ts
+│           │   ├── coa/route.ts + [id]/route.ts
+│           │   ├── kontrak/route.ts + [id]/route.ts
+│           │   ├── kategori-barang/route.ts + [id]/route.ts
+│           │   ├── jabatan/route.ts + [id]/route.ts
+│           │   └── karyawan/route.ts + [id]/route.ts
+│           ├── pre-sales/         # (future)
+│           ├── sales/             # (future)
+│           ├── procurement/       # (future)
+│           ├── inventory/         # (future)
+│           ├── finance/           # (future)
+│           ├── hr/                # (future)
+│           ├── ai/                # (future)
+│           ├── dokumen/           # (future)
+│           └── laporan/           # (future)
+├── public/
+│   └── openapi.json              # Auto-generated OpenAPI spec
 ├── components/
-│   ├── ui/                       # shadcn/ui components
+│   ├── ui/                       # shadcn/ui components (installed via CLI)
 │   ├── forms/                    # Form components
 │   ├── tables/                   # Table components
 │   ├── layout/                   # Layout components
 │   ├── pdf/                      # PDF components
 │   └── shared/                   # Shared components
 ├── lib/
+│   ├── api/
+│   │   ├── client.ts             # Frontend API client (apiFetch — auto-attach Bearer token)
+│   │   ├── auth.ts               # verifyAuth() untuk API route handlers
+│   │   ├── errors.ts             # HTTP error response helpers
+│   │   └── supabase-server.ts    # Supabase admin client (service_role key)
 │   ├── db/
 │   │   ├── schema/               # Drizzle schema files
 │   │   ├── migrations/           # Database migrations
-│   │   └── client.ts             # Database client
-│   ├── actions/                  # Server Actions
-│   ├── ai/                       # AI Agent integration
-│   ├── pdf/                      # PDF components
-│   ├── services/                 # Business logic layer
-│   ├── utils/                    # Utility functions
-│   └── validations/              # Zod schemas
-├── hooks/                        # Custom React hooks
-├── store/                        # Zustand stores
-├── types/                        # TypeScript type definitions
-└── styles/                       # Global CSS
+│   │   └── client.ts             # Supabase client (anon key)
+│   ├── actions/                  # Server Actions (future)
+│   ├── ai/                       # AI Agent integration (future)
+│   ├── pdf/                      # PDF components (future)
+│   ├── services/                 # Business logic layer (future)
+│   ├── utils/
+│   │   └── document-number.ts    # generateDocumentNumber() utility
+│   └── validations/              # Zod schemas (future)
+├── hooks/                        # Custom React hooks (future)
+├── store/                        # Zustand stores (future)
+├── types/                        # TypeScript type definitions (future)
+└── styles/                       # Global CSS (future)
 ```
 
-### 11.2 Struktur Database (Tabel)
+### 12.2 API Architecture
+
+#### 12.2.1 Pola Hybrid: Server Components + API Routes
+
+ERP RRI menggunakan **pola hybrid** untuk mengoptimalkan performa dan keamanan:
+
+| Lapisan | Method | Database Client | Use Case |
+|---------|--------|---------------|----------|
+| **Server Components** | Direct Supabase (server-side) | `supabase` (anon key) | List pages — read-only, render di server, cepat |
+| **Client Components** | `apiFetch()` → API Routes | `supabaseAdmin` (service_role) | Form tambah/edit — mutations via API, centralized logic |
+
+**Alur Request:**
+```
+Browser
+  ↓
+Next.js Server
+  ├── Server Component (list) → supabase.from('table').select()  ← langsung ke DB
+  └── Client Component (form) → fetch('/api/v1/...') → Route Handler
+        ↓
+      verifyAuth(request)  ← Bearer JWT dari supabase.auth.getSession()
+        ↓
+      supabaseAdmin.from('table').insert/update/delete()  ← service_role key
+        ↓
+      Response JSON
+```
+
+#### 12.2.2 Autentikasi API
+
+Semua API route mewajibkan **Bearer JWT token** yang diverifikasi via `verifyAuth()`:
+
+```
+Header: Authorization: Bearer <access_token>
+```
+
+Token didapat dari `supabase.auth.getSession()` — auto-attached oleh `apiFetch()`.
+
+#### 12.2.3 API Route Pattern
+
+Setiap entity master memiliki 2 file route handler:
+
+```
+/api/v1/master/barang/route.ts        → GET (list), POST (create)
+/api/v1/master/barang/[id]/route.ts   → GET (detail), PUT (update), DELETE
+```
+
+**Pattern Route Handler:**
+```typescript
+// GET /api/v1/master/barang
+export async function GET(request: NextRequest) {
+  const auth = await verifyAuth(request)      // verify JWT
+  const data = await supabaseAdmin            // service_role client
+    .from('barang')
+    .select('*')
+  return NextResponse.json({ data })
+}
+
+// POST /api/v1/master/barang
+export async function POST(request: NextRequest) {
+  const auth = await verifyAuth(request)      // verify JWT
+  const body = await request.json()
+  const parsed = schema.parse(body)           // Zod validation
+  const { data } = await supabaseAdmin
+    .from('barang')
+    .insert(parsed)
+    .select()
+    .single()
+  return NextResponse.json({ data })
+}
+```
+
+**Key Files:**
+| File | Fungsi |
+|------|--------|
+| `src/lib/api/client.ts` | `apiFetch()` — frontend HTTP client, auto-attach token |
+| `src/lib/api/auth.ts` | `verifyAuth()` — verifikasi Bearer JWT dari request headers |
+| `src/lib/api/errors.ts` | Helper response: 400, 401, 404, 409, 500 |
+| `src/lib/api/supabase-server.ts` | `supabaseAdmin` — Supabase client dengan service_role key |
+
+#### 12.2.4 OpenAPI Documentation (Auto-Generated)
+
+**Setup:**
+```bash
+npx next-openapi-gen init               # Init config: next.openapi.json
+npx next-openapi-gen                    # Generate openapi.json dari route handlers
+```
+
+**Output:**
+- `/public/openapi.json` — Raw OpenAPI 3.0 spec (auto-generated)
+- `/api-docs` — Scalar UI (interactive API documentation with "Try It" feature)
+
+**Scalar UI Config:**
+```typescript
+// src/app/api-docs/route.ts
+import { ApiReference } from '@scalar/nextjs-api-reference'
+
+const config = {
+  url: '/openapi.json',
+  metaData: {
+    title: 'ERP RRI - API Documentation',
+    description: 'REST API documentation for ERP RRI system',
+  },
+}
+
+export const GET = ApiReference(config)
+```
+
+**Akses:** Buka `http://localhost:3000/api-docs` → Interactive API docs dengan Scalar UI.
+
+#### 12.2.5 Document Numbering
+
+**Utility:** `src/lib/utils/document-number.ts`
+
+```typescript
+import { generateDocumentNumber } from '@/lib/utils/document-number'
+
+// Menghasilkan: SPH/RRI/26/05/0001
+const nomor = await generateDocumentNumber('SPH')
+```
+
+**Cara Kerja:**
+1. Panggil PostgreSQL function `increment_document_counter(p_kode_dokumen, p_tahun, p_bulan)`
+2. Function melakukan atomic upsert + increment counter
+3. Return formatted string: `{KODE}/RRI/{YY}/{MM}/{0000}`
+4. Counter di-reset otomatis setiap tahun/bulan berganti
+
+#### 12.2.6 Middleware (Route Protection)
+
+**File:** `src/middleware.ts` — ditempatkan di `src/` (bukan root project, karena Next.js 15 dengan `src/` directory).
+
+```typescript
+// Matcher: semua path kecuali _next/static, _next/image, favicon.ico, public, login, register, api
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|public|login|register|api).*)'],
+}
+```
+
+**Behavior:**
+- `/` → Redirect ke `/login`
+- `/dashboard/*` → Cek cookie `sb-access-token` → jika tidak ada, redirect ke `/login`
+- `/login`, `/register` → Public (bypass middleware)
+- `/api/*` → Public (bypass middleware, auth di-handle oleh `verifyAuth()` di route handler)
+
+**PENTING:** Middleware harus di `src/middleware.ts`, bukan di root project. Jika di root, Next.js 15 dengan `src/` directory tidak akan mendeteksinya.
+
+### 12.3 Struktur Database (Tabel)
 
 ```
 users                    → auth + profil (semua role)
@@ -762,7 +977,7 @@ audit_log                → audit trail semua transaksi
 whatsapp_log             → log pengiriman notifikasi WhatsApp (status: terkirim/gagal)
 ```
 
-### 11.3 Nomor Dokumen Otomatis
+### 12.4 Nomor Dokumen Otomatis
 
 Implementasi counter di PostgreSQL:
 
@@ -776,18 +991,46 @@ CREATE TABLE document_counter (
 );
 ```
 
-Fungsi untuk generate nomor:
+Fungsi `increment_document_counter()` di PostgreSQL:
 
 ```sql
--- Akan menghasilkan: SPH/RRI/26/05/0001
--- Counter di-reset otomatis setiap tahun/bulan berganti
+CREATE OR REPLACE FUNCTION increment_document_counter(
+  p_kode_dokumen TEXT,
+  p_tahun INTEGER,
+  p_bulan INTEGER
+) RETURNS TEXT AS $$
+DECLARE
+  v_counter INTEGER;
+  v_nomor TEXT;
+BEGIN
+  INSERT INTO document_counter (kode_dokumen, tahun, bulan, counter)
+  VALUES (p_kode_dokumen, p_tahun, p_bulan, 1)
+  ON CONFLICT (kode_dokumen, tahun, bulan)
+  DO UPDATE SET counter = document_counter.counter + 1
+  RETURNING counter INTO v_counter;
+
+  v_nomor := UPPER(p_kode_dokumen) || '/RRI/' ||
+             TO_CHAR(p_tahun, 'FM00') || '/' ||
+             TO_CHAR(p_bulan, 'FM00') || '/' ||
+             LPAD(v_counter::TEXT, 4, '0');
+  RETURN v_nomor;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
-## 12. Prioritas Pengembangan (MVP)
+**Usage dari TypeScript:**
+```typescript
+import { generateDocumentNumber } from '@/lib/utils/document-number'
+
+// Output: "SPH/RRI/26/05/0001"
+const nomor = await generateDocumentNumber('SPH')
+```
+
+## 13. Prioritas Pengembangan (MVP)
 
 | Fase | Modul | Estimasi |
 |---|---|---|
-| **Fase 1** | Setup Project + Auth + Master Data + Document Counter | — |
+| **Fase 1** | Setup Project + Auth + Master Data + Document Counter + API Routes + OpenAPI/Scalar + UI/UX Design System | ✅ Selesai |
 | **Fase 2** | Pre-Sales (RFQ, Quotation, Negosiasi) + Sales (SO, DO) | — |
 | **Fase 3** | Procurement (PR, PO, Receiving, Retur Beli) + Inventory (make-to-order) | — |
 | **Fase 4** | Finance (AR, AP, PPN, PPh, Jurnal, Faktur Pajak) + Dokumen PDF | — |
@@ -796,7 +1039,7 @@ Fungsi untuk generate nomor:
 | **Fase 7** | WhatsApp Notifikasi + Retur Penjualan + User Onboarding | — |
 | **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | — |
 
-## 13. Testing Strategy
+## 14. Testing Strategy
 
 | Level | Tools | Scope |
 |---|---|---|
