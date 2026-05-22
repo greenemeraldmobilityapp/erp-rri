@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -80,6 +81,19 @@ export async function POST(request: NextRequest) {
   if (itemsError) {
     await supabaseAdmin.from('quotation').delete().eq('id', qtn.id)
     return internalError(itemsError)
+  }
+
+  const { data: pics } = await supabaseAdmin
+    .from('customer_pic')
+    .select('no_hp, nama')
+    .eq('customer_id', parsed.data.customer_id)
+    .eq('is_active', true)
+    .limit(1)
+
+  const pic = pics?.[0]
+  if (pic?.no_hp) {
+    const msg = `Halo *${pic.nama}*,\n\nQuotation *${nomor}* telah diterbitkan untuk Anda oleh RRI.\n\nSilakan cek detailnya di portal customer RRI.\n\nTerima kasih.`
+    await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
   }
 
   return NextResponse.json({ data: { ...qtn, items } }, { status: 201 })

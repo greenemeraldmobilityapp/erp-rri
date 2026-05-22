@@ -1,7 +1,10 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, ClipboardList } from 'lucide-react'
+import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, ClipboardList, Bell } from 'lucide-react'
+import { Toaster } from 'sonner'
 import { GlobalSearch } from '@/components/global-search'
+import { OnboardingProvider } from '@/components/onboarding/onboarding-provider'
+import { PanduanButton } from '@/components/onboarding/panduan-button'
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -66,61 +69,68 @@ const menuItems = [
   ]},
   { label: 'System', icon: ShieldCheck, children: [
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
+    { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
   ]},
 ]
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="hidden md:flex w-64 flex-col border-r bg-card">
-        <div className="p-4 border-b space-y-3">
-          <Link href="/dashboard" className="flex items-center space-x-3">
-            <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
-          </Link>
-          <GlobalSearch />
-        </div>
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {menuItems.map((item) => {
-            if ('children' in item && item.children) {
+    <OnboardingProvider>
+      <div className="flex min-h-screen bg-background">
+        <aside className="hidden md:flex w-64 flex-col border-r bg-card">
+          <div className="p-4 border-b space-y-3" data-tour="sidebar-header">
+            <Link href="/dashboard" className="flex items-center space-x-3" data-tour="dashboard-link">
+              <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
+            </Link>
+            <div data-tour="global-search"><GlobalSearch /></div>
+          </div>
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            {menuItems.map((item) => {
+              if ('children' in item && item.children) {
+                return (
+                  <div key={item.label} className="space-y-1">
+                    <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground" data-tour={item.label.toLowerCase().replace(/\s+/g, '-')}>
+                      <item.icon className="h-3.5 w-3.5 mr-2" />
+                      {item.label}
+                    </div>
+                    <div className="ml-2 space-y-1">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                        >
+                          <child.icon className="h-4 w-4 mr-3 text-muted-foreground" />
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
               return (
-                <div key={item.label} className="space-y-1">
-                  <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <item.icon className="h-3.5 w-3.5 mr-2" />
-                    {item.label}
-                  </div>
-                  <div className="ml-2 space-y-1">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                      >
-                        <child.icon className="h-4 w-4 mr-3 text-muted-foreground" />
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                <Link
+                  key={item.href}
+                  href={item.href!}
+                  className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                >
+                  <item.icon className="h-4 w-4 mr-3 text-muted-foreground" />
+                  {item.label}
+                </Link>
               )
-            }
-            return (
-              <Link
-                key={item.href}
-                href={item.href!}
-                className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-              >
-                <item.icon className="h-4 w-4 mr-3 text-muted-foreground" />
-                {item.label}
-              </Link>
-            )
-          })}
+            })}
         </nav>
-      </aside>
-      <main className="flex-1">
-        <div className="p-6 max-w-7xl mx-auto">
-          {children}
+        <div className="p-3 border-t">
+          <PanduanButton />
         </div>
-      </main>
-    </div>
+      </aside>
+        <main className="flex-1">
+          <div className="p-6 max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+        <Toaster richColors position="top-right" />
+      </div>
+    </OnboardingProvider>
   )
 }

@@ -86,10 +86,10 @@
 
 > **Owner Solo Model:** Owner menjalankan semua operasional sendiri. Dashboard Owner adalah Executive Command Center yang menggabungkan semua informasi bisnis dalam satu layar. Role-specific dashboards siap aktif ketika RRI merekrut karyawan — cukup set role di database.
 
-## Fase 7 — Notifikasi & Retur
+## Fase 7 — Notifikasi, Retur & Onboarding ✅
 - [x] Retur Penjualan (CRUD + API routes + sidebar + dokumen auto-number RTJ)
-- [ ] WhatsApp Notification
-- [ ] User Onboarding
+- [x] WhatsApp Notification via Fonnte (utility + 4 trigger events + cron AR reminder + log page + Toaster) — Quotation, DO Dikirim, PO Supplier, AR Reminder H-7/H-3/H+1/H+7
+- [x] User Onboarding (react-joyride, 12 step tour mencakup semua modul, welcome modal + guided tour, DB field `onboarding_disabled` untuk disable/enable, tombol "Panduan" permanen di sidebar untuk replay)
 
 ## Fase 8 — Polish & Production
 - [ ] Dark Mode

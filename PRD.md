@@ -55,7 +55,7 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | Background Jobs | Inngest / Trigger.dev |
 | Cache | Redis (Upstash) |
 | Notifikasi In-App | sonner |
-| Notifikasi WhatsApp | Fonnte (gratis 500 msg/hari) atau whatsapp-web.js |
+| Notifikasi WhatsApp | Fonnte (gratis 500 msg/hari) — sudah implementasi dengan 3 trigger: Quotation, DO Dikirim, PO Supplier |
 | AI Agent | opencode CLI (free model) + Playwright (Chrome on AWS VPS) |
 | Testing (Unit) | Vitest |
 | Testing (E2E) | Playwright |
@@ -495,23 +495,30 @@ Kwitansi:   KWT/RRI/26/05/0001
 
 ### 8.4 WhatsApp Notification Integration
 
-Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi dengan Customer & Supplier.
+Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer & Supplier.
 
-| Notifikasi | Trigger | Penerima |
-|---|---|---|
-| **Quotation Terkirim** | Quotation berhasil dibuat | PIC Customer via WhatsApp |
-| **PO/DI Deal** | Customer deal & terbit PO/DI | PIC Customer (konfirmasi) |
-| **DO Dikirim** | DO status "Dikirim" | PIC Customer — info no. resi & estimasi |
-| **AR Reminder H-7** | Invoice jatuh tempo H-7 | PIC Customer — pengingat tagihan |
-| **AR Reminder H-3** | Invoice jatuh tempo H-3 | PIC Customer — pengingat |
-| **AR Overdue H+1** | Invoice lewat jatuh tempo | PIC Customer + Finance |
-| **AR Overdue H+7** | Invoice lewat 7 hari | PIC Customer + Manager |
-| **PO ke Supplier** | PO terbit ke supplier marketplace | Supplier via WhatsApp (informasi) |
-| **Approval Request** | PR/PO pending approval | Manager via WhatsApp |
+**Status Implementasi:** ✅ 4 trigger aktif — Quotation Terkirim, DO Dikirim, PO Supplier, AR Reminder (via Vercel Cron).
 
-**Config:** Setiap user bisa setting preferensi notifikasi (in-app, WhatsApp, atau keduanya) di halaman profil.
+| Notifikasi | Trigger | Penerima | Status |
+|---|---|---|---|
+| **Quotation Terkirim** | Quotation berhasil dibuat | PIC Customer via WhatsApp | ✅ Aktif |
+| **PO/DI Deal** | Customer deal & terbit PO/DI | PIC Customer (konfirmasi) | 🔜 Rencana |
+| **DO Dikirim** | DO status "Dikirim" | PIC Customer — info no. resi & estimasi | ✅ Aktif |
+| **AR Reminder H-7** | Invoice jatuh tempo H-7 | PIC Customer — pengingat tagihan | ✅ Aktif (Vercel Cron) |
+| **AR Reminder H-3** | Invoice jatuh tempo H-3 | PIC Customer — pengingat | ✅ Aktif (Vercel Cron) |
+| **AR Overdue H+1** | Invoice lewat jatuh tempo | PIC Customer + Finance | ✅ Aktif (Vercel Cron) |
+| **AR Overdue H+7** | Invoice lewat 7 hari | PIC Customer + Manager | ✅ Aktif (Vercel Cron) |
+| **PO ke Supplier** | PO terbit ke supplier marketplace | Supplier via WhatsApp (informasi) | ✅ Aktif |
+| **Approval Request** | PR/PO pending approval | Manager via WhatsApp | 🔜 Rencana |
 
-**Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Tersedia juga opsi `whatsapp-web.js` yang sepenuhnya gratis tapi memerlukan session WhatsApp Web aktif.
+**Implementasi:**
+- **Utility:** `src/lib/utils/whatsapp.ts` — fungsi `sendWhatsapp(recipient, message, userId?)` yang memanggil Fonnte API (`POST https://api.fonnte.com/send`) dan mencatat ke tabel `whatsapp_log`.
+- **Cron Job:** `src/app/api/v1/cron/ar-reminder/route.ts` — endpoint yang dipanggil Vercel Cron setiap hari pukul 01:00 UTC (08:00 WIB). Logic: cek semua invoice aktif, hitung due date dari `tanggal + top`, kirim WA sesuai selisih hari.
+- **Schedule:** `vercel.json` — `"0 1 * * *"` (setiap hari jam 1 AM UTC = 8 AM WIB).
+- **Log:** Semua pengiriman tercatat di tabel `whatsapp_log` untuk monitoring.
+- **Halaman:** `/dashboard/notifikasi` — riwayat notifikasi WhatsApp.
+
+**Catatan Biaya:** Fonnte menyediakan **500 pesan gratis per hari** – lebih dari cukup untuk kebutuhan ERP RRI (estimasi ~20 pesan/hari). Vercel Cron gratis di Hobby Plan (maks 1x/hari).
 
 ## 9. Professional Features
 
@@ -528,7 +535,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte / whatsapp-web.js) untuk komunikasi
 | **Print-Friendly CSS** | Halaman dokumen langsung bisa di-print rapi dari browser tanpa perlu PDF |
 | **Loading Skeleton** | Tidak ada spinner — skeleton loading memberikan kesan profesional |
 | **Role-Based Navigation** | Sidebar & menu menyesuaikan role user — tidak lihat menu yang bukan haknya |
-| **User Onboarding** | Walkthrough interaktif saat pertama login — user baru langsung paham cara pakai ERP |
+| **User Onboarding** | Walkthrough interaktif saat pertama login — user baru langsung paham cara pakai ERP. Tur 12 step dalam 6 grup mencakup semua modul. Tombol "Panduan" permanen di sidebar untuk replay. Bisa dinonaktifkan/aktifkan via profil (field `onboarding_disabled` di tabel `users`) |
 | **Multi-Bahasa (future)** | Persiapan i18n jika nanti ada customer atau kebutuhan internasional |
 | **Maintenance Mode** | Satu toggle di settings — user lihat halaman "Sedang Perbaikan" |
 | **Soft Delete** | Semua data hanya di-soft-delete (`deleted_at`), tidak pernah hilang permanen |
@@ -729,6 +736,7 @@ src/
 │   ├── tables/                   # Table components
 │   ├── layout/                   # Layout components
 │   ├── pdf/                      # PDF components
+│   ├── onboarding/               # User onboarding (react-joyride tour)
 │   └── shared/                   # Shared components
 ├── lib/
 │   ├── api/
@@ -1057,7 +1065,7 @@ const nomor = await generateDocumentNumber('SPH')
 | **Fase 4** | Finance (Invoice, Kwitansi, Faktur Pajak, Jurnal) + PDF Generation (Invoice, Kwitansi, Quotation, DO, Slip Gaji) + Financial Reports (AR/AP Aging, Laba/Rugi, Neraca, Arus Kas) | ✅ Selesai |
 | **Fase 5** | AI Agent (Search Harga Playwright, OCR Kontrak, Rekomendasi Harga, Negosiasi Assistant) | ✅ Selesai |
 | **Fase 6** | HR (Absensi, Penggajian, Slip Gaji) + Dashboard Owner (Executive Command Center) + Dashboard Manager/Sales/Procurement/Gudang/Finance (role-based, future-ready) + Export Excel/CSV + Audit Trail + Global Search + PDF Quotation & DO | ✅ Selesai |
-| **Fase 7** | WhatsApp Notifikasi + Retur Penjualan + User Onboarding | — |
+| **Fase 7** | WhatsApp Notifikasi (Fonnte) + Retur Penjualan + User Onboarding (react-joyride) | ✅ Selesai |
 | **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | — |
 
 ## 14. Testing Strategy

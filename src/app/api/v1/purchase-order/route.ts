@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(),
@@ -49,6 +50,17 @@ export async function POST(request: NextRequest) {
   }))
   const { error: ie } = await supabaseAdmin.from('purchase_order_item').insert(items)
   if (ie) { await supabaseAdmin.from('purchase_order').delete().eq('id', po.id); return internalError(ie) }
+
+  const { data: supplier } = await supabaseAdmin
+    .from('supplier')
+    .select('kontak, nama')
+    .eq('id', parsed.data.supplier_id)
+    .single()
+
+  if (supplier?.kontak) {
+    const msg = `Halo *${supplier.nama}*,\n\nPurchase Order *${nomor}* telah diterbitkan oleh RRI.\n\nSilakan cek detailnya untuk segera diproses.\n\nTerima kasih.`
+    await sendWhatsapp(supplier.kontak, msg, auth.user?.id)
+  }
 
   return NextResponse.json({ data: { ...po, items } }, { status: 201 })
 }
