@@ -78,11 +78,13 @@
 - [x] Absensi
 - [x] Penggajian
 - [x] Slip Gaji
-- [x] Dashboard Owner
-- [ ] Dashboard Manager / Sales / Procurement / Gudang / Finance
+- [x] Dashboard Owner → **Executive Command Center** (7 section: Revenue, Pipeline, Procurement, Finance, Inventory, Pending Actions, Recent Activity)
+- [x] Dashboard Manager / Sales / Procurement / Gudang / Finance (role-based, future-ready)
 - [x] Export Excel / CSV
 - [x] Audit Trail
 - [x] Global Search
+
+> **Owner Solo Model:** Owner menjalankan semua operasional sendiri. Dashboard Owner adalah Executive Command Center yang menggabungkan semua informasi bisnis dalam satu layar. Role-specific dashboards siap aktif ketika RRI merekrut karyawan — cukup set role di database.
 
 ## Fase 7 — Notifikasi & Retur
 - [ ] WhatsApp Notification

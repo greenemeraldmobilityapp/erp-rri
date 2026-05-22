@@ -427,15 +427,36 @@ Format dokumen akan mengikuti template yang akan disediakan customer di direktor
 
 ### J. Dashboard & Laporan
 
+Arsitektur dashboard role-based: setiap user melihat dashboard sesuai rolenya. Implementasi via server component yang mendeteksi role dari session user (`users.role`), lalu merender komponen dashboard yang sesuai.
+
+**Owner Dashboard — Executive Command Center:**
+
+Bukan sekedar 6 kartu statistik — dashboard Owner adalah command center yang memberikan visibilitas penuh ke semua aspek bisnis dalam satu layar:
+
+| Section | Data | Tujuan |
+|---|---|---|
+| **Revenue & Profit** | Total revenue bulan ini, Laba/Rugi, perbandingan dengan bulan lalu | Performa bisnis real-time |
+| **Pipeline** | Quotation outstanding, PO customer deal, SO aktif | Visibilitas order yang sedang berjalan |
+| **Procurement** | PR dan PO pending | Tidak ada pembelian terlewat |
+| **Finance** | AR outstanding + aging, AP outstanding, Faktur Pajak pending | Cashflow & kewajiban terpantau |
+| **Inventory** | Total barang, total stok, stok kosong/minimum | Tahu potensi stop operasional |
+| **Pending Actions** | Semua item butuh tindakan owner (PR/PO approval, retur pending) | Tidak ada yang terabaikan |
+| **Recent Activity** | 5-10 transaksi terakhir dari semua modul | Konteks aktivitas hari ini |
+| **Quick Actions** | Tombol shortcut sesuai konteks owner solo | Eksekusi cepat tanpa navigasi |
+
+**Role-Specific Dashboards (Future-Ready):**
+
 | Dashboard | Untuk Role |
 |---|---|
-| Dashboard Owner | Owner — Revenue, Profit, Cashflow, AP/AR Aging, grafik tren, ringkasan pajak |
-| Dashboard Manager | Manager — Ringkasan per modul, approval pending |
-| Dashboard Sales | Sales — Pipeline order, RFQ → Quotation → Deal ratio |
-| Dashboard Procurement | Procurement — PR/PO status, hasil AI Search |
-| Dashboard Gudang | Gudang — Stok, barang mau habis, retur pending |
-| Dashboard Finance | Finance — AP/AR, cashflow, jurnal, PPN masa, faktur pajak |
+| **Manager** | Ringkasan per modul, approval pending (PR, PO) |
+| **Sales** | Pipeline order, RFQ → Quotation → Deal ratio, recent quotations |
+| **Procurement** | PR/PO status, pending receiving & GRN |
+| **Gudang** | Stok, barang kosong, DO pending |
+| **Finance** | AR/AP, kwitansi bulan ini, faktur pajak pending |
+| **Owner/Admin** | Executive Command Center — semua data dalam satu layar |
 | Semua data bisa di-export ke Excel/CSV | Semua role |
+
+> **Catatan:** Dashboard per role siap aktif kapanpun. Cukup set role user di database (`users.role`), sistem otomatis menampilkan dashboard yang sesuai. Owner dan Admin melihat Executive Command Center selama rolenya 'owner' atau 'admin'.
 
 ## 8. Automation & Smart Workflow
 
@@ -1035,7 +1056,7 @@ const nomor = await generateDocumentNumber('SPH')
 | **Fase 3** | Procurement (PR, PO, Receiving, GRN, Retur Beli) + Document Numbering | ✅ Selesai |
 | **Fase 4** | Finance (Invoice, Kwitansi, Faktur Pajak, Jurnal) + PDF Generation (Invoice, Kwitansi, Quotation, DO, Slip Gaji) + Financial Reports (AR/AP Aging, Laba/Rugi, Neraca, Arus Kas) | ✅ Selesai |
 | **Fase 5** | AI Agent (Search Harga Playwright, OCR Kontrak, Rekomendasi Harga, Negosiasi Assistant) | ✅ Selesai |
-| **Fase 6** | HR (Absensi, Penggajian, Slip Gaji) + Dashboard Owner + Export Excel/CSV + Audit Trail + Global Search + PDF Quotation & DO | ✅ Selesai |
+| **Fase 6** | HR (Absensi, Penggajian, Slip Gaji) + Dashboard Owner (Executive Command Center) + Dashboard Manager/Sales/Procurement/Gudang/Finance (role-based, future-ready) + Export Excel/CSV + Audit Trail + Global Search + PDF Quotation & DO | ✅ Selesai |
 | **Fase 7** | WhatsApp Notifikasi + Retur Penjualan + User Onboarding | — |
 | **Fase 8** | Professional polish (Dark mode, shortcuts, skeleton, print CSS) + Testing Setup + Deploy Vercel | — |
 
@@ -1072,6 +1093,73 @@ Push ke branch → GitHub Actions:
   ├── Build (next build)
   └── Deploy ke Vercel Preview (jika branch fitur)
 ```
+
+## 15. Deployment Model: Owner Solo (2026)
+
+### 15.1 Konteks
+
+Saat peluncuran awal, PT. RRI belum memiliki karyawan tetap — Owner menjalankan seluruh operasional sendiri. Ini adalah model **Owner Solo**: satu user dengan role `owner` mengerjakan semua fungsi bisnis (Sales, Procurement, Gudang, Finance, HR).
+
+### 15.2 Dampak pada Aplikasi
+
+| Area | Penyesuaian |
+|---|---|
+| **Dashboard** | Owner melihat **Executive Command Center** — gabungan semua informasi dari semua role dalam satu layar. Bukan dashboard role-specific |
+| **Navigasi Sidebar** | Owner melihat semua menu tanpa filter — akses penuh ke semua modul |
+| **Approval Workflow** | Owner auto-approve untuk dirinya sendiri. Tidak perlu approval chain karena tidak ada Manager terpisah |
+| **Notifikasi** | Semua notifikasi dikirim ke Owner. Tidak ada escalation routing |
+| **Role Management** | Role 'owner' memiliki akses ALL. Role lain (sales, procurement, dll) tetap ada di database tapi belum dipakai |
+
+### 15.3 Transisi ke Model Berkaryawan
+
+Ketika RRI mulai merekrut karyawan tetap:
+
+1. **Buat user baru** di halaman Register (atau via Admin) dengan role spesifik (sales, procurement, gudang, finance, dll)
+2. **Set role** di database `users.role` → sistem otomatis menampilkan dashboard & navigasi yang sesuai
+3. **Approval workflow aktif** — PR/PO butuh approval Manager, escalation berjalan
+4. **Role-specific dashboard** langsung tampil tanpa perubahan kode
+
+> **Filosofi Desain:** Semua fitur role-based dibangun dari awal (future-ready). Owner Solo bukan mode terbatas — melainkan model di mana semua informasi dikonsolidasikan ke satu layar. Ketika perusahaan tumbuh, sistem siap tanpa rewrite.
+
+### 15.4 Arsitektur Role Detection
+
+```
+Server Component (/dashboard/page.tsx)
+  → cookies().get('sb-access-token')
+  → supabase.auth.getUser(token)
+  → supabase.from('users').select('role').eq('id', user.id).single()
+  → render dashboard sesuai role:
+      owner/admin → ExecutiveCommandCenter
+      manager     → ManagerDashboard
+      sales       → SalesDashboard
+      procurement → ProcurementDashboard
+      gudang      → GudangDashboard
+      finance     → FinanceDashboard
+      fallback    → ExecutiveCommandCenter (default aman)
+```
+
+### 15.5 Role Detection: Owner vs Admin
+
+Role `owner` dan `admin` sama-sama melihat **Executive Command Center** — dashboard penuh dengan semua data bisnis. Tidak ada filter atau batasan untuk kedua role ini. Perbedaan hanya di hak akses menu samping (sidebar):
+
+- **Owner** — melihat semua menu tanpa pengecualian
+- **Admin** — fokus ke master data, user management, dan konfigurasi sistem
+
+Di kode dashboard router, role `admin` tidak dicek secara explicit sehingga fallback ke default — yaitu Executive Command Center (sama dengan Owner).
+
+## 16. Akun Role untuk Testing
+
+| Role | Email | Password | Dashboard |
+|---|---|---|---|
+| Owner | owner@rri.com | rri123456 | Executive Command Center |
+| Admin | admin@rri.com | rri123456 | Executive Command Center |
+| Manager | manager@rri.com | rri123456 | Manager Dashboard |
+| Sales | sales@rri.com | rri123456 | Sales Dashboard |
+| Procurement | procurement@rri.com | rri123456 | Procurement Dashboard |
+| Gudang | gudang@rri.com | rri123456 | Gudang Dashboard |
+| Finance | finance@rri.com | rri123456 | Finance Dashboard |
+
+Semua akun di atas dapat digunakan untuk login di halaman `/login` dan akan langsung diarahkan ke dashboard sesuai role masing-masing.
 
 ---
 **Catatan Teknis:** Nomor dokumen dengan reset tahunan sangat mudah diimplementasikan di PostgreSQL/Supabase. Cukup gunakan tabel counter atau sequence yang di-reset via trigger setiap pergantian tahun.
