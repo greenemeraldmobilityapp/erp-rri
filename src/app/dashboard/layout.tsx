@@ -26,6 +26,7 @@ const menuItems = [
     { href: '/dashboard/sales-order', label: 'Sales Order', icon: FileText },
     { href: '/dashboard/di', label: 'Delivery Instr.', icon: FileText },
     { href: '/dashboard/delivery-order', label: 'Delivery Order', icon: FileText },
+    { href: '/dashboard/retur-penjualan', label: 'Retur Penjualan', icon: FileText },
   ]},
   { label: 'Procurement', icon: Package, children: [
     { href: '/dashboard/purchase-request', label: 'Purchase Request', icon: FileText },

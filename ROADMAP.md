@@ -87,8 +87,8 @@
 > **Owner Solo Model:** Owner menjalankan semua operasional sendiri. Dashboard Owner adalah Executive Command Center yang menggabungkan semua informasi bisnis dalam satu layar. Role-specific dashboards siap aktif ketika RRI merekrut karyawan — cukup set role di database.
 
 ## Fase 7 — Notifikasi & Retur
+- [x] Retur Penjualan (CRUD + API routes + sidebar + dokumen auto-number RTJ)
 - [ ] WhatsApp Notification
-- [ ] Retur Penjualan
 - [ ] User Onboarding
 
 ## Fase 8 — Polish & Production
