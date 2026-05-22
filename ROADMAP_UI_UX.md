@@ -100,10 +100,17 @@
 - [ ] Toast notification position konsisten (top-right sudah)
 
 ### P4 — Auth (Login, Register)
-- [ ] Login: loading state
-- [ ] Login: error message yang jelas
-- [ ] Register: form validation
-- [ ] Password strength indicator
+- [x] Login: loading spinner di button + disabled state
+- [x] Login: error message yang jelas dengan role="alert" + styling desteductive
+- [x] Login: password visibility toggle (Eye/EyeOff icons)
+- [x] Login: desain split-screen (brand panel + form card)
+- [x] Register: shadcn Form + Select components
+- [x] Register: password strength indicator (4 level bar + checklist)
+- [x] Register: password visibility toggle
+- [x] Register: role select dengan shadcn Select
+- [x] Auth layout: gradient brand panel dengan company info
+- [x] Semua form pakai shadcn/ui Card, Input, Button, Label
+- [x] Bahasa Indonesia untuk semua label dan pesan error
 
 ## Implementation Notes
 1. **Tidak perlu ganti font** — Lexend + Source Sans 3 sudah sesuai rekomendasi

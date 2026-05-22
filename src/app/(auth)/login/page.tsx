@@ -1,107 +1,157 @@
-"use client";
+"use client"
 
-import { useState } from 'react';
-import { supabase } from '@/lib/db/client';
-import { redirect } from 'next/navigation';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/db/client'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2, Eye, EyeOff, LogIn } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
+  email: z.string().email({ message: 'Email tidak valid' }),
+  password: z.string().min(6, { message: 'Password minimal 6 karakter' }),
+})
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-  });
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  })
 
   const onSubmit = async (data: LoginFormValues) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-      });
+      })
 
       if (authError) {
-        setError(authError.message);
-        return;
+        setError(authError.message === 'Invalid login credentials'
+          ? 'Email atau password salah'
+          : authError.message
+        )
+        return
       }
 
-      // Redirect to dashboard on successful login
-      redirect('/dashboard');
+      router.push('/dashboard')
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <div className="flex items-center justify-center">
-        <h1 className="text-2xl font-bold">Login to ERP RRI</h1>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            {...register('email')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+    <Card className="border-0 shadow-lg sm:border sm:shadow-sm">
+      <CardHeader className="space-y-1 pb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center lg:hidden">
+            <LogIn className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <CardTitle className="text-2xl font-heading font-bold">Masuk</CardTitle>
         </div>
+        <CardDescription>
+          Masukkan email dan password untuk mengakses dashboard
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {error && (
+            <div
+              role="alert"
+              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
+            >
+              {error}
+            </div>
+          )}
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            {...register('password')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.password ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="nama@email.com"
+              autoComplete="email"
+              autoFocus
+              {...register('email')}
+              aria-invalid={!!errors.email}
+            />
+            {errors.email && (
+              <p className="text-sm font-medium text-destructive" role="alert">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+            </div>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                {...register('password')}
+                aria-invalid={!!errors.password}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-sm font-medium text-destructive" role="alert">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full" size="lg">
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Memproses...
+              </>
+            ) : (
+              'Masuk'
+            )}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex-col space-y-3">
+        <div className="text-sm text-muted-foreground text-center w-full">
+          Belum punya akun?{' '}
+          <Link href="/register" className="text-accent font-medium hover:underline underline-offset-4">
+            Daftar disini
+          </Link>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-
-      {error && <p className="text-red-500 text-center">{error}</p>}
-
-      <div className="text-center text-sm">
-        <p>
-          Don&apos;t have an account?{' '}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Register here
-          </a>
-        </p>
-      </div>
-    </div>
-  );
+      </CardFooter>
+    </Card>
+  )
 }
