@@ -12,7 +12,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { FormActions } from '@/components/form-actions';
 
@@ -139,13 +138,13 @@ export default function TambahBarangPage() {
               control={form.control}
               name="stok_minimum"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stok Minimum</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                 <FormItem>
+                   <FormLabel>Stok Minimum</FormLabel>
+                   <FormControl>
+                     <Input type="number" min="0" value={field.value as number} onChange={field.onChange} />
+                   </FormControl>
+                   <FormMessage />
+                 </FormItem>
               )}
             />
           </div>
@@ -167,26 +166,26 @@ export default function TambahBarangPage() {
               control={form.control}
               name="harga_beli_default"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Harga Beli Default</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <FormItem>
+                    <FormLabel>Harga Beli Default</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" value={Number(field.value || 0)} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
               )}
             />
             <FormField
               control={form.control}
               name="harga_jual_default"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Harga Jual Default</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <FormItem>
+                    <FormLabel>Harga Jual Default</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" value={Number(field.value || 0)} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
               )}
             />
           </div>
