@@ -119,6 +119,7 @@ export {
   kwitansi,
   kwitansiItem,
   stok,
+  stokMutasi,
   gudang,
   jurnal,
   jurnalItem,

@@ -48,8 +48,8 @@
 - [x] GRN CRUD (list, tambah, edit) + API routes + document numbering
 - [x] Retur Pembelian CRUD (list, tambah, edit) + API routes + document numbering
 - [x] AI Search Harga
-- [ ] Stok Masuk / Keluar
-- [ ] Kartu Stok
+- [x] Stok Masuk / Keluar
+- [x] Kartu Stok
 
 ## Fase 4 — Finance & Dokumen PDF
 - [x] Invoice CRUD (list, tambah, edit) + API routes + document numbering + PDF generation
@@ -65,6 +65,7 @@
 - [x] Sidebar: Finance + Laporan menu groups
 - [ ] PPN & PPh kalkulasi otomatis di Invoice
 - [x] PDF Quotation & DO
+- [x] Slip Gaji PDF
 
 ## Fase 5 — AI Agent
 - [x] AI Search Harga (Playwright) — page + API + Playwright library + mock fallback

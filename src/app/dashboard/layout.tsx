@@ -34,6 +34,12 @@ const menuItems = [
     { href: '/dashboard/grn', label: 'GRN', icon: FileText },
     { href: '/dashboard/retur-pembelian', label: 'Retur Pembelian', icon: FileText },
   ]},
+  { label: 'Inventory', icon: Package, children: [
+    { href: '/dashboard/inventory/gudang', label: 'Gudang', icon: Building2 },
+    { href: '/dashboard/inventory/stok', label: 'Stok', icon: Package },
+    { href: '/dashboard/inventory/stok/masuk', label: 'Stok Masuk', icon: TrendingUp },
+    { href: '/dashboard/inventory/stok/keluar', label: 'Stok Keluar', icon: TrendingDown },
+  ]},
   { label: 'Finance', icon: Landmark, children: [
     { href: '/dashboard/invoice', label: 'Invoice', icon: ReceiptText },
     { href: '/dashboard/kwitansi', label: 'Kwitansi', icon: Receipt },
