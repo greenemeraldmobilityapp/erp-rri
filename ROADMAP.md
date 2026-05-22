@@ -26,39 +26,52 @@
 - [x] PRD.md v4.0 — didokumentasi penuh (design system, API architecture, folder structure update)
 
 ## Fase 2 — Pre-Sales & Sales
-- [ ] RFQ (list, tambah, edit, detail)
-- [ ] Quotation (list, tambah, edit, PDF)
-- [ ] Negosiasi (track, counter offer, approval)
-- [ ] DI — Delivery Instruction (list, tambah, edit)
-- [ ] Sales Order (auto-generate, list, detail)
-- [ ] Delivery Order (list, tambah, PDF, tracking)
+- [x] shadcn/ui initialization + base components (Button, Input, Card, Table, Badge, Select, Dialog, Form, Tabs, Checkbox, DropdownMenu, Separator, Textarea)
+- [x] UI/UX theme applied (Lexend + Source Sans 3, navy-blue palette, globals.css with Tailwind v4)
+- [x] Migration RFQ: customer_id → supplier_id, add nomor + status
+- [x] RFQ CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Migration Quotation: add nomor + status
+- [x] Quotation CRUD (list, tambah, edit) + API routes
+- [x] Migration all Fase 2 tables: add nomor + status
+- [x] Negosiasi CRUD (list, tambah, edit) + API routes
+- [x] Customer PO CRUD (list, tambah, edit) + API routes
+- [x] DI — Delivery Instruction CRUD (list, tambah, edit) + API routes
+- [x] Sales Order CRUD (list, tambah, edit) + API routes
+- [x] Delivery Order CRUD (list, tambah, edit) + API routes
+- [ ] PDF generation (Quotation, DO, Invoice, Kwitansi) — postponed
+- [x] Sonner toast integration
 
 ## Fase 3 — Procurement & Inventory
-- [ ] Purchase Request (list, tambah, approval)
+- [x] Purchase Request CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Purchase Order CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Purchase Receiving CRUD (list, tambah, edit) + API routes + document numbering
+- [x] GRN CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Retur Pembelian CRUD (list, tambah, edit) + API routes + document numbering
 - [ ] AI Search Harga
-- [ ] Purchase Order (list, tambah, edit, PDF)
-- [ ] Receiving / Penerimaan Barang
-- [ ] GRN (Goods Received Note)
-- [ ] Retur Pembelian
 - [ ] Stok Masuk / Keluar
 - [ ] Kartu Stok
 
 ## Fase 4 — Finance & Dokumen PDF
-- [ ] Invoice (list, tambah, PDF)
-- [ ] Kwitansi (list, tambah, PDF)
-- [ ] Faktur Pajak
-- [ ] PPN & PPh kalkulasi
-- [ ] AR / AP Aging
-- [ ] Jurnal Umum
-- [ ] Laba / Rugi
-- [ ] Neraca
-- [ ] Arus Kas
+- [x] Invoice CRUD (list, tambah, edit) + API routes + document numbering + PDF generation
+- [x] Kwitansi CRUD (list, tambah, edit) + API routes + document numbering + PDF generation
+- [x] Faktur Pajak CRUD (list, tambah, edit) + API routes + document numbering
+- [x] Jurnal Umum CRUD (list, tambah, edit) + API routes + document numbering
+- [x] AR Aging report
+- [x] AP Aging report
+- [x] Laba / Rugi report
+- [x] Neraca report
+- [x] Arus Kas report
+- [x] Migration 0007: add nomor + status to invoice, kwitansi, faktur_pajak, jurnal
+- [x] Sidebar: Finance + Laporan menu groups
+- [ ] PPN & PPh kalkulasi otomatis di Invoice
+- [ ] PDF Quotation & DO
 
 ## Fase 5 — AI Agent
-- [ ] AI Search Harga (Playwright)
-- [ ] AI OCR Kontrak
-- [ ] AI Rekomendasi Harga
-- [ ] AI Negosiasi Assistant
+- [x] AI Search Harga (Playwright) — page + API + Playwright library + mock fallback
+- [x] AI OCR Kontrak — PDF upload + extract + Supabase Storage
+- [x] AI Rekomendasi Harga — engine based on PO items + kontrak + default margin 15%
+- [x] AI Negosiasi Assistant — margin analysis with approval level logic
+- [x] AI sidebar menu group
 
 ## Fase 6 — HR, Dashboard & Laporan
 - [ ] Absensi

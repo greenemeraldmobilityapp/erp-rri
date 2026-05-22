@@ -1,0 +1,37 @@
+"use client"
+import { useState, useEffect } from 'react'; import { useRouter, useParams } from 'next/navigation'; import { z } from 'zod'; import { useForm } from 'react-hook-form'; import { zodResolver } from '@hookform/resolvers/zod'
+import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+
+const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.string().optional() })
+type FV = z.input<typeof schema>
+const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'confirmed', label: 'Dikonfirmasi' }, { value: 'cancelled', label: 'Batal' }]
+
+export default function EditPoPage() {
+  const router = useRouter(); const params = useParams(); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false)
+  const { register, handleSubmit, reset } = useForm<FV>({ resolver: zodResolver(schema) })
+  useEffect(() => {
+    apiFetch<{ status: string; nomor_po_customer: string | null; terms_of_payment: string | null }>(`/api/v1/customer-po/${params.id}`)
+      .then(r => { reset({ status: r.data.status, nomor_po_customer: r.data.nomor_po_customer ?? '', terms_of_payment: r.data.terms_of_payment ?? '' }); setLoading(false) })
+      .catch(() => { toast.error('Gagal'); router.push('/dashboard/customer-po') })
+  }, [params.id, reset, router])
+  const onSubmit = async (data: FV) => {
+    setSubmitting(true); try { await apiFetch(`/api/v1/customer-po/${params.id}`, { method: 'PUT', body: JSON.stringify(data) }); toast.success('Diupdate!'); router.push('/dashboard/customer-po') }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+  }
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
+  return (
+    <div className="max-w-xl space-y-6">
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><a href="/dashboard/customer-po"><ArrowLeft className="h-5 w-5" /></a></Button><div><h1 className="text-3xl font-heading font-bold">Edit PO</h1></div></div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Card><CardContent className="space-y-4 pt-6">
+          <div className="space-y-2"><label className="text-sm font-medium">Status</label>
+            <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+          <div className="space-y-2"><label className="text-sm font-medium">Nomor PO Customer</label><Input {...register('nomor_po_customer')} /></div>
+          <div className="space-y-2"><label className="text-sm font-medium">Terms of Payment</label><Input {...register('terms_of_payment')} /></div>
+        </CardContent></Card>
+        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><a href="/dashboard/customer-po">Batal</a></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
+      </form>
+    </div>
+  )
+}

@@ -2,9 +2,11 @@ import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const returPembelian = pgTable("retur_pembelian", {
   id: text("id").primaryKey(),
+  nomor: text("nomor").notNull().unique(),
   purchaseOrderId: text("purchase_order_id"),
   supplierId: text("supplier_id").notNull(),
   tanggal: timestamp("tanggal").notNull(),
+  status: text("status").notNull().default("draft"),
   keterangan: text("keterangan"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),

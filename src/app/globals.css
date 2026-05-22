@@ -1,0 +1,72 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-chart-1: #0369A1;
+  --color-chart-2: #22C55E;
+  --color-chart-3: #F59E0B;
+  --color-chart-4: #DC2626;
+  --color-chart-5: #8B5CF6;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-family-heading: var(--font-heading);
+  --font-family-body: var(--font-body);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: #F8FAFC;
+  --foreground: #020617;
+  --card: #FFFFFF;
+  --card-foreground: #020617;
+  --popover: #FFFFFF;
+  --popover-foreground: #020617;
+  --primary: #0F172A;
+  --primary-foreground: #F8FAFC;
+  --secondary: #334155;
+  --secondary-foreground: #F8FAFC;
+  --muted: #F1F5F9;
+  --muted-foreground: #475569;
+  --accent: #0369A1;
+  --accent-foreground: #F8FAFC;
+  --destructive: #DC2626;
+  --destructive-foreground: #F8FAFC;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #0F172A;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+}
