@@ -25,6 +25,7 @@
 ## Implementation Status
 - **Build:** ✅ Passed
 - **Lint:** ✅ Passed (only pre-existing test file errors)
+- **Known Issue:** Next.js 15 prerenders "use client" pages, but event handlers (onClick, onChange from register()) can't be serialized. Fixed by setting `export const dynamic = "force-dynamic"` in `dashboard/layout.tsx` — all dashboard pages are now dynamic, which is appropriate for an ERP.
 - **Reference Form:** `/dashboard/master/barang/tambah` — use as template for other forms
 - **Forms Migrated:** supplier, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan (tambah pages)
 
@@ -155,3 +156,4 @@
 6. **react-hook-form + Zod** — sudah sesuai best practice, tinggal perbaiki tampilan error
 7. **sonner toast** — sudah terintegrasi, konsisten dipakai semua form
 8. **Gunakan recharts** jika perlu chart — sudah ada di dependencies
+9. **Next.js 15 prerendering issue:** Event handlers (onClick, onChange from register(), onSubmit) can't be serialized during static generation, even on "use client" pages. Pages wrapped in shadcn `<Form>`/`FormActions` work around this via proper client boundaries. Raw `<form>` + `{...register()}` + `<Button onClick>` patterns in page JSX trigger the error. Fix: `export const dynamic = "force-dynamic"` at the layout level skips prerendering for those routes.

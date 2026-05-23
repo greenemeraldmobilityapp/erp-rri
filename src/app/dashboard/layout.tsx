@@ -7,6 +7,8 @@ import { KeyboardShortcuts } from '@/components/keyboard/keyboard-shortcuts'
 import { SidebarContent } from '@/components/sidebar-content'
 import { AuthGuardClient } from './auth-guard-client'
 
+export const dynamic = "force-dynamic"
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
