@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, posted: { label: 'Posted', v: 'success' },
@@ -33,7 +33,12 @@ export default async function JurnalPage() {
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell className="text-muted-foreground max-w-xs truncate">{item.keterangan ?? '-'}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
-            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/jurnal/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-1">
+                <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/jurnal/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
+                <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/jurnal/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody></Table></div>}

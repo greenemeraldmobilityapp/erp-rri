@@ -6,14 +6,22 @@ import { TrendingUp, TrendingDown, ReceiptText, DollarSign, ArrowRight, PieChart
 
 export default async function FinanceDashboard() {
   const now = new Date(); const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-  const [invoices, kwitansis, purchaseOrders, fakturPajaks] = await Promise.all([
-    supabase.from('invoice').select('*').in('status', ['sent', 'overdue']),
+  const [invoices, kwitansis, fakturPajaks] = await Promise.all([
+    supabase.from('invoice').select('*').in('status', ['sent', 'partial', 'overdue']),
     supabase.from('kwitansi').select('*').gte('created_at', firstDay),
-    supabase.from('purchase_order').select('*').in('status', ['sent', 'confirmed']),
     supabase.from('faktur_pajak').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
   ])
-  const totalPiutang = (invoices.data ?? []).reduce((s: number, i) => s + ((i as { ppn_rate?: number }).ppn_rate ?? 0), 0)
-  const totalHutang = (purchaseOrders.data ?? []).length
+  const invIds = (invoices.data ?? []).map(i => i.id)
+  const { data: invItems } = invIds.length
+    ? await supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon, ppn, pph').in('invoice_id', invIds)
+    : { data: [] }
+  const totalsById: Record<string, number> = {}
+  for (const it of invItems ?? []) {
+    const dpp = it.harga * it.jumlah - (it.diskon ?? 0)
+    totalsById[it.invoice_id] = (totalsById[it.invoice_id] ?? 0) + dpp + (it.ppn ?? 0) - (it.pph ?? 0)
+  }
+  const totalPiutang = invIds.reduce((s, id) => s + (totalsById[id] ?? 0), 0)
+  const { count: totalHutang } = await supabase.from('purchase_order').select('*', { count: 'exact', head: true }).in('status', ['sent', 'confirmed'])
   const revenueBulanIni = (kwitansis.data ?? []).length
   const piutangCount = invoices.data?.length ?? 0
 

@@ -5,7 +5,7 @@ import { apiFetch } from '@/lib/api/client'; import { Button } from '@/component
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 const schema = z.object({ status: z.string().optional(), ppn_rate: z.coerce.number().optional(), pph_rate: z.coerce.number().optional() })
 type FV = z.input<typeof schema>
-const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Dikirim' }, { value: 'paid', label: 'Lunas' }, { value: 'overdue', label: 'Overdue' }]
+const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Dikirim' }, { value: 'partial', label: 'Dibayar Sebagian' }, { value: 'paid', label: 'Lunas' }, { value: 'overdue', label: 'Overdue' }]
 export default function EditInvoicePage() {
   const router = useRouter(); const params = useParams(); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false)
   const { register, handleSubmit, reset } = useForm<FV>({ resolver: zodResolver(schema) })
