@@ -19,7 +19,9 @@ const schema = z.object({
  *       200:
  *         description: Berhasil
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await verifyAuth(req)
+  if (auth.error) return auth.error
   const { data, error } = await supabaseAdmin.from('kategori_barang').select('*').order('nama')
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })

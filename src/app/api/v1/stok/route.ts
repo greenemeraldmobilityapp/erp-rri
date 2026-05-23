@@ -3,7 +3,9 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await verifyAuth(req)
+  if (auth.error) return auth.error
   const { data, error } = await supabaseAdmin
     .from('stok')
     .select('*, barang!barang_id(id, nama, kode, satuan, stok_minimum), gudang!gudang_id(nama)')

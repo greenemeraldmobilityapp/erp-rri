@@ -45,6 +45,9 @@ export default function OcrKontrakPage() {
     }
     setProcessing(true);
     setExtracted(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
     try {

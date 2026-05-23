@@ -12,7 +12,14 @@ function daysBetween(a: Date, b: Date): number {
   return Math.round(ms / (1000 * 60 * 60 * 24))
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const cronToken = process.env.CRON_SECRET_TOKEN
+  if (cronToken) {
+    const authHeader = req.headers.get('authorization')
+    if (authHeader !== `Bearer ${cronToken}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  }
   const { data: invoices, error } = await supabaseAdmin
     .from('invoice')
     .select('id, nomor, customer_id, tanggal, top, status, is_active')

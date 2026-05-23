@@ -1,16 +1,8 @@
 import { supabase } from '@/lib/db/client'
 
-let cachedToken: string | null = null
-
 export async function getAuthToken(): Promise<string | null> {
-  if (cachedToken) return cachedToken
   const { data } = await supabase.auth.getSession()
-  cachedToken = data.session?.access_token ?? null
-  return cachedToken
-}
-
-export function clearToken() {
-  cachedToken = null
+  return data.session?.access_token ?? null
 }
 
 export async function apiFetch<T = unknown>(url: string, options?: RequestInit): Promise<{ data: T } & { message?: string }> {
