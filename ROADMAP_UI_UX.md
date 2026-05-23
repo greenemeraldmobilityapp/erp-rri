@@ -168,10 +168,10 @@
 - [x] Loading skeleton untuk semua halaman (sudah partial)
 - [x] Error boundary + fallback UI — ErrorBoundary component created
 - [x] 404 page custom untuk dashboard — dashboard/not-found.tsx
-- [ ] Sidebar: active state visual (highlight halaman aktif)
-- [ ] Sidebar: collapsible untuk mobile
-- [ ] Responsive: mobile bottom navigation atau hamburger menu
-- [ ] Toast notification position konsisten (top-right sudah)
+- [x] Sidebar: active state visual (highlight halaman aktif) — usePathname, bg-accent, font-medium for current page
+- [x] Sidebar: collapsible untuk mobile — Sheet drawer with hamburger button, collapsible section groups with ChevronDown toggle
+- [x] Responsive: mobile bottom navigation atau hamburger menu — hamburger button (md:hidden) + Sheet sidebar drawer, section groups auto-expand when child active
+- [x] Toast notification position konsisten (top-right sudah)
 
 ### P4 — Auth (Login, Register)
 - [x] Login: loading spinner di button + disabled state

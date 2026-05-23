@@ -1,11 +1,38 @@
 'use client'
 
 import Link from 'next/link'
-import { Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2, Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown, PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, ClipboardList, Bell, Sun, Moon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import {
+  Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2,
+  Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
+  PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck,
+  ClipboardList, Bell, Sun, Moon, LucideIcon,
+} from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
 import { PanduanButton } from '@/components/onboarding/panduan-button'
+import { cn } from '@/lib/utils'
 
-const menuItems = [
+interface MenuLink {
+  href: string
+  label: string
+  icon: LucideIcon
+}
+
+interface MenuGroup {
+  label: string
+  icon: LucideIcon
+  children: MenuLink[]
+}
+
+type MenuItem = MenuLink | MenuGroup
+
+function isGroup(item: MenuItem): item is MenuGroup {
+  return 'children' in item
+}
+
+const menuItems: MenuItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { label: 'Master Data', icon: FolderTree, children: [
     { href: '/dashboard/master/barang', label: 'Barang', icon: Package },
@@ -72,45 +99,47 @@ const menuItems = [
   ]},
 ]
 
-export function SidebarContent() {
+function isActive(href: string, pathname: string): boolean {
+  if (href === '/dashboard') return pathname === '/dashboard'
+  return pathname.startsWith(href)
+}
+
+function groupHasActive(group: MenuGroup, pathname: string): boolean {
+  return group.children.some(child => isActive(child.href, pathname))
+}
+
+function SidebarNavLink({ href, icon: Icon, label, collapsed }: { href: string; icon: LucideIcon; label: string; collapsed?: boolean }) {
+  const pathname = usePathname()
+  const active = isActive(href, pathname)
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'flex items-center px-3 py-2 rounded-md text-sm transition-colors duration-200',
+        active
+          ? 'bg-accent font-medium text-foreground'
+          : 'text-foreground/80 hover:bg-accent hover:text-accent-foreground',
+      )}
+    >
+      <Icon className={cn('h-4 w-4 shrink-0', collapsed ? '' : 'mr-3')} />
+      {!collapsed && label}
+    </Link>
+  )
+}
+
+export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
   const { theme, toggleTheme } = useTheme()
+  const pathname = usePathname()
 
   return (
     <>
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         {menuItems.map((item) => {
-          if ('children' in item && item.children) {
-            return (
-              <div key={item.label} className="space-y-1">
-                <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground" data-tour={item.label.toLowerCase().replace(/\s+/g, '-')}>
-                  <item.icon className="h-3.5 w-3.5 mr-2" />
-                  {item.label}
-                </div>
-                <div className="ml-2 space-y-1">
-                  {item.children.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                    >
-                      <child.icon className="h-4 w-4 mr-3 text-muted-foreground" />
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )
+          if (isGroup(item)) {
+            const expanded = groupHasActive(item, pathname)
+            return <SidebarGroup key={item.label} group={item} defaultOpen={expanded} collapsed={collapsed} />
           }
-          return (
-            <Link
-              key={item.href}
-              href={item.href!}
-              className="flex items-center px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-            >
-              <item.icon className="h-4 w-4 mr-3 text-muted-foreground" />
-              {item.label}
-            </Link>
-          )
+          return <SidebarNavLink key={item.href} href={item.href} icon={item.icon} label={item.label} collapsed={collapsed} />
         })}
       </nav>
       <div className="p-3 border-t space-y-1">
@@ -125,5 +154,39 @@ export function SidebarContent() {
         </button>
       </div>
     </>
+  )
+}
+
+function SidebarGroup({ group, defaultOpen, collapsed }: { group: MenuGroup; defaultOpen: boolean; collapsed?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  if (collapsed) {
+    return (
+      <div className="space-y-1">
+        {group.children.map(child => (
+          <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} collapsed />
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <group.icon className="h-3.5 w-3.5 mr-2 shrink-0" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div className="ml-2 space-y-1 overflow-hidden">
+          {group.children.map((child) => (
+            <SidebarNavLink key={child.href} href={child.href} icon={child.icon} label={child.label} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

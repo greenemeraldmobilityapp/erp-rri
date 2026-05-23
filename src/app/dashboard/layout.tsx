@@ -5,6 +5,7 @@ import { OnboardingProvider } from '@/components/onboarding/onboarding-provider'
 import { ThemeProvider } from '@/components/theme/theme-provider'
 import { KeyboardShortcuts } from '@/components/keyboard/keyboard-shortcuts'
 import { SidebarContent } from '@/components/sidebar-content'
+import { MobileSidebar } from '@/components/mobile-sidebar'
 import { AuthGuardClient } from './auth-guard-client'
 
 export const dynamic = "force-dynamic"
@@ -25,8 +26,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </div>
               <SidebarContent />
             </aside>
-            <main className="flex-1">
-              <div className="p-6 max-w-7xl mx-auto">
+            <MobileSidebar />
+            <main className="flex-1 md:ml-0 mt-14 md:mt-0">
+              <div className="p-4 md:p-6 max-w-7xl mx-auto">
                 {children}
               </div>
             </main>
