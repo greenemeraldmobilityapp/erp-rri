@@ -19,3 +19,19 @@ export async function apiFetch<T = unknown>(url: string, options?: RequestInit):
   if (!res.ok) throw new Error(json.error || 'Gagal menghubungi server')
   return json
 }
+
+export async function apiFetchFormData<T = unknown>(url: string, body: FormData, options?: RequestInit): Promise<{ data: T } & { message?: string }> {
+  const token = await getAuthToken()
+  const res = await fetch(url, {
+    ...options,
+    method: options?.method ?? 'POST',
+    body,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.error || 'Gagal menghubungi server')
+  return json
+}

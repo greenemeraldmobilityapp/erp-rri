@@ -185,7 +185,7 @@ export default function SearchHargaPage() {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className={`text-xl font-bold text-${getPriceStatus(item.harga)}`}>
+                        <p className={`text-xl font-bold ${getPriceStatus(item.harga) === 'high' ? 'text-destructive' : getPriceStatus(item.harga) === 'low' ? 'text-success' : 'text-foreground'}`}>
                           Rp {item.harga.toLocaleString('id-ID')}
                         </p>
                         <Button 

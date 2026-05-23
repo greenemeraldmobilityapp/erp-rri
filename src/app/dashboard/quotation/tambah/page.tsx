@@ -15,6 +15,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { FormSkeleton } from '@/components/ui/skeleton'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1, 'Barang harus dipilih'),
@@ -39,6 +40,7 @@ export default function TambahQuotationPage() {
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -61,7 +63,7 @@ export default function TambahQuotationPage() {
     ]).then(([customers, barang]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}` })))
-    }).catch(() => toast.error('Gagal memuat data referensi'))
+    }).catch(() => toast.error('Gagal memuat data referensi')).finally(() => setLoading(false))
   }, [])
 
   const onSubmit = async (data: QtnFormValues) => {
@@ -79,7 +81,7 @@ export default function TambahQuotationPage() {
       setSubmitting(false)
     }
   }
-
+  if (loading) return <FormSkeleton />
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-4">

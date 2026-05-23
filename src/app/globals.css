@@ -59,6 +59,8 @@
   --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #0F172A;
+  --success: #22C55E;
+  --warning: #F59E0B;
 }
 
 .dark {
@@ -81,6 +83,8 @@
   --border: #334155;
   --input: #334155;
   --ring: #38BDF8;
+  --success: #22C55E;
+  --warning: #F59E0B;
 }
 
 @layer base {

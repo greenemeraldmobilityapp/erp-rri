@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react'; import { useRouter } from 'next/nav
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import Link from 'next/link'; import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+import Link from 'next/link'; import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'; import { FormSkeleton } from '@/components/ui/skeleton'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), harga_satuan: z.coerce.number().nonnegative(), link_produk: z.string().optional(), nama_toko: z.string().optional(), marketplace: z.string().optional() })
 const schema = z.object({ supplier_id: z.string().min(1), purchase_request_id: z.string().optional(), tanggal: z.string().min(1), terms_of_payment: z.string().optional(), items: z.array(itemSchema).min(1) })
 type FV = z.input<typeof schema>
 
 export default function TambahPoPage() {
-  const router = useRouter(); const [supOpts, setSupOpts] = useState<Array<{ value: string; label: string }>>([]); const [prOpts, setPrOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter(); const [supOpts, setSupOpts] = useState<Array<{ value: string; label: string }>>([]); const [prOpts, setPrOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false); const [loading, setLoading] = useState(true)
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1, harga_satuan: 0 }] } })
   const { register, handleSubmit, control } = form
@@ -20,12 +20,13 @@ export default function TambahPoPage() {
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/supplier'),
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/purchase-request'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([sup, pr, b]) => { setSupOpts((sup.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setPrOpts((pr.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
+    ]).then(([sup, pr, b]) => { setSupOpts((sup.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setPrOpts((pr.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false))
   }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/purchase-order', { method: 'POST', body: JSON.stringify(data) }); toast.success('PO berhasil!'); router.push('/dashboard/purchase-order') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
   }
+  if (loading) return <FormSkeleton />
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/purchase-order"><ArrowLeft className="h-5 w-5" /></Link></Button>

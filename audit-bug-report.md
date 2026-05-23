@@ -12,13 +12,13 @@ Tanggal: 2026-05-23
 | 2 | Cron Endpoint Tanpa Authentication | HIGH | ✅ FIXED |
 | 3 | Memory Leak — Object URL Tidak Di-revoke | HIGH | ✅ FIXED |
 | 4 | Stale Cached Token Setelah Sign-Out | HIGH | ✅ FIXED |
-| 5 | Dynamic Tailwind Class Names | MEDIUM | ⏳ Pending |
-| 6 | Login Page Console Logs | MEDIUM | ⏳ Pending |
-| 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | ⏳ Pending |
-| 8 | RFQ Page Pakai fetch langsung | MEDIUM | ⏳ Pending |
-| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | ⏳ Pending |
+| 5 | Dynamic Tailwind Class Names | MEDIUM | ✅ FIXED |
+| 6 | Login Page Console Logs | MEDIUM | ✅ FIXED |
+| 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | ✅ FIXED |
+| 8 | RFQ Page Pakai fetch langsung | MEDIUM | ✅ FIXED |
+| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | ✅ FIXED |
 | 10 | API Response Format Tidak Konsisten | LOW | ⏳ Pending |
-| 11 | Unused Ref OCR Kontrak | LOW | ⏳ Pending |
+| 11 | Unused Ref OCR Kontrak | LOW | ✅ FIXED (see note) |
 | 12 | Finance Dashboard Hardcoded Colors | LOW | ⏳ Pending |
 | 13 | Error Boundary Tidak Dipakai | LOW | ⏳ Pending |
 

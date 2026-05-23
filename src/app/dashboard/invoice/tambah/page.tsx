@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react'; import { useRouter } from 'next/nav
 import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'; import { FormSkeleton } from '@/components/ui/skeleton'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), harga: z.coerce.number().positive(), jumlah: z.coerce.number().int().positive(), diskon: z.coerce.number().optional(), ppn: z.coerce.number().optional(), pph: z.coerce.number().optional(), keterangan: z.string().optional() })
 const schema = z.object({ sales_order_id: z.string().min(1), customer_id: z.string().min(1), tanggal: z.string().min(1), top: z.string().min(1), ppn_rate: z.coerce.number().optional().default(0.11), pph_rate: z.coerce.number().optional(), items: z.array(itemSchema).min(1) })
 type FV = z.input<typeof schema>
 
 export default function TambahInvoicePage() {
-  const router = useRouter(); const [soOpts, setSoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter(); const [soOpts, setSoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false); const [loading, setLoading] = useState(true)
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, ppn_rate: 0.11, items: [{ barang_id: '', harga: 0, jumlah: 1 }] } })
   const { register, handleSubmit, control, watch } = form
@@ -30,13 +30,14 @@ export default function TambahInvoicePage() {
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/sales-order'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([so, c, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
+    ]).then(([so, c, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false))
   }, [])
   const onSubmit = async (data: FV) => {
     const items = data.items.map(i => ({ ...i, ppn: i.ppn ?? calcPPN(i), pph: i.pph ?? (pphRate ? calcPPh(i) : undefined) }))
     setSubmitting(true); try { await apiFetch('/api/v1/invoice', { method: 'POST', body: JSON.stringify({ ...data, items }) }); toast.success('Invoice berhasil!'); router.push('/dashboard/invoice') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
   }
+  if (loading) return <FormSkeleton />
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/invoice"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Invoice</h1></div></div>

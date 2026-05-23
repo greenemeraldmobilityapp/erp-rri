@@ -35,18 +35,16 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormValues) => {
-    console.log('Login attempt:', data)
     setLoading(true)
     setError(null)
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       })
 
       if (authError) {
-        console.log('Auth error:', authError)
         setError(authError.message === 'Invalid login credentials'
           ? 'Email atau password salah'
           : authError.message
@@ -54,16 +52,11 @@ export default function LoginPage() {
         return
       }
 
-      console.log('Login successful, authData:', authData)
-      console.log('Redirecting to /dashboard')
-
       router.push('/dashboard')
-    } catch (err) {
-      console.error('Catch error:', err)
+    } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
       setLoading(false)
-      console.log('Finally block, loading set to false')
     }
   }
 
