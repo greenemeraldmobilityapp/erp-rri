@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { FormSkeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Loader2, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -18,14 +20,25 @@ export default function StokKeluarPage() {
   const [barangList, setBarangList] = useState<BarangItem[]>([])
   const [gudangList, setGudangList] = useState<GudangItem[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedBarang, setSelectedBarang] = useState<BarangItem | null>(null)
+  const [selectedGudang, setSelectedGudang] = useState<string>('')
   const [showDropdown, setShowDropdown] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    apiFetch<BarangItem[]>('/api/v1/master/barang').then(r => setBarangList(r.data ?? [])).catch(() => {})
-    apiFetch<GudangItem[]>('/api/v1/master/gudang').then(r => setGudangList(r.data ?? [])).catch(() => {})
+    Promise.all([
+      apiFetch<BarangItem[]>('/api/v1/master/barang'),
+      apiFetch<GudangItem[]>('/api/v1/master/gudang'),
+    ]).then(([b, g]) => {
+      setBarangList(b.data ?? [])
+      setGudangList(g.data ?? [])
+    }).catch(() => {
+      toast.error('Gagal memuat data')
+    }).finally(() => {
+      setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -45,16 +58,15 @@ export default function StokKeluarPage() {
     e.preventDefault()
     if (!selectedBarang) { toast.error('Pilih barang terlebih dahulu'); return }
     setSubmitting(true)
-    const fd = new FormData(e.currentTarget)
     try {
       await apiFetch('/api/v1/stok', {
         method: 'POST',
         body: JSON.stringify({
           tipe: 'keluar',
           barang_id: selectedBarang.id,
-          gudang_id: fd.get('gudang_id') || null,
-          jumlah: Number(fd.get('jumlah')),
-          keterangan: fd.get('keterangan'),
+          gudang_id: selectedGudang || null,
+          jumlah: Number((e.currentTarget.elements.namedItem('jumlah') as HTMLInputElement).value),
+          keterangan: (e.currentTarget.elements.namedItem('keterangan') as HTMLTextAreaElement).value,
         }),
       })
       toast.success('Stok keluar dicatat!')
@@ -64,6 +76,18 @@ export default function StokKeluarPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-xl space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild><Link href="/dashboard/inventory/stok"><ArrowLeft className="h-5 w-5" /></Link></Button>
+          <div><h1 className="text-3xl font-heading font-bold">Stok Keluar</h1><p className="text-muted-foreground mt-1">Catat pengeluaran barang</p></div>
+        </div>
+        <FormSkeleton />
+      </div>
+    )
   }
 
   return (
@@ -106,10 +130,14 @@ export default function StokKeluarPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Gudang</label>
-              <select name="gudang_id" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                <option value="">Pilih Gudang</option>
-                {gudangList.map(g => <option key={g.id} value={g.id}>{g.nama}</option>)}
-              </select>
+              <Select value={selectedGudang} onValueChange={setSelectedGudang}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Gudang" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gudangList.map(g => <SelectItem key={g.id} value={g.id}>{g.nama}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Jumlah *</label>

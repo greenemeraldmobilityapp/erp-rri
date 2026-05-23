@@ -105,7 +105,7 @@
 - [x] Sales Order: status visual (Draft → Dikonfirmasi → Diproses → Dikirim) — StatusWorkflow + detail page
 - [x] DI: status visual (Draft → Aktif → Selesai) — StatusWorkflow + detail page
 - [x] Dokumen terkait: link ke dokumen sumber (PO → SO → DO) — di semua 4 detail pages
-- [ ] DO: barcode/QR code untuk scanning gudang
+- [x] DO: barcode/QR code untuk scanning gudang
 - [x] Auto-generate chain: ketika Customer PO dikonfirmasi → SO auto-terbuat (items di-copy dari PO), ketika SO diproses → DO auto-terbuat (items di-copy dari SO). Notifikasi toast + tombol "Lihat SO/DO" yang navigasi ke detail dokumen baru
 
 ### P2 — Procurement (PR, PO, Receiving, GRN, Retur)
@@ -149,9 +149,9 @@
 ### P3 — AI Agent (Search Harga, OCR, Rekomendasi, Negosiasi Assistant)
 - [x] AI Search: loading skeleton untuk scraping (progress: mencari di Shopee...) — implemented in search-harga page
 - [x] AI Search: hasil dengan perbandingan harga visual — price range bar, min/max/average display
-- [ ] OCR Kontrak: drag & drop upload + preview hasil OCR
-- [ ] Rekomendasi Harga: tampilan seperti side panel / modal
-- [ ] Negosiasi Assistant: chat-like interface
+- [x] OCR Kontrak: drag & drop upload + preview hasil OCR
+- [x] Rekomendasi Harga: tampilan seperti side panel / modal
+- [x] Negosiasi Assistant: chat-like interface
 
 ### P4 — HR (Absensi, Penggajian, Slip Gaji)
 - [x] Absensi: kalender view kehadiran
@@ -159,12 +159,12 @@
 - [x] Slip Gaji: preview sebelum download PDF
 
 ### P4 — Dashboard (Home)
-- [ ] Owner Command Center: KPI cards dengan icon + trend indicator (naik/turun)
-- [ ] Revenue chart (line chart 6 bulan)
-- [ ] Pipeline: pipeline visual (RFQ → Quotation → PO → SO)
-- [ ] Pending Actions: list dengan urgency badge
-- [ ] Recent Activity: timeline dengan avatar + timestamp
-- [ ] Quick Actions: grid tombol shortcut
+- [x] Owner Command Center: KPI cards dengan icon + trend indicator (naik/turun)
+- [x] Revenue chart (line chart 6 bulan)
+- [x] Pipeline: pipeline visual (RFQ → Quotation → PO → SO)
+- [x] Pending Actions: list dengan urgency badge (already existed)
+- [x] Recent Activity: timeline dengan avatar + timestamp (already existed)
+- [x] Quick Actions: grid tombol shortcut (already existed)
 
 ### P4 — Global Components
 - [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component

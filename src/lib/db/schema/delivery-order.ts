@@ -7,6 +7,7 @@ export const deliveryOrder = pgTable("delivery_order", {
   tanggal: timestamp("tanggal").notNull(),
   status: text("status").notNull().default("draft"),
   keterangan: text("keterangan"),
+  kodeBarcode: text("kode_barcode"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

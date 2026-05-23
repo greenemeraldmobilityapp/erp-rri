@@ -174,8 +174,17 @@ Only client component list pages needed skeleton:
 2. `inventory/stok` ✅ (TableSkeleton - done now)
 All 19 other transaction list pages are Server Components → no skeleton needed.
 
-### Phase 3: Other Pages (P3) — ~10 pages
-Remaining pages.
+### Phase 3: Other Pages (P3) — ✅ COMPLETE
+Phase 3 pages are form pages (stok masuk/keluar) with `submitting` state — no page-level data fetch loading needed since the main data is already pre-loaded via server components.
+
+**Form pages** — use `submitting` state pattern for form submission:
+- `inventory/stok/masuk` — FormSkeleton while initial data loads + shadcn Select ✅ Done
+- `inventory/stok/keluar` — FormSkeleton while initial data loads + shadcn Select ✅ Done
+
+**Server Components** (no skeleton needed):
+- `inventory/stok/kartu/[id]` — Server ✅
+- `notifikasi` — Server ✅
+- `audit-log` — Server ✅
 
 ## Notes
 

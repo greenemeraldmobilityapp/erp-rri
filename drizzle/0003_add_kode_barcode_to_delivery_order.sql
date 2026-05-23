@@ -1,0 +1,1 @@
+ALTER TABLE "delivery_order" ADD COLUMN "kode_barcode" text;
