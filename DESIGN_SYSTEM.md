@@ -163,37 +163,73 @@ Tidak perlu kode spesial — cukup pakai token seperti `bg-card`, `text-foregrou
 
 ## 11. Form Layout Patterns
 
-### 11.1 Form Structure
+### 11.1 Form Structure (shadcn/ui pattern)
+Import dari single file:
 ```tsx
-import { Form } from '@/components/ui/form'
-import { FormField } from '@/components/ui/form-field'
-import { FormItem } from '@/components/ui/form-item'
-import { FormLabel } from '@/components/ui/form-label'
-import { FormControl } from '@/components/ui/form-control'
-import { FormMessage } from '@/components/ui/form-message'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
-<Form>
-  <FormField>
-    <FormItem>
-      <FormLabel>Nama Field</FormLabel>
-      <FormControl>
-        <Input {...} />
-      </FormControl>
-      <FormMessage>{/* error message */}</FormMessage>
-    </FormItem>
-  </FormField>
+const form = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <FormField
+      control={form.control}
+      name="fieldName"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Label</FormLabel>
+          <FormControl>
+            <Input {...field} placeholder="placeholder" />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </form>
 </Form>
 ```
 
-### 11.2 Validation Error Display
-- Gunakan `FormMessage` untuk menampilkan error validation
-- Error otomatis terhubung dengan `react-hook-form` via `FormField`
-- Styling sudah sesuai standar (text-red-500, bg-red-50, dll)
+### 11.2 Number Input dengan min/step
+Untuk input type="number", jangan spread `field` langsung. Gunakan:
+```tsx
+<Input
+  type="number"
+  min={0}
+  step={0.01}
+  value={field.value != null ? String(field.value) : ''}
+  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+  onBlur={field.onBlur}
+  name={field.name}
+  ref={field.ref}
+/>
+```
 
-### 11.3 Loading State in Forms
-- Gunakan `Button` dengan state loading
-- Tambah `Loader2` di dalam button saat loading
-- Nonaktifkan semua field interaktif saat loading
+### 11.3 Validation Error Display
+- Gunakan `FormMessage` untuk menampilkan error validation
+- Error otomatis terhubung dengan `react-hook-form` via FormField context
+- Hapus manual error passing - `FormMessage` sudah membaca dari form state
+
+### 11.4 Loading State in Forms
+- Gunakan `Button` dengan variant `default` dan prop `disabled={loading}`
+- Tambah `Loader2` icon di dalam button saat loading
+- Form actions pattern:
+```tsx
+<Button type="submit" disabled={loading}>
+  {loading ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Menyimpan...
+    </>
+  ) : (
+    'Simpan'
+  )}
+</Button>
+```
 
 ## 12. Toast/Notification Patterns
 
@@ -313,8 +349,3 @@ import { Skeleton } from '@/components/ui/skeleton'
 - Gunakan halaman loading skeleton saat data sedang di-fetch
 - Tampilkan konten sesaat setelah data siap
 - Hindari flashing dengan menunda tampilan konten minimal 300ms
-
-## 16. Dark Mode
-
-Semua komponen SUDAH support dark mode via CSS variables.
-Tidak perlu kode spesial — cukup pakai token seperti `bg-card`, `text-foreground`, dll.

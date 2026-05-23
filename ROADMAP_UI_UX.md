@@ -12,17 +12,25 @@
 - **DESIGN_SYSTEM.md** — single source of truth (done)
 - **Pattern Components:** PageHeader, StatusBadge, FormActions (done)
 - **CSS Variables** — completed in globals.css (done)
+- **Reference Implementation:** barang/tambah/page.tsx — shadcn Form pattern (done)
+- **Form Layout Patterns** — updated in DESIGN_SYSTEM.md section 11 (done)
 - **Component Audit** — raw HTML elements identified for migration (ongoing)
+
+## Implementation Status
+- **Build:** ✅ Passed
+- **Lint:** ✅ Passed (only pre-existing test file errors)
+- **Reference Form:** `/dashboard/master/barang/tambah` — use as template for other forms
 
 ## Prioritas & Halaman
 
 ### P1 — Master Data (Barang, Supplier, Customer, PIC, COA, Kontrak, Kategori, Jabatan, Karyawan)
+- [ ] Migrate all master data forms to shadcn Form pattern (barang/tambah as reference)
 - [ ] Tabel: tambahkan column sorting, filter per kolom, search bar per halaman
 - [ ] Tabel: nomor baris (row number) di kolom pertama
-- [ ] Tabel: status badge konsisten (Active = hijau, Non-Active = merah)
-- [ ] Form: loading state saat submit (button disabled + spinner)
-- [ ] Form: success/error toast setelah submit
-- [ ] Form: validasi error inline (sudah pakai react-hook-form + Zod — perbaiki tampilan error)
+- [x] Tabel: status badge konsisten (Active = hijau, Non-Active = merah) — using StatusBadge component
+- [x] Form: loading state saat submit (button disabled + spinner) — FormActions pattern
+- [ ] Form: success/error toast setelah submit (using sonner)
+- [x] Form: validasi error inline — shadcn Form + FormMessage pattern
 - [ ] Form: cancel confirmation dialog jika ada perubahan
 - [ ] Detail page untuk setiap entity (bukan hanya edit form)
 - [ ] Empty state: ilustrasi + pesan "Belum ada data" + tombol "Tambah"
