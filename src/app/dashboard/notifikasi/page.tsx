@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/db/client'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { CheckCircle, XCircle, Clock } from 'lucide-react'
 
 export default async function NotifikasiPage() {
@@ -25,24 +26,21 @@ export default async function NotifikasiPage() {
         </div>
       ) : (
         <div className="rounded-lg border bg-card">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Waktu</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Penerima</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Pesan</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+          <Table>
+            <TableHeader><TableRow>
+                <TableHead>Waktu</TableHead>
+                <TableHead>Penerima</TableHead>
+                <TableHead>Pesan</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow></TableHeader><TableBody>
               {data.map((item) => (
-                <tr key={item.id} className="hover:bg-muted/30 text-sm">
-                  <td className="p-3 text-muted-foreground whitespace-nowrap">
+                <TableRow key={item.id}>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">
                     {new Date(item.created_at).toLocaleString('id-ID')}
-                  </td>
-                  <td className="p-3 font-mono text-xs">{item.recipient}</td>
-                  <td className="p-3 max-w-md truncate">{item.message}</td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{item.recipient}</TableCell>
+                  <TableCell className="max-w-md truncate">{item.message}</TableCell>
+                  <TableCell>
                     {item.status === 'sent' ? (
                       <span className="inline-flex items-center gap-1 text-emerald-600">
                         <CheckCircle className="h-3.5 w-3.5" /> Terkirim
@@ -56,11 +54,10 @@ export default async function NotifikasiPage() {
                         <XCircle className="h-3.5 w-3.5" /> Gagal
                       </span>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody></Table>
         </div>
       )}
     </div>

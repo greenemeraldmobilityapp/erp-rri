@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 const coaSchema = z.object({
   kode: z.string().min(1, { message: "Kode akun harus diisi" }),
@@ -124,8 +127,8 @@ export default function EditCOAPage() {
   if (isLoading) {
     return (
       <div className="min-h-[200px] flex items-center justify-center">
-        <div className="animate-spin rounded-full border-4 border-blue-500 border-t-transparent h-12 w-12"></div>
-        <p className="ml-4">Memuat data...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="ml-3 text-muted-foreground">Memuat data...</p>
       </div>
     );
   }
@@ -134,56 +137,56 @@ export default function EditCOAPage() {
     <div className="max-w-xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Edit Akun</h1>
-        <p className="text-sm text-gray-500">Formulir untuk mengedit data akun (COA)</p>
+        <p className="text-sm text-muted-foreground">Formulir untuk mengedit data akun (COA)</p>
       </div>
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-          <p className="text-green-700">{success}</p>
+        <div className="mb-4 p-4 bg-success/10 border-l-4 border-success">
+          <p className="text-success">{success}</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive">
+          <p className="text-destructive">{error}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="kode" className="block text-sm font-medium mb-1">
-            Kode Akun <span className="text-red-500">*</span>
+            Kode Akun <span className="text-destructive">*</span>
           </label>
           <input
             id="kode"
             type="text"
             {...register('kode')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kode ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.kode ? 'border-destructive' : ''}`}
           />
-          {errors.kode && <p className="text-red-500 text-sm mt-1">{errors.kode.message}</p>}
+          {errors.kode && <p className="text-destructive text-sm mt-1">{errors.kode.message}</p>}
         </div>
 
         <div>
           <label htmlFor="nama" className="block text-sm font-medium mb-1">
-            Nama Akun <span className="text-red-500">*</span>
+            Nama Akun <span className="text-destructive">*</span>
           </label>
           <input
             id="nama"
             type="text"
             {...register('nama')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.nama ? 'border-destructive' : ''}`}
           />
-          {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
+          {errors.nama && <p className="text-destructive text-sm mt-1">{errors.nama.message}</p>}
         </div>
 
         <div>
           <label htmlFor="tipe" className="block text-sm font-medium mb-1">
-            Tipe Akun <span className="text-red-500">*</span>
+            Tipe Akun <span className="text-destructive">*</span>
           </label>
           <select
             id="tipe"
             {...register('tipe')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.tipe ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.tipe ? 'border-destructive' : ''}`}
           >
             <option value="">Pilih Tipe Akun</option>
             {TIPE_OPTIONS.map(option => (
@@ -192,7 +195,7 @@ export default function EditCOAPage() {
               </option>
             ))}
           </select>
-          {errors.tipe && <p className="text-red-500 text-sm mt-1">{errors.tipe.message}</p>}
+          {errors.tipe && <p className="text-destructive text-sm mt-1">{errors.tipe.message}</p>}
         </div>
 
         <div>
@@ -202,7 +205,7 @@ export default function EditCOAPage() {
           <select
             id="indukId"
             {...register('indukId')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.indukId ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.indukId ? 'border-destructive' : ''}`}
           >
             <option value="">Tidak Ada (Akun Utama)</option>
             {parentOptions.map(option => (
@@ -211,7 +214,7 @@ export default function EditCOAPage() {
               </option>
             ))}
           </select>
-          {errors.indukId && <p className="text-red-500 text-sm mt-1">{errors.indukId.message}</p>}
+          {errors.indukId && <p className="text-destructive text-sm mt-1">{errors.indukId.message}</p>}
         </div>
 
         <div>
@@ -222,27 +225,26 @@ export default function EditCOAPage() {
             id="keterangan"
             {...register('keterangan')}
             rows={3}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.keterangan ? 'border-red-500' : ''}`}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.keterangan ? 'border-destructive' : ''}`}
           />
-          {errors.keterangan && <p className="text-red-500 text-sm mt-1">{errors.keterangan.message}</p>}
+          {errors.keterangan && <p className="text-destructive text-sm mt-1">{errors.keterangan.message}</p>}
         </div>
 
         <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? 'Memperbarui...' : 'Simpan Perubahan'}
-          </button>
+          </Button>
         </div>
       </form>
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <a href="/dashboard/master/coa" className="text-sm text-blue-600 hover:underline">
-            Kembali ke Daftar Akun
-          </a>
+          <Button variant="link" asChild>
+            <Link href="/dashboard/master/coa">
+              Kembali ke Daftar Akun
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api/client';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 
 const customerSchema = z.object({
   nama: z.string().min(2, { message: "Nama customer harus diisi" }),
@@ -22,7 +28,7 @@ type CustomerFormValues = z.input<typeof customerSchema>;
 
 export default function TambahCustomerPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<CustomerFormValues>({
+  const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
   });
 
@@ -49,7 +55,7 @@ export default function TambahCustomerPage() {
       });
 
       setSuccess('Customer berhasil ditambahkan!');
-      reset();
+      form.reset();
       
       setTimeout(() => {
         router.push('/dashboard/customer');
@@ -65,130 +71,65 @@ export default function TambahCustomerPage() {
     <div className="max-w-xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Tambah Customer Baru</h1>
-        <p className="text-sm text-gray-500">Formulir untuk menambahkan data customer baru</p>
+        <p className="text-sm text-muted-foreground">Formulir untuk menambahkan data customer baru</p>
       </div>
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-          <p className="text-green-700">{success}</p>
+        <div className="mb-4 p-4 bg-success/10 border-l-4 border-success">
+          <p className="text-success">{success}</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive">
+          <p className="text-destructive">{error}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="nama" className="block text-sm font-medium mb-1">
-            Nama Customer <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nama"
-            type="text"
-            {...register('nama')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.nama ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="kode" className="block text-sm font-medium mb-1">
-            Kode Customer <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="kode"
-            type="text"
-            {...register('kode')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.kode ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.kode && <p className="text-red-500 text-sm mt-1">{errors.kode.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="alamat" className="block text-sm font-medium mb-1">
-            Alamat
-          </label>
-          <input
-            id="alamat"
-            type="text"
-            {...register('alamat')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.alamat ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.alamat && <p className="text-red-500 text-sm mt-1">{errors.alamat.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="kontak" className="block text-sm font-medium mb-1">
-            Kontak
-          </label>
-          <input
-            id="kontak"
-            type="text"
-            {...register('kontak')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.kontak ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.kontak && <p className="text-red-500 text-sm mt-1">{errors.kontak.message}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="termsOfPayment" className="block text-sm font-medium mb-1">
-            Terms of Payment <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="termsOfPayment"
-            {...register('termsOfPayment')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.termsOfPayment ? 'border-red-500' : ''
-            }`}
-          >
-            <option value="">Pilih Terms of Payment</option>
-            <option value="Net 30">Net 30</option>
-            <option value="Net 60">Net 60</option>
-            <option value="Cash">Cash</option>
-            <option value="Custom">Custom</option>
-          </select>
-          {errors.termsOfPayment && <p className="text-red-500 text-sm mt-1">{errors.termsOfPayment.message}</p>}
-        </div>
-
-        <div className="flex items-center">
-          <label htmlFor="isActive" className="flex items-center text-sm font-medium mb-0">
-            <input
-              id="isActive"
-              type="checkbox"
-              {...register('isActive')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span className="ml-2">Aktif</span>
-          </label>
-        </div>
-
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Menyimpan...' : 'Simpan Customer'}
-          </button>
-        </div>
-      </form>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField control={form.control} name="nama" render={({ field }) => (
+            <FormItem><FormLabel>Nama Customer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="kode" render={({ field }) => (
+            <FormItem><FormLabel>Kode Customer</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="alamat" render={({ field }) => (
+            <FormItem><FormLabel>Alamat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="kontak" render={({ field }) => (
+            <FormItem><FormLabel>Kontak</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="termsOfPayment" render={({ field }) => (
+            <FormItem><FormLabel>Terms of Payment</FormLabel><Select onValueChange={field.onChange} value={field.value}>
+              <FormControl><SelectTrigger><SelectValue placeholder="Pilih Terms of Payment" /></SelectTrigger></FormControl>
+              <SelectContent>
+                <SelectItem value="Net 30">Net 30</SelectItem>
+                <SelectItem value="Net 60">Net 60</SelectItem>
+                <SelectItem value="Cash">Cash</SelectItem>
+                <SelectItem value="Custom">Custom</SelectItem>
+              </SelectContent>
+            </Select><FormMessage /></FormItem>
+          )} />
+          <FormField control={form.control} name="isActive" render={({ field }) => (
+            <FormItem><div className="flex items-center gap-2 pt-2"><FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="h-4 w-4 text-primary focus-visible:ring-ring border-border rounded" /></FormControl><FormLabel className="mb-0">Aktif</FormLabel></div><FormMessage /></FormItem>
+          )} />
+          <div className="pt-4">
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading ? 'Menyimpan...' : 'Simpan Customer'}
+            </Button>
+          </div>
+        </form>
+      </Form>
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <a href="/dashboard/customer" className="text-sm text-blue-600 hover:underline">
-            Kembali ke Daftar Customer
-          </a>
+          <Button variant="link" asChild>
+            <Link href="/dashboard/customer">
+              Kembali ke Daftar Customer
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

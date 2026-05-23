@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 const schema = z.object({
   nik: z.string().min(2, { message: "NIK harus diisi" }),
@@ -80,69 +83,70 @@ export default function EditKaryawanPage() {
     finally { setLoading(false); }
   };
 
-  if (isLoading) return <div className="min-h-[200px] flex items-center justify-center"><div className="animate-spin rounded-full border-4 border-blue-500 border-t-transparent h-12 w-12"></div><p className="ml-4">Memuat data...</p></div>;
+  if (isLoading) return <div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div>;
 
   return (
     <div className="max-w-xl">
       <div className="mb-6"><h1 className="text-2xl font-bold">Edit Karyawan</h1></div>
-      {success && <div className="mb-4 p-4 bg-green-50 border-l-4 border-green-500"><p className="text-green-700">{success}</p></div>}
-      {error && <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500"><p className="text-red-700">{error}</p></div>}
+      {success && <div className="mb-4 p-4 bg-success/10 border-l-4 border-success"><p className="text-success">{success}</p></div>}
+      {error && <div className="mb-4 p-4 bg-destructive/10 border-l-4 border-destructive"><p className="text-destructive">{error}</p></div>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">NIK <span className="text-red-500">*</span></label>
-            <input type="text" {...register('nik')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nik ? 'border-red-500' : ''}`} />
-            {errors.nik && <p className="text-red-500 text-sm mt-1">{errors.nik.message}</p>}
+            <label className="block text-sm font-medium mb-1">NIK <span className="text-destructive">*</span></label>
+            <input type="text" {...register('nik')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.nik ? 'border-destructive' : ''}`} />
+            {errors.nik && <p className="text-destructive text-sm mt-1">{errors.nik.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Nama <span className="text-red-500">*</span></label>
-            <input type="text" {...register('nama')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.nama ? 'border-red-500' : ''}`} />
-            {errors.nama && <p className="text-red-500 text-sm mt-1">{errors.nama.message}</p>}
+            <label className="block text-sm font-medium mb-1">Nama <span className="text-destructive">*</span></label>
+            <input type="text" {...register('nama')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.nama ? 'border-destructive' : ''}`} />
+            {errors.nama && <p className="text-destructive text-sm mt-1">{errors.nama.message}</p>}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
-            <input type="email" {...register('email')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : ''}`} />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+            <label className="block text-sm font-medium mb-1">Email <span className="text-destructive">*</span></label>
+            <input type="email" {...register('email')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.email ? 'border-destructive' : ''}`} />
+            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">No. HP</label>
-            <input type="text" {...register('noHp')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" {...register('noHp')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Jabatan <span className="text-red-500">*</span></label>
-            <select {...register('jabatanId')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.jabatanId ? 'border-red-500' : ''}`}>
+            <label className="block text-sm font-medium mb-1">Jabatan <span className="text-destructive">*</span></label>
+            <select {...register('jabatanId')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.jabatanId ? 'border-destructive' : ''}`}>
               <option value="">Pilih Jabatan</option>
               {jabatanOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            {errors.jabatanId && <p className="text-red-500 text-sm mt-1">{errors.jabatanId.message}</p>}
+            {errors.jabatanId && <p className="text-destructive text-sm mt-1">{errors.jabatanId.message}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Gaji Pokok</label>
-            <input type="number" min="0" step="0.01" {...register('gajiPokok')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="number" min="0" step="0.01" {...register('gajiPokok')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Tanggal Masuk</label>
-          <input type="date" {...register('tanggalMasuk')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input type="date" {...register('tanggalMasuk')} className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
         </div>
         <div className="flex items-center">
           <label className="flex items-center text-sm font-medium">
-            <input type="checkbox" {...register('isActive')} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+            <input type="checkbox" {...register('isActive')} className="h-4 w-4 text-primary focus-visible:ring-ring border-border rounded" />
             <span className="ml-2">Aktif</span>
           </label>
         </div>
         <div className="pt-4">
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50">
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? 'Memperbarui...' : 'Simpan Perubahan'}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="mt-6">
-        <a href="/dashboard/master/karyawan" className="text-sm text-blue-600 hover:underline">Kembali ke Daftar Karyawan</a>
+        <Button variant="link" asChild><Link href="/dashboard/master/karyawan">Kembali ke Daftar Karyawan</Link></Button>
       </div>
     </div>
   );

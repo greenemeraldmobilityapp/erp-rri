@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Button } from '@/components/ui/button'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil } from 'lucide-react'
 
 export default async function GudangPage() {
@@ -14,21 +15,21 @@ export default async function GudangPage() {
       {error ? <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error.message}</div> :
       !data?.length ? <div className="text-center py-12 border rounded-lg bg-card"><p className="text-muted-foreground">Belum ada gudang.</p>
         <Button asChild className="mt-4"><Link href="/dashboard/inventory/gudang/tambah">Buat Gudang Pertama</Link></Button></div> :
-      <div className="rounded-lg border bg-card"><table className="w-full"><thead><tr className="border-b bg-muted/50">
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Nama</th>
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Lokasi</th>
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Keterangan</th>
-        <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">Aksi</th>
-      </tr></thead><tbody className="divide-y">
+      <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
+        <TableHead>Nama</TableHead>
+        <TableHead>Lokasi</TableHead>
+        <TableHead>Keterangan</TableHead>
+        <TableHead className="text-right">Aksi</TableHead>
+      </TableRow></TableHeader><TableBody>
         {data.map((item) => (
-          <tr key={item.id} className="hover:bg-muted/30">
-            <td className="p-3 text-sm font-medium">{item.nama}</td>
-            <td className="p-3 text-sm text-muted-foreground">{item.lokasi ?? '-'}</td>
-            <td className="p-3 text-sm text-muted-foreground">{item.keterangan ?? '-'}</td>
-            <td className="p-3 text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/gudang/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></td>
-          </tr>
+          <TableRow key={item.id}>
+            <TableCell className="font-medium">{item.nama}</TableCell>
+            <TableCell className="text-muted-foreground">{item.lokasi ?? '-'}</TableCell>
+            <TableCell className="text-muted-foreground">{item.keterangan ?? '-'}</TableCell>
+            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/gudang/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
+          </TableRow>
         ))}
-      </tbody></table></div>}
+      </TableBody></Table></div>}
     </div>
   )
 }

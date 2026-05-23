@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/db/client'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function NeracaPage() {
@@ -30,21 +31,21 @@ export default async function NeracaPage() {
       </div>
       <Card><CardHeader><CardTitle className="text-lg">Rincian Akun</CardTitle></CardHeader><CardContent>
         {!akun.length ? <p className="text-muted-foreground text-sm">Belum ada data COA.</p> :
-        <table className="w-full"><thead><tr className="border-b bg-muted/50 text-left">
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Kode</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Nama Akun</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Tipe</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase text-right">Saldo</th>
-        </tr></thead><tbody className="divide-y">
+        <Table><TableHeader><TableRow>
+          <TableHead>Kode</TableHead>
+          <TableHead>Nama Akun</TableHead>
+          <TableHead>Tipe</TableHead>
+          <TableHead className="text-right">Saldo</TableHead>
+        </TableRow></TableHeader><TableBody>
           {akun.filter(a => a.total !== 0).map(item => (
-            <tr key={item.id} className="hover:bg-muted/30">
-              <td className="p-3 text-sm font-mono">{item.kode}</td>
-              <td className="p-3 text-sm font-medium">{item.nama}</td>
-              <td className="p-3 text-sm">{item.tipe}</td>
-              <td className={`p-3 text-sm font-bold text-right ${item.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>Rp {item.total.toLocaleString('id-ID')}</td>
-            </tr>
+            <TableRow key={item.id}>
+              <TableCell className="font-mono">{item.kode}</TableCell>
+              <TableCell className="font-medium">{item.nama}</TableCell>
+              <TableCell>{item.tipe}</TableCell>
+              <TableCell className={`text-sm font-bold text-right ${item.total >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>Rp {item.total.toLocaleString('id-ID')}</TableCell>
+            </TableRow>
           ))}
-        </tbody></table>}
+        </TableBody></Table>}
       </CardContent></Card>
     </div>
   )

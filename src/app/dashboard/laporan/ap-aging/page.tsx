@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/db/client'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function ApAgingPage() {
@@ -18,20 +19,20 @@ export default async function ApAgingPage() {
       ))}</div>
       <Card><CardHeader><CardTitle className="text-lg">Detail Hutang</CardTitle></CardHeader><CardContent>
         {!data?.length ? <p className="text-muted-foreground text-sm">Belum ada hutang.</p> :
-        <table className="w-full"><thead><tr className="border-b bg-muted/50 text-left">
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">PO</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Supplier</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Tanggal</th>
-          <th className="p-3 text-xs font-medium text-muted-foreground uppercase">Umur (Hari)</th>
-        </tr></thead><tbody className="divide-y">
+        <Table><TableHeader><TableRow>
+          <TableHead>PO</TableHead>
+          <TableHead>Supplier</TableHead>
+          <TableHead>Tanggal</TableHead>
+          <TableHead>Umur (Hari)</TableHead>
+        </TableRow></TableHeader><TableBody>
           {data.map(item => {
             const umur = Math.floor((now.getTime() - new Date(item.tanggal).getTime()) / (1000 * 60 * 60 * 24))
-            return <tr key={item.id} className="hover:bg-muted/30"><td className="p-3 text-sm font-medium">{item.nomor}</td>
-              <td className="p-3 text-sm">{item.supplier?.nama}</td>
-              <td className="p-3 text-sm">{new Date(item.tanggal).toLocaleDateString('id-ID')}</td>
-              <td className="p-3 text-sm">{umur} hari</td></tr>
+            return <TableRow key={item.id}><TableCell className="font-medium">{item.nomor}</TableCell>
+              <TableCell>{item.supplier?.nama}</TableCell>
+              <TableCell>{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+              <TableCell>{umur} hari</TableCell></TableRow>
           })}
-        </tbody></table>}
+        </TableBody></Table>}
       </CardContent></Card>
     </div>
   )

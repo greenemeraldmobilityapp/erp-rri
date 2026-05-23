@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Package, Plus, Minus, FileText } from 'lucide-react'
 
 export default async function StokPage() {
@@ -24,28 +25,28 @@ export default async function StokPage() {
         <p className="text-muted-foreground">Belum ada stok tercatat.</p>
         <Button asChild className="mt-4"><Link href="/dashboard/inventory/stok/masuk">Catat Stok Masuk</Link></Button>
       </div> :
-      <div className="rounded-lg border bg-card"><table className="w-full"><thead><tr className="border-b bg-muted/50">
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Barang</th>
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Gudang</th>
-        <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">Jumlah</th>
-        <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Status</th>
-        <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">Aksi</th>
-      </tr></thead><tbody className="divide-y">
+      <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
+        <TableHead>Barang</TableHead>
+        <TableHead>Gudang</TableHead>
+        <TableHead className="text-right">Jumlah</TableHead>
+        <TableHead>Status</TableHead>
+        <TableHead className="text-right">Aksi</TableHead>
+      </TableRow></TableHeader><TableBody>
         {data.map((item) => {
           const brg = item.barang as { id: string; nama: string; kode: string; satuan: string; stok_minimum: number } | null
           const gdg = item.gudang as { nama: string } | null
           const isLow = item.jumlah <= (brg?.stok_minimum ?? 0)
           return (
-            <tr key={item.id} className="hover:bg-muted/30">
-              <td className="p-3"><div className="text-sm font-medium">{brg?.nama ?? '-'}</div><div className="text-xs text-muted-foreground">{brg?.kode} — {brg?.satuan}</div></td>
-              <td className="p-3 text-sm">{gdg?.nama ?? '-'}</td>
-              <td className={`p-3 text-right text-sm font-bold ${isLow ? 'text-destructive' : ''}`}>{item.jumlah}</td>
-              <td className="p-3">{isLow ? <Badge variant="destructive">Stok Minimum</Badge> : <Badge variant="success">Aman</Badge>}</td>
-              <td className="p-3 text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/stok/kartu/${brg?.id}`}><FileText className="h-4 w-4" /></Link></Button></td>
-            </tr>
+            <TableRow key={item.id}>
+              <TableCell><div className="text-sm font-medium">{brg?.nama ?? '-'}</div><div className="text-xs text-muted-foreground">{brg?.kode} — {brg?.satuan}</div></TableCell>
+              <TableCell>{gdg?.nama ?? '-'}</TableCell>
+              <TableCell className={`text-right text-sm font-bold ${isLow ? 'text-destructive' : ''}`}>{item.jumlah}</TableCell>
+              <TableCell>{isLow ? <Badge variant="destructive">Stok Minimum</Badge> : <Badge variant="success">Aman</Badge>}</TableCell>
+              <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/inventory/stok/kartu/${brg?.id}`}><FileText className="h-4 w-4" /></Link></Button></TableCell>
+            </TableRow>
           )
         })}
-      </tbody></table></div>}
+      </TableBody></Table></div>}
     </div>
   )
 }

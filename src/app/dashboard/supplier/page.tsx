@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
 
@@ -45,51 +46,51 @@ export default async function SupplierPage() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
                   Kode
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Nama Supplier
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Nama Toko
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   No. Rekening
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Kontak
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Terms of Payment
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Marketplace
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                </TableHead>
+                <TableHead>
                   Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {supplierData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kode}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.nama_toko || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.no_rekening || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.kontak || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.terms_of_payment || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <TableRow key={item.id}>
+                  <TableCell>{item.kode}</TableCell>
+                  <TableCell>{item.nama}</TableCell>
+                  <TableCell>{item.nama_toko || '-'}</TableCell>
+                  <TableCell>{item.no_rekening || '-'}</TableCell>
+                  <TableCell>{item.kontak || '-'}</TableCell>
+                  <TableCell>{item.terms_of_payment || '-'}</TableCell>
+                  <TableCell>
                     {item.is_marketplace ? 'Ya' : 'Tidak'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  </TableCell>
+                  <TableCell>
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       item.is_active 
                         ? 'bg-green-100 text-green-800' 
@@ -97,8 +98,8 @@ export default async function SupplierPage() {
                     }`}>
                       {item.is_active ? 'Active' : 'Non-Active'}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  </TableCell>
+                  <TableCell>
                     <Link 
                       href={`/dashboard/supplier/${item.id}/edit`} 
                       className="text-blue-600 hover:text-blue-900 mr-3"
@@ -111,11 +112,10 @@ export default async function SupplierPage() {
                     >
                       Hapus
                     </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody></Table>
         </div>
       )}
     </div>

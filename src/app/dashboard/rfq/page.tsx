@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil } from 'lucide-react'
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'outline' }> = {
@@ -45,34 +46,31 @@ export default async function RfqPage() {
         </div>
       ) : (
         <div className="rounded-lg border bg-card">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Nomor</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Supplier</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Tanggal</th>
-                <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+          <Table>
+            <TableHeader><TableRow>
+                <TableHead>Nomor</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
+              </TableRow></TableHeader><TableBody>
               {rfqData.map((item) => (
-                <tr key={item.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="p-3 text-sm font-medium">{item.nomor}</td>
-                  <td className="p-3 text-sm">
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.nomor}</TableCell>
+                  <TableCell>
                     <span className="text-muted-foreground text-xs">{item.supplier?.kode}</span>
                     <br />
                     {item.supplier?.nama}
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={statusLabel[item.status]?.variant ?? 'outline'}>
                       {statusLabel[item.status]?.label ?? item.status}
                     </Badge>
-                  </td>
-                  <td className="p-3 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/dashboard/rfq/${item.id}/edit`}>
@@ -81,11 +79,10 @@ export default async function RfqPage() {
                         </Link>
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody></Table>
         </div>
       )}
     </div>

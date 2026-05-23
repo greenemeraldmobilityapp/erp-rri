@@ -17,17 +17,37 @@
 - **Toast Pattern** — sonner v2 with loading/id pattern (done)
 - **Toaster in Layout** — Toaster component added to app/layout.tsx (done)
 - **Performance Guidelines** — section 16 in DESIGN_SYSTEM.md (done)
-- **Component Audit** — raw HTML elements identified for migration (ongoing)
+- **Component Audit** — completed: ~290 hardcoded color violations, 42 raw `<select>`, 26 raw `<table>`, 12 raw `<button>`, 10 raw `<input>`, 9 custom spinners
 - **New Components:** AlertDialog, Breadcrumb, Tooltip, DeleteConfirmationDialog, BreadcrumbNav, EmptyState, TableRow pattern, ErrorBoundary (done)
 - **Pages Updated:** supplier, barang, customer, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan (done)
 - **404 Page:** dashboard/not-found.tsx with friendly error page (done)
 
 ## Implementation Status
 - **Build:** ✅ Passed
-- **Lint:** ✅ Passed (only pre-existing test file errors)
-- **Known Issue:** Next.js 15 prerenders "use client" pages, but event handlers (onClick, onChange from register()) can't be serialized. Fixed by setting `export const dynamic = "force-dynamic"` in `dashboard/layout.tsx` — all dashboard pages are now dynamic, which is appropriate for an ERP.
+- **Lint:** ✅ Passed (only pre-existing warnings)
+- **Known Issue:** Next.js 15 prerenders "use client" pages — event handlers can't be serialized during static generation. Fixed by setting `export const dynamic = "force-dynamic"` in `dashboard/layout.tsx`. All dashboard pages are now dynamic, appropriate for an ERP.
 - **Reference Form:** `/dashboard/master/barang/tambah` — use as template for other forms
-- **Forms Migrated:** supplier, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan (tambah pages)
+- **Reference List:** `/dashboard/master/supplier` — use as template for list pages (PageHeader + shadcn Table + EmptyState + BreadcrumbNav)
+
+## Design Audit — Raw HTML Element Migration
+
+### P0 — Completed (May 2026)
+- **Hardcoded colors → CSS variables:** All 10 edit/tambah pages now use `text-destructive`, `bg-success/10`, `border-border`, `text-muted-foreground`, etc.
+- **Raw `<button>` → `<Button>`:** All buttons in edit/tambah pages migrated to shadcn Button
+- **Raw `<a>` → `<Button variant="link" asChild><Link>`:** All navigation links migrated
+- **Custom spinner → `<Loader2>`:** All custom `animate-spin border-4 border-blue-500` replaced
+- **Files:** supplier/[id]/edit, master/barang/[id]/edit, master/karyawan/[id]/edit, master/jabatan/[id]/edit, master/kategori-barang/[id]/edit, master/customer/[id]/edit, master/kontrak/[id]/edit, master/coa/[id]/edit, master/pic-customer/[id]/edit, customer/tambah
+
+### P1 — Raw `<select>` → shadcn `<Select>` + Raw `<input>` → `<Input>` + shadcn `<Form>` pattern
+- **All tambah pages** (master + non-master) now use shadcn `<Form>` + `<FormField>` + `<Select>` ✅
+- **Total converted:** 20 pages (6 simple + 14 complex useFieldArray) ✅
+- **Strategy:** Hybrid approach — `<Form>` wrapper + `<FormField><Select>` for select fields, keep `register()` for `<Input type="number">` to avoid valueAsNumber type issues
+
+### P2 — Raw `<table>` → shadcn `<Table>`
+- **ALL 27 non-master list pages** now use shadcn `<Table>` ✅
+- **Master list pages** (9 pages) already use shadcn `<Table>` with table-row.tsx pattern ✅
+- **Absensi** was reference (converted earlier) ✅
+- **Converted:** delivery-order, sales-order, jurnal, invoice, kwitansi, faktur-pajak, penggajian, negoiasi, customer-po, di, grn, purchase-receiving, purchase-request, retur-pembelian, retur-penjualan, rfq, quotation, notifikasi, audit-log, inventory/gudang, inventory/stok, laporan/neraca, laporan/ar-aging, laporan/ap-aging, supplier, customer, ai/ocr-kontrak ✅
 
 ## P4 — Global Components (Updates from ui-ux-pro-max)
 - [x] Toast notification position konsisten (top-right sudah)
