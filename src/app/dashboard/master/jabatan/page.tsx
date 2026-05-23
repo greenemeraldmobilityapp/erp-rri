@@ -12,6 +12,7 @@ import { apiFetch } from "@/lib/api/client"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Eye, Pencil, Trash2 } from "lucide-react"
+import { TableSkeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation"
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -98,7 +99,7 @@ export default function JabatanPage() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader title="Jabatan" />
-      <div className="text-center py-12 text-muted-foreground">Memuat data...</div>
+      <TableSkeleton rows={5} cols={2} actionsCols={3} headerHidden />
     </div>
   )
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
+import { TableSkeleton } from '@/components/ui/skeleton'
 import { Package, Plus, Minus, FileText, Download, Search, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -92,7 +93,7 @@ export default function StokPage() {
         </CardContent>
       </Card>
 
-      {loading ? <div className="text-center py-12 text-muted-foreground">Memuat data...</div> :
+      {loading ? <TableSkeleton rows={5} cols={4} actionsCols={1} /> :
       !filtered.length ? <div className="text-center py-12 border rounded-lg bg-card">
         <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">{data.length ? 'Tidak ada hasil filter.' : 'Belum ada stok tercatat.'}</p>

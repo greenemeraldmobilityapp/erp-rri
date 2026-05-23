@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CalendarSkeleton } from '@/components/ui/skeleton'
 import { useState, useEffect } from 'react'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -70,14 +71,7 @@ export default function AbsensiPage() {
           <div><h1 className="text-3xl font-heading font-bold">Absensi</h1><p className="text-muted-foreground mt-1">Catatan kehadiran karyawan</p></div>
           <Button asChild><Link href="/dashboard/absensi/tambah"><Plus className="h-4 w-4 mr-2" />Tambah Absensi</Link></Button>
         </div>
-        <div className="text-center py-12">
-          <div className="flex justify-center space-x-2">
-            <div className="h-4 w-4 animate-pulse rounded-md bg-muted"></div>
-            <div className="h-4 w-4 animate-pulse rounded-md bg-muted"></div>
-            <div className="h-4 w-4 animate-pulse rounded-md bg-muted"></div>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">Memuat data...</p>
-        </div>
+        <CalendarSkeleton />
       </div>
     )
   }

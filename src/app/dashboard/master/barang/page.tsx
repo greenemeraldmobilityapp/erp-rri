@@ -11,6 +11,7 @@ import { MasterDataTable, Column } from "@/components/master-data-table"
 import { apiFetch } from "@/lib/api/client"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { TableSkeleton } from "@/components/ui/skeleton"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -130,7 +131,12 @@ export default function BarangPage() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader title="Data Barang" />
-      <div className="text-center py-12 text-muted-foreground">Memuat data...</div>
+      <TableSkeleton 
+        rows={5} 
+        cols={8} 
+        actionsCols={3}
+        headerHidden
+      />
     </div>
   )
 

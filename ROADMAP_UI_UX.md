@@ -60,13 +60,18 @@
 ## P4 — Global Components (Updates from ui-ux-pro-max)
 - [x] Toast notification position konsisten (top-right sudah)
 - [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
-- [ ] Sidebar: active state visual (highlight halaman aktif)
-- [ ] Sidebar: collapsible untuk mobile
-- [ ] Responsive: mobile bottom navigation atau hamburger menu
-- [ ] Loading skeleton untuk semua halaman (sudah partial)
-- [ ] Error boundary + fallback UI
-- [ ] 404 page custom untuk dashboard
-- [ ] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
+- [x] Sidebar: active state visual (highlight halaman aktif) — usePathname, bg-accent, font-medium for current page
+- [x] Sidebar: collapsible untuk mobile — Sheet drawer with hamburger button, collapsible section groups with ChevronDown toggle
+- [x] Responsive: mobile bottom navigation atau hamburger menu — hamburger button (md:hidden) + Sheet sidebar drawer, section groups auto-expand when child active
+- [x] Loading skeleton untuk semua halaman (Phase 1 Master Data ✅, Phase 2 Transactions ✅) ⚠️ See `roadmap-skeleton.md` for full implementation roadmap
+  - **Centralized Components:** `/src/components/ui/skeleton.tsx` — single source of truth, update 1 file untuk affect semua halaman
+  - **Implemented:** AI pages (search-harga, ocr-kontrak), Master list (barang, supplier, customer, pic-customer, coa, kontrak, kategori-barang, jabatan, karyawan), HR (absensi), Inventory (stok) ✅
+  - **Phase 1 Master Data (9/9):** All 9 master data pages now use TableSkeleton ✅
+  - **Phase 2 Transactions (2/2 client list pages):** absensi (CalendarSkeleton), inventory/stok (TableSkeleton). All 19 other transaction list pages are Server Components — block on server, no skeleton needed.
+  - **Remaining:** ~100 pages — mostly Server Components (no skeleton needed), plus detail/edit pages (use spinner pattern). See roadmap-skeleton.md for detail.
+- [x] Error boundary + fallback UI — ErrorBoundary component created
+- [x] 404 page custom untuk dashboard — dashboard/not-found.tsx
+- [x] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
 
 ## Prioritas & Halaman
 
@@ -142,8 +147,8 @@
 - [x] Comparative period — bulan ini vs bulan lalu for all Laporan pages (KPI comparison cards with diff + percentage)
 
 ### P3 — AI Agent (Search Harga, OCR, Rekomendasi, Negosiasi Assistant)
-- [ ] AI Search: loading skeleton untuk scraping (progress: mencari di Shopee...)
-- [ ] AI Search: hasil dengan perbandingan harga visual
+- [x] AI Search: loading skeleton untuk scraping (progress: mencari di Shopee...) — implemented in search-harga page
+- [x] AI Search: hasil dengan perbandingan harga visual — price range bar, min/max/average display
 - [ ] OCR Kontrak: drag & drop upload + preview hasil OCR
 - [ ] Rekomendasi Harga: tampilan seperti side panel / modal
 - [ ] Negosiasi Assistant: chat-like interface
@@ -165,7 +170,7 @@
 - [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
 - [x] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
 - [x] TooltipProvider: wrap app dengan TooltipProvider untuk tooltip consistency
-- [x] Loading skeleton untuk semua halaman (sudah partial)
+- [ ] Loading skeleton untuk semua halaman (sudah partial) ⚠️ See `roadmap-skeleton.md` for full implementation plan
 - [x] Error boundary + fallback UI — ErrorBoundary component created
 - [x] 404 page custom untuk dashboard — dashboard/not-found.tsx
 - [x] Sidebar: active state visual (highlight halaman aktif) — usePathname, bg-accent, font-medium for current page
