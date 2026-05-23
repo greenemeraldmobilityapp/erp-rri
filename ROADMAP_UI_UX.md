@@ -131,8 +131,8 @@
 - [x] Invoice: eye button on list page navigates to detail page
 - [x] AR/AP Aging: grafik batang aging (recharts BarChart, 4 bucket cards dengan nominal Rp, detail table link ke invoice/PO)
 - [x] Jurnal: tampilan seperti buku jurnal (format debit/kredit tradisional) — detail page with timestamp, COA code, debit/credit columns, running totals, balance check
-- [ ] Faktur Pajak: format sesuai Dirjen Pajak
-- [ ] Dashboard finance: AR/AP ringkasan, cashflow mini-chart
+- [x] Faktur Pajak: format sesuai Dirjen Pajak — detail page with official format (kode & nomor seri, PKP Penjual/Pembeli, DPP/PPN/PPh breakdown, cetak button)
+- [x] Dashboard finance: AR/AP ringkasan (grouped bar chart + per-bucket breakdown) + cashflow mini-chart (6-month area chart revenue vs expense)
 
 ### P3 — Laporan (AR Aging, AP Aging, Laba/Rugi, Neraca, Arus Kas)
 - [ ] Chart visual (gunakan recharts atau chart.js — yang sudah ada di project)

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Eye } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, approved: { label: 'Disetujui', v: 'success' },
@@ -37,7 +37,12 @@ export default async function FakturPajakPage() {
             <TableCell>{item.dpp?.toLocaleString('id-ID')}</TableCell>
             <TableCell>{item.ppn?.toLocaleString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
-            <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/faktur-pajak/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-1">
+                <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/faktur-pajak/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
+                <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/faktur-pajak/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody></Table></div>}
