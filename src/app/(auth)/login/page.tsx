@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Email tidak valid' }),
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [showSkeleton, setShowSkeleton] = useState(false)
 
   const {
     register,
@@ -36,7 +38,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setLoading(true)
+    setShowSkeleton(true)
     setError(null)
+
+    // Set minimum loading time
+    const timer = setTimeout(() => {
+      setShowSkeleton(false)
+    }, 800) // 800ms minimum loading time
 
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({
@@ -56,6 +64,7 @@ export default function LoginPage() {
     } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
+      clearTimeout(timer)
       setLoading(false)
     }
   }
@@ -74,15 +83,28 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div
-              role="alert"
-              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
-            >
-              {error}
+        {showSkeleton ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-10 w-full" />
             </div>
-          )}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
+              >
+                {error}
+              </div>
+            )}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -132,25 +154,21 @@ export default function LoginPage() {
             )}
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full" size="lg">
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Memproses...
-              </>
-            ) : (
-              'Masuk'
-            )}
-          </Button>
-        </form>
+            <Button type="submit" disabled={loading || showSkeleton} className="w-full" size="lg">
+              Masuk
+            </Button>
+          </form>
+        )}
       </CardContent>
       <CardFooter className="flex-col space-y-3">
-        <div className="text-sm text-muted-foreground text-center w-full">
-          Belum punya akun?{' '}
-          <Link href="/register" className="text-accent font-medium hover:underline underline-offset-4">
-            Daftar disini
-          </Link>
-        </div>
+        {!showSkeleton && (
+          <div className="text-sm text-muted-foreground text-center w-full">
+            Belum punya akun?{' '}
+            <Link href="/register" className="text-accent font-medium hover:underline underline-offset-4">
+              Daftar disini
+            </Link>
+          </div>
+        )}
       </CardFooter>
     </Card>
   )

@@ -17,6 +17,10 @@ import { PanduanButton } from '@/components/onboarding/panduan-button'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { cn } from '@/lib/utils'
 import { MODULE_PERMISSIONS, type Role } from '@/types/role'
+import { LogOut, User } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { supabase } from '@/lib/db/client'
+import { useRouter } from 'next/navigation'
 
 interface MenuLink {
   href: string
@@ -177,8 +181,14 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
   const { theme, toggleTheme } = useTheme()
   const pathname = usePathname()
   const { user } = useAuth()
+  const router = useRouter()
   const role = (user?.role as Role) ?? 'owner'
   const visibleItems = filterMenuByRole(menuItems, role)
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   return (
     <>
@@ -199,8 +209,22 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
           title={theme === 'light' ? 'Mode Gelap' : 'Mode Terang'}
         >
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-          {theme === 'light' ? 'Mode Gelap' : 'Mode Terang'}
+          {!collapsed && (theme === 'light' ? 'Mode Gelap' : 'Mode Terang')}
         </button>
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2 w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          {!collapsed && 'Keluar'}
+        </Button>
+        {user && !collapsed && (
+          <div className="px-4 py-2 text-sm text-muted-foreground">
+            <div className="font-medium">{user.name || 'User'}</div>
+            <div className="text-xs">{user.email}</div>
+          </div>
+        )}
       </div>
     </>
   )
