@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 // import Link from 'next/link' // Used in JSX
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/db/client'
@@ -101,12 +102,11 @@ export default function LoginPage() {
         {/* Luxury header */}
         <div className="absolute top-8 left-0 right-0 flex justify-center">
           <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border border-border/50">
-            <img
-              src="/logo/logo-rri-bg-transparan.png"
-              alt="Logo RRI"
-              className="h-8 w-auto"
-              loading="eager"
-            />
+       <img
+        src="/logo/logo-rri-bg-transparan.png"
+        alt="RRI"
+        className="mx-auto h-8 w-auto"
+      />
             <span className="text-xl font-heading font-bold text-primary">ERP RRI</span>
           </div>
         </div>
@@ -115,14 +115,15 @@ export default function LoginPage() {
         <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-card/80 backdrop-blur-sm border border-border/50">
          <CardHeader className="space-y-3 pb-6 text-center">
             <div className="flex justify-center mb-4">
-              <div className="p-3 bg-accent/10 rounded-full">
-                <img
-                  src="/logo/logo-rri-bg-transparan.png"
-                  alt="Logo RRI"
-                  className="h-10 w-auto"
-                  loading="eager"
-                />
-              </div>
+                <div className="p-3 bg-accent/10 rounded-full">
+                  <Image
+                    src="/logo/logo-rri-bg-transparan.png"
+                    alt="Logo"
+                    className="h-16 w-auto"
+                    width={64}
+                    height={64}
+                  />
+                </div>
             </div>
             <CardTitle className="text-3xl font-heading font-bold text-primary tracking-tight">Selamat Datang</CardTitle>
             <CardDescription className="text-muted-foreground">

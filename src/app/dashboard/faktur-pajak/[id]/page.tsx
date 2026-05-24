@@ -45,20 +45,6 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
       };
     };
   } | null>(null);
-  const [invoice, setInvoice] = useState<{
-    nomor: string;
-    customer_id: string;
-    customer: {
-      nama: string;
-      alamat: string | null;
-      kode: string;
-    };
-  } | null>(null);
-  const [customer, setCustomer] = useState<{
-    nama: string;
-    alamat: string | null;
-    kode: string;
-  } | null>(null);
   const [items, setItems] = useState<Array<{
     id: string;
     faktur_pajak_id: string;
@@ -76,6 +62,18 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
       };
     };
   }>>([]);
+  
+  const ppnRate = items && items.length > 0 && items[0].dpp > 0
+    ? Math.round((items[0].ppn / items[0].dpp) * 100)
+    : 11;
+
+  const pphRate = (() => {
+    if (!items?.length) return null;
+    const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0);
+    const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0);
+    if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
+    return null;
+  })();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,12 +81,6 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
     if (!id) return;
 
     const fetchData = async () => {
-      const { data: fp, error } = await supabase
-        .from('faktur_pajak')
-        .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
-        .eq('id', id)
-        .single();
-
       const { data: fpData, error: fpError } = await supabase
         .from('faktur_pajak')
         .select('*, invoice!invoice_id(nomor, customer_id, customer!customer_id(nama, alamat, kode))')
@@ -107,30 +99,13 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
         .eq('faktur_pajak_id', id)
         .order('created_at', { ascending: true });
 
-      const ppnRate = items && items.length > 0 && items[0].dpp > 0
-        ? Math.round((items[0].ppn / items[0].dpp) * 100)
-        : 11;
-
-      const pphRate = (() => {
-        if (!items?.length) return null;
-        const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0);
-        const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0);
-        if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
-        return null;
-      })();
-
-      const invoice = fpData.invoice as { nomor: string; customer_id: string; customer: { nama: string; alamat: string | null; kode: string } } | null;
-      const customer = invoice?.customer || null;
-
       setFakturPajak(fpData);
-      setInvoice(invoice);
-      setCustomer(customer);
       setItems(items || []);
       setIsLoading(false);
     };
 
     fetchData();
-  }, [params]);
+  }, [id]);
 
   if (isLoading) {
     return <div className="text-center py-20 text-muted-foreground">Loading...</div>;
@@ -143,18 +118,6 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
   if (!fakturPajak) {
     return <div className="text-center py-20 text-muted-foreground">Faktur Pajak tidak ditemukan</div>;
   }
-
-  const ppnRate = items && items.length > 0 && items[0].dpp > 0
-    ? Math.round((items[0].ppn / items[0].dpp) * 100)
-    : 11;
-
-  const pphRate = (() => {
-    if (!items?.length) return null;
-    const totalPph = items.reduce((s, i) => s + (i.pph ?? 0), 0);
-    const totalDpp = items.reduce((s, i) => s + (i.dpp ?? 0), 0);
-    if (totalDpp > 0 && totalPph > 0) return Math.round((totalPph / totalDpp) * 100);
-    return null;
-  })();
 
   return (
     <div className="space-y-6">
@@ -211,7 +174,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
           </div>
 
           {/* PKP Penjual & Pembeli */}
-          <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6">
             <div className="border rounded-lg p-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 PKP Penjual
@@ -238,7 +201,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
               <div className="space-y-2 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Nama</p>
-                  <p className="font-medium">{customer?.nama ?? '-'}</p>
+                  <p className="font-medium">{fakturPajak.invoice?.customer?.nama ?? '-'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">NPWP</p>
@@ -246,7 +209,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Alamat</p>
-                  <p className="text-muted-foreground">{customer?.alamat ?? '-'}</p>
+                  <p className="text-muted-foreground">{fakturPajak.invoice?.customer?.alamat ?? '-'}</p>
                 </div>
               </div>
             </div>
@@ -254,8 +217,8 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
 
           {/* Ref Invoice */}
           <div className="text-xs text-muted-foreground border rounded-lg p-3">
-            Referensi: Invoice <span className="font-medium">{invoice?.nomor ?? '-'}</span>
-            {' · '}Kode Customer: <span className="font-medium">{customer?.kode ?? '-'}</span>
+             Referensi: Invoice <span className="font-medium">{fakturPajak.invoice?.nomor ?? '-'}</span>
+            {' · '}Kode Customer: <span className="font-medium">{fakturPajak.invoice?.customer?.kode ?? '-'}</span>
           </div>
 
           {/* Items Table */}

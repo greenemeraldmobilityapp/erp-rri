@@ -2,14 +2,13 @@ import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileCheck, ClipboardList, ShoppingCart, FileText, Users, TrendingUp, DollarSign } from 'lucide-react'
+import { FileCheck, ClipboardList, ShoppingCart, Users, TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function ManagerDashboard() {
-  const [pr, po, so, kontrak, invoices, karyawan] = await Promise.all([
+  const [pr, po, _so, invoices, karyawan] = await Promise.all([
     supabase.from('purchase_request').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('purchase_order').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('sales_order').select('*', { count: 'exact', head: true }).in('status', ['confirmed', 'processed']),
-    supabase.from('kontrak').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('invoice').select('ppn_rate').in('status', ['sent', 'overdue']),
     supabase.from('karyawan').select('*', { count: 'exact', head: true }).eq('is_active', true),
   ])

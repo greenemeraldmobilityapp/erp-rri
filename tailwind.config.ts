@@ -1,4 +1,8 @@
 import type { Config } from "tailwindcss";
+import animatePlugin from "tailwindcss-animate";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 const config: Config = {
   darkMode: "class",
@@ -79,12 +83,12 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        heading: ["Lexend", "sans-serif"],
-        body: ["Source Sans 3", "sans-serif"],
+        sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+        heading: ["var(--font-heading)", ...defaultTheme.fontFamily.sans],
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animatePlugin],
 };
 
 export default config;
