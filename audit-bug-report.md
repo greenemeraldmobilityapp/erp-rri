@@ -25,7 +25,7 @@ Tanggal: 2026-05-23 (revisi: 2026-05-24)
 | **14** | **Error Masking di GET Handlers** | **HIGH** | 36 GET handler pakai `if(error\|\|!data) return notFound()` — DB error termasking 404 | ✅ **FIXED** |
 | **15** | **`customer_top` CRUD Missing** | **MEDIUM** | Table & schema ada, tapi tidak ada API/halaman CRUD | ✅ **FIXED** |
 | **16** | **PRD vs Implementasi: `satuan` tabel** | **LOW** | PRD tulis tabel terpisah, realita free-text di barang | ✅ **PRD corrected** |
-| **17** | **PRD vs Implementasi: `supplier_kontak`** | **LOW** | PRD tulis tabel multiple kontak, belum diimplementasi | ⏳ Gap |
+| **17** | **PRD vs Implementasi: `supplier_kontak`** | **LOW** | PRD tulis tabel multiple kontak, belum diimplementasi | ✅ **FIXED** |
 
 ---
 
@@ -37,7 +37,7 @@ Tanggal: 2026-05-23 (revisi: 2026-05-24)
 | MEDIUM   | 7      |
 | LOW      | 6      |
 
-**Fixed: 16 | Gaps remaining: 3**
+**Fixed: 17 | Gaps remaining: 1** (item #10 — sengaja dilewati)
 
 ---
 
@@ -277,7 +277,7 @@ if (!data) return notFound('...')        // legitimate missing → 404
 
 ---
 
-### 17. PRD vs Implementasi: `supplier_kontak` Belum Ada ⏳ Gap
+### 17. PRD vs Implementasi: `supplier_kontak` ✅ FIXED
 
 **Severity:** LOW
 
@@ -286,7 +286,11 @@ if (!data) return notFound('...')        // legitimate missing → 404
 - Tidak ada tabel `supplier_kontak` di schema, DB, atau migration
 - Tidak ada API atau UI untuk multiple kontak supplier
 
-**Workaround:** Saat ini field `kontak` di tabel `supplier` bisa dipakai untuk satu nomor kontak utama. Tidak ada dukungan untuk multiple PIC/kontak per supplier (tidak seperti Customer yang punya `customer_pic`).
+**Perbaikan (24 May 2026):**
+- **Drizzle Schema:** `src/lib/db/schema/supplier-kontak.ts` — tabel `supplier_kontak` (columns: `id`, `supplier_id`, `nama`, `jabatan`, `no_hp`, `email`, `is_active`, `created_at`, `updated_at`)
+- **Migration:** `0012_supplier_kontak.sql` (applied ke Supabase project `jagrbaydmehsdkekexuq`)
+- **API:** `POST/GET /api/v1/master/supplier-kontak` + `GET/PUT/DELETE /api/v1/master/supplier-kontak/[id]`
+- **Frontend:** Card "Kontak PIC Supplier" di halaman detail supplier dengan inline add/delete
 
 ---
 
