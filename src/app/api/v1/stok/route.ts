@@ -1,3 +1,27 @@
+/**
+ * @openapi
+ * /api/v1/stok:
+ *   get:
+ *     tags: [Inventory]
+ *     summary: Daftar stok barang
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar stok
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   post:
+ *     tags: [Inventory]
+ *     summary: Mutasi stok (masuk/keluar)
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Mutasi berhasil
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'

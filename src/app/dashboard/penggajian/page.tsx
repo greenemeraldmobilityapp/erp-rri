@@ -30,7 +30,7 @@ export default async function PenggajianPage() {
       </TableRow></TableHeader><TableBody>
         {data.map((item) => (
           <TableRow key={item.id}>
-            <TableCell className="font-medium">{item.nomor}</TableCell>
+            <TableCell className="font-medium"><Link href={`/dashboard/penggajian/${item.id}`} className="hover:underline">{item.nomor}</Link></TableCell>
             <TableCell>{item.karyawan?.nama}</TableCell>
             <TableCell>{item.bulan}/{item.tahun}</TableCell>
             <TableCell className="font-bold">Rp {(item.gaji_bersih ?? 0).toLocaleString('id-ID')}</TableCell>

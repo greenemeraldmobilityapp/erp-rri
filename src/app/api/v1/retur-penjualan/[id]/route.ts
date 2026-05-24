@@ -1,3 +1,43 @@
+/**
+ * @openapi
+ * /api/v1/retur-penjualan/{id}:
+ *   get:
+ *     tags: [Retur]
+ *     summary: Detail retur penjualan
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Retur penjualan detail
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   put:
+ *     tags: [Retur]
+ *     summary: Update retur penjualan
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Retur penjualan updated
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   delete:
+ *     tags: [Retur]
+ *     summary: Hapus retur penjualan
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Retur penjualan deleted
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'

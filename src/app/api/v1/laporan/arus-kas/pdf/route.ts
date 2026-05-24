@@ -1,3 +1,17 @@
+/**
+ * @openapi
+ * /api/v1/laporan/arus-kas/pdf:
+ *   get:
+ *     tags: [Laporan]
+ *     summary: Cetak PDF laporan arus kas
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: PDF laporan arus kas
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'

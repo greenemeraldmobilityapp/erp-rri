@@ -1,3 +1,43 @@
+/**
+ * @openapi
+ * /api/v1/master/gudang/{id}:
+ *   get:
+ *     tags: [Master]
+ *     summary: Detail gudang
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Gudang detail
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   put:
+ *     tags: [Master]
+ *     summary: Update gudang
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Gudang updated
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   delete:
+ *     tags: [Master]
+ *     summary: Hapus gudang
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Gudang deleted
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'

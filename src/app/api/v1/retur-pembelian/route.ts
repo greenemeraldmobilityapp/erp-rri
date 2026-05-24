@@ -1,3 +1,27 @@
+/**
+ * @openapi
+ * /api/v1/retur-pembelian:
+ *   get:
+ *     tags: [Retur]
+ *     summary: Daftar retur pembelian
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar retur pembelian
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   post:
+ *     tags: [Retur]
+ *     summary: Tambah retur pembelian baru
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Retur pembelian created
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'

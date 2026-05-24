@@ -40,7 +40,9 @@ const createUserSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuthWithRole(request, ['owner', 'admin'])
-  if (!auth.user) return auth.error
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const { data: users, error } = await supabaseAdmin
     .from('users')
@@ -53,7 +55,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAuthWithRole(request, ['owner', 'admin'])
-  if (!auth.user) return auth.error
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const body = await request.json().catch(() => null)
   if (!body) return badRequest('Invalid JSON')

@@ -1,3 +1,27 @@
+/**
+ * @openapi
+ * /api/v1/master/gudang:
+ *   get:
+ *     tags: [Master]
+ *     summary: Daftar gudang
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar gudang
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   post:
+ *     tags: [Master]
+ *     summary: Tambah gudang baru
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Gudang created
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'

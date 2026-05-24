@@ -1,3 +1,23 @@
+/**
+ * @openapi
+ * /api/v1/stok/kartu/{id}:
+ *   get:
+ *     tags: [Inventory]
+ *     summary: Kartu stok barang
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Kartu stok
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { notFound, internalError } from '@/lib/api/errors'

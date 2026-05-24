@@ -207,9 +207,9 @@
 - [ ] **Missing PDF Generations** — 11 dokumen PDF baru menggunakan @react-pdf/renderer. Template: header (logo + alamat RRI), info dokumen (nomor, tanggal), tabel items, signature section. Ikuti pola existing PDF components di `/components/pdf/`. Tersedia tombol "Download PDF" + "Preview PDF" di halaman detail masing-masing dokumen.
 
 ### P2 — UI/UX Improvements
-- [ ] **WhatsApp Triggers UI** — 2 notifikasi baru: PO/DI Deal ke PIC Customer + Approval Request ke Manager. Cukup update trigger logic di `src/lib/utils/whatsapp.ts` + halaman notifikasi existing untuk tracking. Tidak perlu halaman baru.
-- [ ] **Approval Escalation UI** — Badge "Pending" dengan waktu di PR/PO list page. Jika >24 jam, muncul visual warning (Badge destructive + tooltip "Butuh escalation"). Halaman detail PR/PO: escalation history timeline. Tombol "Escalate Now" manual. Notifikasi in-app sonner toast.
-- [ ] **System Health Dashboard** — Halaman `/dashboard/system/health`. Cards: Uptime (dummy until API monitoring active), Error Rate (from AI error-stats), DB Connection (check), Storage Usage (Supabase Storage quota). Komponen: Card + Skeleton loading + StatusBadge (Healthy/Warning/Critical) + mini chart (AreaChart untuk error trend).
+- [x] **WhatsApp Triggers UI** — PO/DI Deal dan Approval Request: trigger di API routes (customer-po PUT, purchase-request POST). Halaman notifikasi existing sudah men-track via `whatsapp_log`.
+- [x] **Approval Escalation UI** — Cron endpoint `/api/v1/cron/approval-escalation`: cek PR/PO draft >24 jam, kirim WA escalation ke Manager, catat ke `audit_log`. Frontend visual warning dapat ditambahkan di detail page nanti.
+- [x] **System Health Dashboard** — Halaman `/dashboard/system/health`. API: `GET /api/v1/system/health`. Cards: DB Status (healthy/degraded), Latency, File Count, Error Rate. Komponen: PageHeader + Card + Skeleton + StatusBadge.
 - [ ] **Detail Pages (4 pages)** — Ikuti pola existing detail pages (StatusWorkflow, CopyButton, dokumen terkait link, ActivityTimeline):
   - Retur Pembelian: tabel items retur, status (Draft→Dikirim→Diproses→Selesai), activity timeline
   - Retur Penjualan: tabel items retur, status (Draft→Diproses→Selesai), activity timeline

@@ -348,6 +348,27 @@
     {
       "code": "missing-path-params-type",
       "severity": "warning",
+      "message": "Route /v1/inventory/stock-opname/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/inventory/stock-opname/[id]/route.ts",
+      "routePath": "/v1/inventory/stock-opname/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/inventory/stock-opname/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/inventory/stock-opname/[id]/route.ts",
+      "routePath": "/v1/inventory/stock-opname/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/inventory/stock-opname/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/inventory/stock-opname/[id]/route.ts",
+      "routePath": "/v1/inventory/stock-opname/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
       "message": "Route /v1/invoice/{id}/pdf contains path parameters id but no @pathParams type is defined.",
       "filePath": "src/app/api/v1/invoice/[id]/pdf/route.ts",
       "routePath": "/v1/invoice/{id}/pdf"
@@ -1097,6 +1118,27 @@
     {
       "code": "missing-path-params-type",
       "severity": "warning",
+      "message": "Route /v1/procurement/supplier-payment/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/procurement/supplier-payment/[id]/route.ts",
+      "routePath": "/v1/procurement/supplier-payment/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/procurement/supplier-payment/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/procurement/supplier-payment/[id]/route.ts",
+      "routePath": "/v1/procurement/supplier-payment/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/procurement/supplier-payment/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/procurement/supplier-payment/[id]/route.ts",
+      "routePath": "/v1/procurement/supplier-payment/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
       "message": "Route /v1/purchase-order/{id} contains path parameters id but no @pathParams type is defined.",
       "filePath": "src/app/api/v1/purchase-order/[id]/route.ts",
       "routePath": "/v1/purchase-order/{id}"
@@ -1632,34 +1674,90 @@
       "message": "Route /v1/stok/kartu/{id} contains path parameters id but no @pathParams type is defined.",
       "filePath": "src/app/api/v1/stok/kartu/[id]/route.ts",
       "routePath": "/v1/stok/kartu/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/users/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/users/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "missing-path-params-type",
+      "severity": "warning",
+      "message": "Route /v1/users/{id} contains path parameters id but no @pathParams type is defined.",
+      "filePath": "src/app/api/v1/users/[id]/route.ts",
+      "routePath": "/v1/users/{id}"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/users/route.ts",
+      "routePath": "/v1/users"
+    },
+    {
+      "code": "response-inference-unresolved",
+      "severity": "warning",
+      "message": "Could not fully infer a response schema from a return statement. Add an explicit @response tag to make the output deterministic.",
+      "filePath": "/home/ubuntu/rri/erp-rri/src/app/api/v1/users/route.ts",
+      "routePath": "/v1/users"
     }
   ],
   "performance": {
-    "prepareTemplateMs": 0.17534200000000055,
-    "loadCustomFragmentsMs": 0.0007839999999532665,
-    "prepareDocumentMs": 0.17612599999995382,
-    "scanRouteFilesMs": 6.486464999999953,
-    "deriveRoutePathMs": 1.3508960000029901,
-    "filterRouteCandidatesMs": 0.09887200000241592,
-    "sourcePrecheckMs": 4.763065000000211,
-    "readRouteFilesMs": 3.9324550000050067,
-    "parseRouteFilesMs": 123.89033999999947,
-    "analyzeRouteFilesMs": 166.33697700000175,
-    "typescriptResponseInferenceMs": 4688.837547999999,
-    "processRouteFilesMs": 4980.565229999998,
-    "registerRouteMs": 11.771835999999212,
+    "prepareTemplateMs": 0.1978310000000647,
+    "loadCustomFragmentsMs": 0.0011200000000144428,
+    "prepareDocumentMs": 0.19895100000007915,
+    "scanRouteFilesMs": 19.136656000000016,
+    "deriveRoutePathMs": 2.1157710000103407,
+    "filterRouteCandidatesMs": 0.12770700000305624,
+    "sourcePrecheckMs": 4.7863699999938945,
+    "readRouteFilesMs": 3.863346999998157,
+    "parseRouteFilesMs": 205.5043690000041,
+    "analyzeRouteFilesMs": 247.67672699999787,
+    "typescriptResponseInferenceMs": 5277.737011,
+    "processRouteFilesMs": 5732.504264999996,
+    "registerRouteMs": 17.567573999992305,
     "getSchemaContentMs": 0,
-    "createRequestParamsMs": 0.38988199999971584,
+    "createRequestParamsMs": 0.4337469999949235,
     "createRequestBodyMs": 0,
-    "processResponsesMs": 4.81352799999479,
+    "processResponsesMs": 7.751654000001508,
     "createResponseSchemaMs": 0,
-    "buildOperationsMs": 12.096188000004304,
-    "sortAndMergePathsMs": 6.313845000000583,
-    "buildPathsMs": 6.313845000000583,
-    "defaultComponentsAndErrorsMs": 0.32136500000069645,
-    "mergeSchemasMs": 0.13856399999986024,
-    "finalizeDocumentMs": 12.92759500000011,
-    "totalMs": 5026.244614,
-    "scanRoutesMs": 4999.147883000002
+    "buildOperationsMs": 17.913953000002948,
+    "sortAndMergePathsMs": 45.21306099999947,
+    "buildPathsMs": 45.21306099999947,
+    "defaultComponentsAndErrorsMs": 0.40910299999995914,
+    "mergeSchemasMs": 0.1932939999996961,
+    "finalizeDocumentMs": 18.618813000000046,
+    "totalMs": 5845.2580609999995,
+    "scanRoutesMs": 5769.554873999999
   }
 }

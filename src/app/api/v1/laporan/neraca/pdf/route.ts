@@ -1,3 +1,17 @@
+/**
+ * @openapi
+ * /api/v1/laporan/neraca/pdf:
+ *   get:
+ *     tags: [Laporan]
+ *     summary: Cetak PDF laporan neraca
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: PDF laporan neraca
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'

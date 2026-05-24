@@ -50,7 +50,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await verifyAuthWithRole(request, ['owner', 'admin'])
-  if (!auth.user) return auth.error
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const { id } = await params
   const { data: user, error } = await supabaseAdmin
@@ -68,7 +70,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await verifyAuthWithRole(request, ['owner', 'admin'])
-  if (!auth.user) return auth.error
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const { id } = await params
   const body = await request.json().catch(() => null)
@@ -92,7 +96,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await verifyAuthWithRole(request, ['owner', 'admin'])
-  if (!auth.user) return auth.error
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
 
   const { id } = await params
   const { error } = await supabaseAdmin

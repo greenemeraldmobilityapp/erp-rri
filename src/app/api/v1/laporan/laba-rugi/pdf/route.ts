@@ -1,3 +1,17 @@
+/**
+ * @openapi
+ * /api/v1/laporan/laba-rugi/pdf:
+ *   get:
+ *     tags: [Laporan]
+ *     summary: Cetak PDF laporan laba rugi
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: PDF laporan laba rugi
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'

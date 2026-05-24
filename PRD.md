@@ -287,7 +287,7 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 | **Chart of Accounts (COA)** | Daftar akun untuk pembukuan keuangan |
 | **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Upload file PDF kontrak → AI OCR extract harga → masuk database |
 | **Harga Barang** | Histori harga beli dari supplier dan harga jual ke customer |
-| **Bulk Import Excel** ⏳ P1 | Import master data barang, supplier, customer bisa dari upload file Excel — **Belum implementasi** |
+| **Bulk Import Excel** ✅ | Import master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import`, API `POST /api/v1/tools/bulk-import`, sidebar Master Data group |
 
 ### B. AI Agent Module
 
@@ -395,8 +395,8 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Receiving / Penerimaan Barang** | Penerimaan barang dari supplier, update stok |
 | **GRN (Goods Received Note)** | Tanda terima barang |
 | **Retur Pembelian** | Barang dikembalikan ke supplier karena cacat/tidak sesuai. Proses: Retur → DO Retur → Kirim ke supplier → Refund/Adjustment |
-| **Supplier Payment** ⏳ P0 | Pembayaran ke supplier (termasuk bukti transfer) — **Belum implementasi** |
-| **Approval Escalation** ⏳ P2 | Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke atasan via notifikasi — **Belum implementasi** |
+| **Supplier Payment** ✅ | Pembayaran ke supplier (termasuk bukti transfer) — `supplier_payment` table + API + halaman `/dashboard/procurement/supplier-payment` |
+| **Approval Escalation** ✅ | Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke atasan via notifikasi — Cron endpoint `/api/v1/cron/approval-escalation` + audit_log |
 
 **Model Inventory:**
 - **Default: Make-to-Order** — barang dibeli setelah PO Customer deal
@@ -408,7 +408,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 |---|---|
 | **Stok Masuk** | Barang masuk (dari pembelian) |
 | **Stok Keluar** | Barang keluar (untuk penjualan) |
-| **Stock Opname** ⏳ P0 | Opname stok fisik — **Belum implementasi** |
+| **Stock Opname** ✅ | Opname stok fisik — `stock_opname` + `stock_opname_item` tables + API + halaman `/dashboard/inventory/stock-opname` |
 | **Mutasi Baru** | Mutasi antar gudang |
 | **Minimum Stock Alert** | Notifikasi stok minimum |
 | **Kartu Stok** | Riwayat pergerakan stok per barang |
@@ -423,7 +423,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **Accounts Payable (AP)** | Hutang dagang — kewagiban bayar ke supplier. Aging berdasarkan TOP |
 | **Cash & Bank** | Kas dan rekening bank. Mata uang: IDR (single currency untuk MVP) |
 | **PPN & Pajak** | PPN 11% default di setiap Invoice & Quotation. PPh Pasal 22/23 jika berlaku. Auto-kalkulasi pajak di setiap transaksi |
-| **Laporan PPN Masa** ⏳ P0 | Rekap PPN masa untuk pelaporan ke Kantor Pajak. Filter per bulan — **Belum implementasi** |
+| **Laporan PPN Masa** ✅ | Rekap PPN masa untuk pelaporan ke Kantor Pajak. Filter per bulan — Halaman `/dashboard/laporan/ppn-masa` + PDF export |
 | **Faktur Pajak** | Generate nomor faktur pajak sesuai ketentuan Dirjen Pajak |
 | **Jurnal Umum** | Jurnal transaksi keuangan. Auto-generate jurnal saat Invoice terbit (debit AR, credit Revenue, debit/kredit PPN) |
 | **Laba / Rugi** | Laporan pendapatan dan biaya |
@@ -539,14 +539,14 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 | Notifikasi | Trigger | Penerima | Status |
 |---|---|---|---|
 | **Quotation Terkirim** | Quotation berhasil dibuat | PIC Customer via WhatsApp | ✅ Aktif |
-| **PO/DI Deal** ⏳ P2 | Customer deal & terbit PO/DI | PIC Customer (konfirmasi) | 🔜 Belum implementasi |
+| **PO/DI Deal** ✅ | Customer deal & terbit PO/DI | PIC Customer (konfirmasi) | ✅ Aktif via API customer-po PUT |
 | **DO Dikirim** | DO status "Dikirim" | PIC Customer — info no. resi & estimasi | ✅ Aktif |
 | **AR Reminder H-7** | Invoice jatuh tempo H-7 | PIC Customer — pengingat tagihan | ✅ Aktif (Vercel Cron) |
 | **AR Reminder H-3** | Invoice jatuh tempo H-3 | PIC Customer — pengingat | ✅ Aktif (Vercel Cron) |
 | **AR Overdue H+1** | Invoice lewat jatuh tempo | PIC Customer + Finance | ✅ Aktif (Vercel Cron) |
 | **AR Overdue H+7** | Invoice lewat 7 hari | PIC Customer + Manager | ✅ Aktif (Vercel Cron) |
 | **PO ke Supplier** | PO terbit ke supplier marketplace | Supplier via WhatsApp (informasi) | ✅ Aktif |
-| **Approval Request** ⏳ P2 | PR/PO pending approval | Manager via WhatsApp | 🔜 Belum implementasi |
+| **Approval Request** ✅ | PR/PO pending approval | Manager via WhatsApp | ✅ Aktif via API purchase-request POST |
 
 **Implementasi:**
 - **Utility:** `src/lib/utils/whatsapp.ts` — fungsi `sendWhatsapp(recipient, message, userId?)` yang memanggil Fonnte API (`POST https://api.fonnte.com/send`) dan mencatat ke tabel `whatsapp_log`.
@@ -564,9 +564,9 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 | **Audit Trail** | Setiap create/update/delete tercatat: siapa, kapan, IP, data sebelum & sesudah. Tidak bisa dihapus |
 | **Activity Log** | Timeline per transaksi — lihat histori lengkap satu SO/PO/Invoice dari awal sampai selesai |
 | **Digital Approval** | Approve/Reject dengan digital signature (nama + timestamp) |
-| **Global Search** | Satu search bar (shortcut `/` atau `Cmd+K`) untuk mencari barang, customer, supplier, PO, SO, Invoice, Quotation dari halaman manapun. Search fuzzy across semua modul — ⚠️ 17 tabel belum tercakup |
+| **Global Search** | Satu search bar (shortcut `/` atau `Cmd+K`) untuk mencari di 28 tabel: barang, customer, supplier, karyawan, PO, PR, SO, Customer PO, DO, Invoice, Quotation, RFQ, DI, GRN, Faktur Pajak, Kwitansi, Retur Jual/Beli, Jurnal, Negosiasi, Kontrak, Absensi, COA, Jabatan, Kategori Barang, Gudang, PIC Customer, Stock Opname, Pembayaran Supplier, Penggajian |
 | **Export Excel / CSV** | Semua halaman list data bisa di-export — Owner & Manager sering minta data dalam Excel |
-| **Bulk Import Excel** ⏳ P1 | Input master data barang, supplier, customer bisa upload file Excel — **Belum implementasi** |
+| **Bulk Import Excel** ✅ | Input master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import` |
 | **Dark Mode** | Toggle dark/light mode — nyaman dipakai malam hari |
 | **Keyboard Shortcuts** | Power user: `Ctrl+N` = Baru, `Ctrl+S` = Simpan, `/` = Fokus global search, `Escape` = Tutup modal |
 | **Print-Friendly CSS** | Halaman dokumen langsung bisa di-print rapi dari browser tanpa perlu PDF |
@@ -578,7 +578,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 | **Maintenance Mode** | Satu toggle di settings — user lihat halaman "Sedang Perbaikan" |
 | **Soft Delete** | Semua data hanya di-soft-delete (`deleted_at`), tidak pernah hilang permanen |
 | **Data Archiving** | Data lama (>1 tahun) bisa di-archive ke tabel khusus atau bucket storage khusus untuk mengoptimasi performa query utama. Proses archiving bisa dijadwalkan bulan sekali. |
-| **System Health Monitoring** ⏳ P2 | Monitoring uptime, error rate, database health, storage usage — **Belum implementasi** |
+| **System Health Monitoring** ✅ | Monitoring uptime, error rate, database health, storage usage — Halaman `/dashboard/system/health` + API `/api/v1/system/health` |
 
 ## 10. User Roles & Hak Akses
 

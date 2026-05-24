@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Loader2, Package, Users, FileText, ShoppingCart, Truck, DollarSign, Building2, ClipboardList } from 'lucide-react'
+import { Search, Loader2, Package, Users, FileText, ShoppingCart, Truck, DollarSign, Building2, ClipboardList, BookOpen, Receipt, ArrowLeftRight, Warehouse, KanbanSquare, Landmark, Handshake, UserCheck, GitBranch, Calculator } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator } from '@/components/ui/command'
 
@@ -12,10 +12,32 @@ const tableIcons: Record<string, React.ElementType> = {
   customer: Building2,
   supplier: Truck,
   karyawan: Users,
-  'purchase_order': ShoppingCart,
+  purchase_order: ShoppingCart,
+  purchase_request: ClipboardList,
   sales_order: FileText,
+  customer_po: ShoppingCart,
+  delivery_order: Truck,
   invoice: DollarSign,
   quotation: ClipboardList,
+  rfq: BookOpen,
+  di: KanbanSquare,
+  grn: Warehouse,
+  faktur_pajak: Receipt,
+  kwitansi: Receipt,
+  retur_penjualan: ArrowLeftRight,
+  retur_pembelian: ArrowLeftRight,
+  jurnal: BookOpen,
+  negoiasi: Handshake,
+  kontrak: FileText,
+  absensi: UserCheck,
+  coa: Landmark,
+  jabatan: GitBranch,
+  kategori_barang: KanbanSquare,
+  gudang: Warehouse,
+  customer_pic: Users,
+  stock_opname: ClipboardList,
+  supplier_payment: DollarSign,
+  penggajian: Calculator,
 }
 
 const tableLabels: Record<string, string> = {
@@ -24,11 +46,31 @@ const tableLabels: Record<string, string> = {
   supplier: 'Supplier',
   karyawan: 'Karyawan',
   purchase_order: 'Purchase Order',
+  purchase_request: 'Purchase Request',
   sales_order: 'Sales Order',
+  customer_po: 'Customer PO',
+  delivery_order: 'Delivery Order',
   invoice: 'Invoice',
   quotation: 'Quotation',
   rfq: 'RFQ',
-  delivery_order: 'Delivery Order',
+  di: 'Delivery Instruction',
+  grn: 'Goods Receipt Note',
+  faktur_pajak: 'Faktur Pajak',
+  kwitansi: 'Kwitansi',
+  retur_penjualan: 'Retur Penjualan',
+  retur_pembelian: 'Retur Pembelian',
+  jurnal: 'Jurnal',
+  negoiasi: 'Negosiasi',
+  kontrak: 'Kontrak',
+  absensi: 'Absensi',
+  coa: 'Chart of Account',
+  jabatan: 'Jabatan',
+  kategori_barang: 'Kategori Barang',
+  gudang: 'Gudang',
+  customer_pic: 'PIC Customer',
+  stock_opname: 'Stock Opname',
+  supplier_payment: 'Pembayaran Supplier',
+  penggajian: 'Penggajian',
   general: 'Lainnya',
 }
 

@@ -29,7 +29,7 @@ export default async function ReturPenjualanPage() {
       </TableRow></TableHeader><TableBody>
         {data.map((item) => (
           <TableRow key={item.id}>
-            <TableCell className="font-medium">{item.nomor}</TableCell>
+            <TableCell className="font-medium"><Link href={`/dashboard/retur-penjualan/${item.id}`} className="hover:underline">{item.nomor}</Link></TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>

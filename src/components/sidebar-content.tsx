@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { ChevronDown, Settings } from 'lucide-react'
+import { ChevronDown, Settings, Activity } from 'lucide-react'
 import {
-  Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2,
+  Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
-  PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, Store, AlertTriangle, ListOrdered,
-  ClipboardList, Bell, Sun, Moon, LucideIcon,
+  PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, Store, AlertTriangle, ListOrdered, CreditCard,
+  ClipboardList, ClipboardCheck, Bell, Sun, Moon, LucideIcon,
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
 import { PanduanButton } from '@/components/onboarding/panduan-button'
@@ -46,6 +46,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/master/kategori-barang', label: 'Kategori Barang', icon: FolderTree },
     { href: '/dashboard/master/jabatan', label: 'Jabatan', icon: Briefcase },
     { href: '/dashboard/master/karyawan', label: 'Karyawan', icon: Users2 },
+    { href: '/dashboard/tools/bulk-import', label: 'Import Excel', icon: FileSpreadsheet },
   ]},
   { label: 'Pre-Sales', icon: Search, children: [
     { href: '/dashboard/rfq', label: 'RFQ', icon: FileText },
@@ -65,12 +66,14 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/purchase-receiving', label: 'Penerimaan', icon: FileText },
     { href: '/dashboard/grn', label: 'GRN', icon: FileText },
     { href: '/dashboard/retur-pembelian', label: 'Retur Pembelian', icon: FileText },
+    { href: '/dashboard/procurement/supplier-payment', label: 'Pembayaran Supplier', icon: CreditCard },
   ]},
   { label: 'Inventory', icon: Package, children: [
     { href: '/dashboard/inventory/gudang', label: 'Gudang', icon: Building2 },
     { href: '/dashboard/inventory/stok', label: 'Stok', icon: Package },
     { href: '/dashboard/inventory/stok/masuk', label: 'Stok Masuk', icon: TrendingUp },
     { href: '/dashboard/inventory/stok/keluar', label: 'Stok Keluar', icon: TrendingDown },
+    { href: '/dashboard/inventory/stock-opname', label: 'Stock Opname', icon: ClipboardCheck },
   ]},
   { label: 'Finance', icon: Landmark, children: [
     { href: '/dashboard/invoice', label: 'Invoice', icon: ReceiptText },
@@ -82,6 +85,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/laporan/ar-aging', label: 'AR Aging', icon: TrendingUp },
     { href: '/dashboard/laporan/ap-aging', label: 'AP Aging', icon: TrendingDown },
     { href: '/dashboard/laporan/laba-rugi', label: 'Laba / Rugi', icon: Banknote },
+    { href: '/dashboard/laporan/ppn-masa', label: 'PPN Masa', icon: Receipt },
     { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart },
     { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: TrendingUp },
   ]},
@@ -101,6 +105,7 @@ const menuItems: MenuItem[] = [
   ]},
   { label: 'System', icon: ShieldCheck, children: [
     { href: '/dashboard/system/users', label: 'User Management', icon: Users },
+    { href: '/dashboard/system/health', label: 'System Health', icon: Activity },
     { href: '/dashboard/system/profile', label: 'Profil', icon: Settings },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
