@@ -15,8 +15,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .select('*, sales_order!sales_order_id(nomor, customer_po_id)')
     .eq('id', id)
     .single()
-  if (error || !sj) return notFound('Delivery Order tidak ditemukan')
-
+  if (error) return internalError(error)
+  if (!sj) return notFound('Delivery Order tidak ditemukan')
   const so = sj.sales_order as { nomor: string; customer_po_id: string } | null
   let customerNama = '-'
   if (so?.customer_po_id) {

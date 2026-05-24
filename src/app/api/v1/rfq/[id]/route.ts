@@ -12,8 +12,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .eq('id', id)
     .single()
 
-  if (rfqError || !rfq) return notFound('RFQ tidak ditemukan')
+  if (rfqError) return internalError(rfqError)
 
+  if (!rfq) return notFound('RFQ tidak ditemukan')
   const { data: items } = await supabaseAdmin
     .from('rfq_item')
     .select('*, barang!barang_id(id, nama, kode, satuan)')

@@ -976,16 +976,15 @@ export const config = {
 users                    → auth + profil (semua role)
 user_roles               → mapping user ke role
 
-barang                   → master barang
+barang                   → master barang (field: satuan — free-text, bukan tabel terpisah)
 kategori_barang          → kategori barang
-satuan                   → satuan barang
 
-supplier                 → data supplier (termasuk marketplace)
-supplier_kontak          → multiple kontak supplier
+supplier                 → data supplier (termasuk marketplace, field: kontak — single contact)
+                         (planned: supplier_kontak — multiple kontak, belum diimplementasi)
 
 customer                 → data customer
 customer_pic             → multiple PIC per customer
-customer_top             → terms of payment per customer (net_30, net_60, cash, custom)
+customer_top             → terms of payment per customer (net_30, net_60, cash, custom) — sudah ada DB & Drizzle schema, belum ada CRUD API/halaman
 
 karyawan                 → data karyawan RRI
 jabatan                  → master jabatan

@@ -11,7 +11,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
 
   const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, customer!customer_id(nama, kode)').eq('id', id).single()
-  if (error || !inv) return notFound('Invoice tidak ditemukan')
+  if (error) return internalError(error)
+  if (!inv) return notFound('Invoice tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id)
   if (!items) return internalError('Gagal memuat item')
 

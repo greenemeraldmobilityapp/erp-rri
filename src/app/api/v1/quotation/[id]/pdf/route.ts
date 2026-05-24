@@ -15,8 +15,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .select('*, customer!customer_id(nama, kode)')
     .eq('id', id)
     .single()
-  if (error || !qtn) return notFound('Quotation tidak ditemukan')
-
+  if (error) return internalError(error)
+  if (!qtn) return notFound('Quotation tidak ditemukan')
   const { data: items } = await supabaseAdmin
     .from('quotation_item')
     .select('*, barang!barang_id(nama, kode, satuan)')

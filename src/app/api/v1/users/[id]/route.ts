@@ -61,7 +61,9 @@ export async function GET(
     .eq('id', id)
     .single()
 
-  if (error || !user) return notFound('User tidak ditemukan')
+  if (error) return internalError(error)
+
+  if (!user) return notFound('User tidak ditemukan')
   return NextResponse.json({ data: user })
 }
 

@@ -7,7 +7,8 @@ import { generateDOFromSO } from '@/lib/auto-sales'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data: so, error } = await supabaseAdmin.from('sales_order').select('*, customer_po!customer_po_id(nomor)').eq('id', id).single()
-  if (error || !so) return notFound('Sales Order tidak ditemukan')
+  if (error) return internalError(error)
+  if (!so) return notFound('Sales Order tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('sales_order_item').select('*, barang!barang_id(nama, kode, satuan)').eq('sales_order_id', id)
   return NextResponse.json({ data: { ...so, items: items ?? [] } })
 }

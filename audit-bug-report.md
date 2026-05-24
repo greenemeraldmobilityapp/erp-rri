@@ -1,26 +1,31 @@
 # Audit Bug Report — ERP RRI
 
-Tanggal: 2026-05-23
+Tanggal: 2026-05-23 (revisi: 2026-05-24)
 
 ---
 
 ## Status Pengerjaan
 
-| # | Deskripsi | Severity | Status |
-|---|-----------|----------|--------|
-| 1 | GET Handler Tanpa Authentication | HIGH | ✅ FIXED |
-| 2 | Cron Endpoint Tanpa Authentication | HIGH | ✅ FIXED |
-| 3 | Memory Leak — Object URL Tidak Di-revoke | HIGH | ✅ FIXED |
-| 4 | Stale Cached Token Setelah Sign-Out | HIGH | ✅ FIXED |
-| 5 | Dynamic Tailwind Class Names | MEDIUM | ✅ FIXED |
-| 6 | Login Page Console Logs | MEDIUM | ✅ FIXED |
-| 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | ✅ FIXED |
-| 8 | RFQ Page Pakai fetch langsung | MEDIUM | ✅ FIXED |
-| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | ✅ FIXED |
-| 10 | API Response Format Tidak Konsisten | LOW | ⏳ Skipped (low priority) |
-| 11 | Unused Ref OCR Kontrak | LOW | ✅ FIXED |
-| 12 | Finance Dashboard Hardcoded Colors | LOW | ✅ FIXED |
-| 13 | Error Boundary Tidak Dipakai | LOW | ✅ FIXED |
+| # | Deskripsi | Severity | Temuan | Status |
+|---|-----------|----------|--------|--------|
+| 1 | GET Handler Tanpa Authentication | HIGH | 23-05: 4 endpoint list (stok, gudang, kategori-barang, rfq/documents) | ✅ FIXED |
+|   |                                 |      | 24-05: 1 endpoint detail (stok/kartu/[id]) — terlewat dari audit sebelumnya | ✅ FIXED |
+| 2 | Cron Endpoint Tanpa Authentication | HIGH | 23-05: ar-reminder tanpa auth | ✅ FIXED |
+| 3 | Memory Leak — Object URL Tidak Di-revoke | HIGH | | ✅ FIXED |
+| 4 | Stale Cached Token Setelah Sign-Out | HIGH | | ✅ FIXED |
+| 5 | Dynamic Tailwind Class Names | MEDIUM | | ✅ FIXED |
+| 6 | Login Page Console Logs | MEDIUM | | ✅ FIXED |
+| 7 | FormSkeleton Tidak Digunakan di Page "Tambah" | MEDIUM | | ✅ FIXED |
+| 8 | RFQ Page Pakai fetch langsung | MEDIUM | | ✅ FIXED |
+| 9 | Badge Variants CSS Variables Non-Standard | MEDIUM | | ✅ FIXED |
+| 10 | API Response Format Tidak Konsisten | LOW | | ⏳ Skipped |
+| 11 | Unused Ref OCR Kontrak | LOW | | ✅ FIXED |
+| 12 | Finance Dashboard Hardcoded Colors | LOW | | ✅ FIXED |
+| 13 | Error Boundary Tidak Dipakai | LOW | | ✅ FIXED |
+| **14** | **Error Masking di GET Handlers** | **HIGH** | 36 GET handler pakai `if(error\|\|!data) return notFound()` — DB error termasking 404 | ✅ **FIXED** |
+| **15** | **`customer_top` CRUD Missing** | **MEDIUM** | Table & schema ada, tapi tidak ada API/halaman CRUD | ⏳ Gap |
+| **16** | **PRD vs Implementasi: `satuan` tabel** | **LOW** | PRD tulis tabel terpisah, realita free-text di barang | ✅ **PRD corrected** |
+| **17** | **PRD vs Implementasi: `supplier_kontak`** | **LOW** | PRD tulis tabel multiple kontak, belum diimplementasi | ⏳ Gap |
 
 ---
 
@@ -28,9 +33,9 @@ Tanggal: 2026-05-23
 
 | Severity | Jumlah |
 |----------|--------|
-| HIGH     | 4      |
-| MEDIUM   | 5      |
-| LOW      | 4      |
+| HIGH     | 7      |
+| MEDIUM   | 7      |
+| LOW      | 6      |
 
 ---
 
@@ -211,8 +216,77 @@ export default function DashboardLayout({ children }) {
 
 ---
 
+## New Findings (24 May 2026 — Integration Audit)
+
+### 14. Error Masking di GET Handlers ✅ FIXED
+
+**Severity:** HIGH
+
+**File:** 36 file `[id]/route.ts` dan `[id]/pdf/route.ts` di seluruh modul
+
+**Deskripsi:** Semua GET detail handler menggunakan pola:
+```ts
+if (error || !data) return notFound('...')
+```
+Ini menyebabkan **DB error (koneksi putus, RLS violation, timeout) termasking sebagai 404 Not Found** — menyulitkan debugging. Hanya `absensi/[id]` yang sudah benar sejak awal.
+
+**Perbaikan:** Dipisahkan menjadi:
+```ts
+if (error) return internalError(error)   // DB error → 500
+if (!data) return notFound('...')        // legitimate missing → 404
+```
+
+**File yang diperbaiki (36):**
+- Transaksi: `invoice`, `purchase-order`, `sales-order`, `customer-po`, `delivery-order`, `grn`, `retur-penjualan`, `retur-pembelian`, `kwitansi`, `faktur-pajak`, `jurnal`, `supplier-payment`, `purchase-request`, `purchase-receiving`, `negoiasi`, `quotation`, `rfq`, `di`
+- HR: `penggajian`
+- Master: `barang`, `supplier`, `customer`, `pic-customer`, `coa`, `kontrak`, `kategori-barang`, `jabatan`, `karyawan`, `stock-opname`, `gudang`
+- Users: `users`
+- PDF: `invoice/[id]/pdf`, `kwitansi/[id]/pdf`, `delivery-order/[id]/pdf`, `quotation/[id]/pdf`, `slip-gaji/[id]/pdf`
+
+---
+
+### 15. `customer_top` CRUD Missing ⏳ Gap
+
+**Severity:** MEDIUM
+
+**File:** Tidak ada (missing)
+
+**Deskripsi:** Tabel `customer_top` sudah ada di database dan Drizzle schema (column: `id`, `customer_id`, `top`, `created_at`, `updated_at`), dan sudah digunakan oleh AI Data Agent queries. TAPI tidak ada:
+- API routes (`/api/v1/master/customer-top`)
+- Frontend pages untuk CRUD
+- UI untuk memilih TOP di form customer
+
+**Impact:** Terms of Payment (TOP) per customer tidak bisa dikelola melalui UI. Saat ini TOP hanya bisa di-set via direct database atau API `PUT /api/v1/master/customer` (yang mungkin tidak handle top).
+
+---
+
+### 16. PRD vs Implementasi: `satuan` Bukan Tabel Terpisah ✅ PRD Corrected
+
+**Severity:** LOW
+
+**Deskripsi:** PRD mencantumkan `satuan` sebagai tabel terpisah. Realitanya, `satuan` adalah free-text field (`text`) pada tabel `barang` dan `rfq_item`. Tidak ada master data satuan yang terstandardisasi.
+
+**Perbaikan:** PRD.md sudah dikoreksi.
+
+**Future:** Jika diperlukan standardisasi satuan, bisa ditambahkan sebagai tabel master dengan foreign key dari `barang.satuan`.
+
+---
+
+### 17. PRD vs Implementasi: `supplier_kontak` Belum Ada ⏳ Gap
+
+**Severity:** LOW
+
+**Deskripsi:** PRD mencantumkan `supplier_kontak` sebagai tabel multiple kontak supplier. Realitanya:
+- Supplier hanya punya satu field `kontak` (text)
+- Tidak ada tabel `supplier_kontak` di schema, DB, atau migration
+- Tidak ada API atau UI untuk multiple kontak supplier
+
+**Workaround:** Saat ini field `kontak` di tabel `supplier` bisa dipakai untuk satu nomor kontak utama. Tidak ada dukungan untuk multiple PIC/kontak per supplier (tidak seperti Customer yang punya `customer_pic`).
+
+---
+
 ## Prioritas Perbaikan
 
-1. **Segera (sebelum production):** Bug #1, #2, #3, #4
-2. **Sebelum production deploy:** Bug #5, #6, #7, #9
-3. **Nice to have:** Bug #8, #10, #11, #12, #13
+1. **Segera (sebelum production):** Bug #1, #2, #3, #4, #14
+2. **Sebelum production deploy:** Bug #5, #6, #7, #9, #15 (customer_top CRUD)
+3. **Nice to have:** Bug #8, #10, #11, #12, #13, #16, #17

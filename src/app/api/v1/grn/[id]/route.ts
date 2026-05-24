@@ -6,7 +6,8 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data: grn, error } = await supabaseAdmin.from('grn').select('*, purchase_receiving!purchase_receiving_id(nomor), di!di_id(nomor)').eq('id', id).single()
-  if (error || !grn) return notFound('GRN tidak ditemukan')
+  if (error) return internalError(error)
+  if (!grn) return notFound('GRN tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('grn_item').select('*, barang!barang_id(nama, kode)').eq('grn_id', id)
   return NextResponse.json({ data: { ...grn, items: items ?? [] } })
 }

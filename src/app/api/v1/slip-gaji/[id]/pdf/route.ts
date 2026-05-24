@@ -11,8 +11,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
 
   const { data: pg, error } = await supabaseAdmin.from('penggajian').select('*, karyawan!karyawan_id(nama, nik)').eq('id', id).single()
-  if (error || !pg) return notFound('Penggajian tidak ditemukan')
-
+  if (error) return internalError(error)
+  if (!pg) return notFound('Penggajian tidak ditemukan')
   const pdfData = {
     nomor: pg.nomor,
     karyawan_nama: (pg.karyawan as { nama: string })?.nama ?? '-',

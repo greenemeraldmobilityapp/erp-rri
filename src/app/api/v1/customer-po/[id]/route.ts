@@ -8,7 +8,8 @@ import { sendWhatsapp } from '@/lib/utils/whatsapp'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data: po, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode)').eq('id', id).single()
-  if (error || !po) return notFound('PO tidak ditemukan')
+  if (error) return internalError(error)
+  if (!po) return notFound('PO tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('customer_po_item').select('*, barang!barang_id(nama, kode, satuan)').eq('customer_po_id', id)
   return NextResponse.json({ data: { ...po, items: items ?? [] } })
 }

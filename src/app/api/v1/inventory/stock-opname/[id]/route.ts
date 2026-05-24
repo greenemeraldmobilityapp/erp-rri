@@ -49,7 +49,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params
 
   const { data, error } = await supabaseAdmin.from('stock_opname').select('*, stock_opname_item(*)').eq('id', id).single()
-  if (error || !data) return notFound('Stock opname tidak ditemukan')
+  if (error) return internalError(error)
+  if (!data) return notFound('Stock opname tidak ditemukan')
   return NextResponse.json({ data })
 }
 

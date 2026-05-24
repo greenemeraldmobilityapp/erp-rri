@@ -7,7 +7,8 @@ import { sendWhatsapp } from '@/lib/utils/whatsapp'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor)').eq('id', id).single()
-  if (error || !sj) return notFound('Delivery Order tidak ditemukan')
+  if (error) return internalError(error)
+  if (!sj) return notFound('Delivery Order tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan)').eq('delivery_order_id', id)
   return NextResponse.json({ data: { ...sj, items: items ?? [] } })
 }

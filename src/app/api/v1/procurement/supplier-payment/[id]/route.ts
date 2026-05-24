@@ -9,7 +9,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params
 
   const { data, error } = await supabaseAdmin.from('supplier_payment').select('*, supplier!supplier_id(nama), purchase_order!purchase_order_id(nomor)').eq('id', id).single()
-  if (error || !data) return notFound('Pembayaran tidak ditemukan')
+  if (error) return internalError(error)
+  if (!data) return notFound('Pembayaran tidak ditemukan')
   return NextResponse.json({ data })
 }
 

@@ -12,8 +12,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .eq('id', id)
     .single()
 
-  if (qtnError || !qtn) return notFound('Quotation tidak ditemukan')
+  if (qtnError) return internalError(qtnError)
 
+  if (!qtn) return notFound('Quotation tidak ditemukan')
   const { data: items } = await supabaseAdmin
     .from('quotation_item')
     .select('*, barang!barang_id(id, nama, kode, satuan)')

@@ -18,7 +18,8 @@ const schema = z.object({
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data, error } = await supabaseAdmin.from('karyawan').select('*, jabatan!jabatan_id(nama)').eq('id', id).single()
-  if (error || !data) return notFound('Karyawan tidak ditemukan')
+  if (error) return internalError(error)
+  if (!data) return notFound('Karyawan tidak ditemukan')
   return NextResponse.json({ data })
 }
 

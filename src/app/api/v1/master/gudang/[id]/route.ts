@@ -46,7 +46,8 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { data, error } = await supabaseAdmin.from('gudang').select('*').eq('id', id).single()
-  if (error) return notFound('Gudang tidak ditemukan')
+  if (error) return internalError(error)
+  if (!data) return notFound('Gudang tidak ditemukan')
   return NextResponse.json({ data })
 }
 

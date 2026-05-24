@@ -20,12 +20,17 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(request)
+  if (auth.error) return auth.error
+
   const { id } = await params
   const { data: barang, error: brgErr } = await supabaseAdmin.from('barang').select('id, nama, kode, satuan').eq('id', id).single()
-  if (brgErr || !barang) return notFound('Barang tidak ditemukan')
+  if (brgErr) return internalError(brgErr)
+  if (!barang) return notFound('Barang tidak ditemukan')
   const { data: mutasi, error: mutErr } = await supabaseAdmin
     .from('stok_mutasi')
     .select('*')

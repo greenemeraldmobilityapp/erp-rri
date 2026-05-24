@@ -11,7 +11,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
 
   const { data: kwt, error } = await supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor)').eq('id', id).single()
-  if (error || !kwt) return notFound('Kwitansi tidak ditemukan')
+  if (error) return internalError(error)
+  if (!kwt) return notFound('Kwitansi tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('kwitansi_item').select('*, invoice_item!invoice_item_id(barang_id, harga)').eq('kwitansi_id', id)
 
   const invoiceId = kwt.invoice_id

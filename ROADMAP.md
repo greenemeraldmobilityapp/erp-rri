@@ -149,3 +149,26 @@
 
 ### All P1/P2 items — Completed in this session
 All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Detail Pages) have been implemented in a single session on May 24, 2026.
+
+## Fase 12 — Integration Audit & Bug Fixes (May 2026)
+
+### Security
+- [x] **Auth gap on `stok/kartu/[id]`** — GET handler using `supabaseAdmin` without `verifyAuth()`. Exposed stock card data for any `barang_id`. Fixed: added `verifyAuth()` at handler start.
+
+### Error Handling Quality
+- [x] **Error masking in 36 GET handlers** — All `[id]/route.ts` and `[id]/pdf/route.ts` files used `if (error || !data) return notFound(...)` which masks DB errors (500) as 404 Not Found. Fixed: separated into `if (error) return internalError(error)` / `if (!data) return notFound(...)` across all 36 routes.
+- [x] **`master/gudang/[id]` special case** — Used `if (error) return notFound(...)` (no `!data` check). Fixed: added proper `internalError` + `notFound` separation.
+
+### Documentation Corrections
+- [x] **PRD.md `satuan` table** — Corrected: `satuan` is a free-text field on `barang`, not a separate table.
+- [x] **PRD.md `supplier_kontak`** — Marked as planned but not implemented (supplier has single `kontak` field).
+- [x] **PRD.md `customer_top`** — Added note: table exists in DB & Drizzle schema but no CRUD API/halaman yet.
+
+### Known Gaps (Not Fixed)
+- `customer_top` CRUD — Table exists in DB, but no API routes or frontend pages to manage it. Affects TOP selection on invoices/customer forms.
+- `supplier_kontak` — Planned many-to-many contact table not implemented.
+- `stok` route uses manual validation instead of Zod schema (inconsistent with other routes).
+
+### Verification
+- Build: `npm run build` — 0 errors, 0 warnings
+- Lint: `npm run lint` — 0 errors, 0 warnings
