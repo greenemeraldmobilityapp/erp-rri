@@ -7,7 +7,7 @@ export interface GRNCheckInput {
 
 export interface GRNCheckResult {
   grn_id: string
-  quality_status: 'PASS' | 'FAIL' | 'REVIEW_REQUIREED'
+  quality_status: 'PASS' | 'FAIL' | 'REVIEW_REQUIRED'
   stock_status: 'UPDATED' | 'PENDING' | 'ERROR'
   items_check: Array<{
     barang_id: string
@@ -79,7 +79,7 @@ export async function checkGRN(input: GRNCheckInput): Promise<GRNCheckResult> {
     })
   }
 
-  let qualityStatus: 'PASS' | 'FAIL' | 'REVIEW_REQUIREED' = 'PASS'
+  let qualityStatus: 'PASS' | 'FAIL' | 'REVIEW_REQUIRED' = 'PASS'
   if (qualityIssues.some(i => i.includes('MISSING'))) {
     qualityStatus = 'FAIL'
   } else if (qualityIssues.length > 0) {
@@ -133,7 +133,7 @@ export async function checkGRN(input: GRNCheckInput): Promise<GRNCheckResult> {
   }
 
   const recommendations: string[] = []
-  if (qualityStatus === 'REVIEW_REQUIREED') {
+  if (qualityStatus === 'REVIEW_REQUIRED') {
     recommendations.push('Quality review diperlukan sebelum proceed')
   }
   if (qualityStatus === 'FAIL') {

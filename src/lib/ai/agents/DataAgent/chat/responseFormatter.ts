@@ -72,6 +72,10 @@ export async function formatResponse(
     }
   }
 
+  const TIMEOUT_MS = 15000
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
   try {
     const response = await client.chat.completions.create({
       model,
@@ -79,7 +83,9 @@ export async function formatResponse(
       temperature: 0.3,
       max_tokens: 1024,
       stream: false,
-    })
+    }, { signal: controller.signal })
+
+    clearTimeout(timeout)
 
     const answer = response.choices[0]?.message?.content ?? 'Maaf, tidak dapat memformat jawaban.'
 
@@ -91,12 +97,46 @@ export async function formatResponse(
       modelUsed: model,
     }
   } catch {
+    clearTimeout(timeout)
+    const fallback = formatAsRuleBased(intent, result)
     return {
-      answer: `Data ditemukan (${result.rowCount} baris), tetapi gagal memformat jawaban. Berikut data mentah:\n\n${JSON.stringify(result.rows.slice(0, 5), null, 2)}`,
+      answer: fallback,
       rawData: result.rows,
       rowCount: result.rowCount,
       formattedAt: new Date().toISOString(),
-      modelUsed: 'none',
+      modelUsed: 'fallback',
     }
   }
+}
+
+function formatAsRuleBased(intent: IntentMatch, result: QueryResult): string {
+  if (result.rowCount === 0) return 'Tidak ada data yang ditemukan.'
+
+  const rows = result.rows
+  const headers = Object.keys(rows[0] ?? {})
+
+  if (result.rowCount === 1) {
+    const row = rows[0]
+    const lines = [`**${intent.pattern.intentName}**\n`]
+    for (const key of headers) {
+      lines.push(`- **${key.replace(/_/g, ' ')}**: ${String(row[key] ?? '-')}`)
+    }
+    return lines.join('\n')
+  }
+
+  if (result.rowCount <= 5) {
+    const lines: string[] = [`**${intent.pattern.intentName}**\n`]
+    for (const row of rows) {
+      const vals = headers.map(h => String(row[h] ?? '-')).join(' | ')
+      lines.push(`| ${vals} |`)
+    }
+    return lines.join('\n')
+  }
+
+  const summary = `Ditemukan **${result.rowCount}** data untuk "${intent.pattern.intentName}".\n\nBerikut 3 data pertama:\n`
+  const sampleRows = rows.slice(0, 3)
+  const sampleLines = sampleRows.map(r => {
+    return headers.map(h => `- ${h.replace(/_/g, ' ')}: ${String(r[h] ?? '-')}`).join('\n')
+  })
+  return summary + sampleLines.join('\n\n') + `\n\n_Gunakan query yang lebih spesifik untuk detail lengkap._`
 }

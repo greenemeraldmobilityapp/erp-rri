@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { PageHeader } from '@/components/page-header'
 import { Bot, User, Loader2, Send, Search, Database, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -63,13 +64,11 @@ export default function DataAgentPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">DataAgent</h1>
-          <p className="text-muted-foreground mt-1">Tanya database ERP pakai bahasa Indonesia — NL-to-SQL tanpa hallucination</p>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-0">
+      <PageHeader
+        title="DataAgent"
+        description="Tanya database ERP pakai bahasa Indonesia — NL-to-SQL tanpa hallucination"
+      />
 
       <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0">
         <TabsList>

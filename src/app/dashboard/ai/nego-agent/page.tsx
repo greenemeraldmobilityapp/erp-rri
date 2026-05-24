@@ -9,6 +9,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { PageHeader } from '@/components/page-header'
 import { CheckCircle2, AlertCircle, TrendingUp, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -87,19 +88,17 @@ export default function NegoAgentPage() {
   const formatCurrency = (v: number) => `Rp ${v.toLocaleString('id-ID')}`
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">NegoAgent</h1>
-          <p className="text-muted-foreground mt-1">Analisa margin, approval routing & risk assessment</p>
-        </div>
-        {result && (
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-0">
+      <PageHeader
+        title="NegoAgent"
+        description="Analisa margin, approval routing & risk assessment"
+        actions={result ? (
           <Button variant="outline" size="sm" onClick={() => { setResult(null); form.reset() }}>
             <RotateCcw className="h-4 w-4 mr-2" />
             Analisa Baru
           </Button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       <Card className="flex-1 flex flex-col min-h-0">
         <CardContent className="flex flex-col h-full p-6">

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { PageHeader } from '@/components/page-header'
 import { Upload, FileText, Loader2, AlertCircle, History } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -97,17 +98,17 @@ export default function VisionAgentPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">VisionAgent</h1>
-          <p className="text-muted-foreground mt-1">OCR dokumen — kontrak, invoice, kwitansi, delivery order</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={fetchHistory}>
-          <History className="h-4 w-4 mr-2" />
-          {showHistory ? 'Tutup History' : 'History'}
-        </Button>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-0">
+      <PageHeader
+        title="VisionAgent"
+        description="OCR dokumen — kontrak, invoice, kwitansi, delivery order"
+        actions={
+          <Button variant="outline" size="sm" onClick={fetchHistory}>
+            <History className="h-4 w-4 mr-2" />
+            {showHistory ? 'Tutup History' : 'History'}
+          </Button>
+        }
+      />
 
       <Tabs defaultValue="upload" className="flex-1 flex flex-col min-h-0">
         <TabsList>
