@@ -60,7 +60,7 @@ export default function StockOpnamePage() {
   const handleCreate = async () => {
     if (!petugas.trim()) { toast.error('Nama petugas wajib diisi'); return }
     try {
-      const r = await apiFetch('/api/v1/inventory/stock-opname', {
+      const r = await apiFetch<StockOpname>('/api/v1/inventory/stock-opname', {
         method: 'POST',
         body: JSON.stringify({
           nomor: `SO/${String(new Date().getFullYear()).slice(-2)}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(data.length + 1).padStart(4, '0')}`,
@@ -68,7 +68,7 @@ export default function StockOpnamePage() {
           gudangId: gudangId || undefined,
         }),
       })
-      if (r.data) setData(prev => [r.data as StockOpname, ...prev])
+      if (r.data) setData(prev => [r.data, ...prev])
       setOpen(false)
       setPetugas('')
       setGudangId('')

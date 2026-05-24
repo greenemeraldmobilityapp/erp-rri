@@ -23,9 +23,18 @@
  *         $ref: '#/components/responses/Unauthorized'
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
+
+const mutasiSchema = z.object({
+  tipe: z.enum(['masuk', 'keluar']),
+  barang_id: z.string().min(1, 'Barang harus dipilih'),
+  gudang_id: z.string().optional(),
+  jumlah: z.coerce.number().int().positive('Jumlah harus lebih dari 0'),
+  keterangan: z.string().optional(),
+})
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAuth(req)
@@ -43,17 +52,17 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error
   const body = await request.json().catch(() => null)
   if (!body) return badRequest('Invalid JSON body')
-  const { tipe, barang_id, gudang_id, jumlah, keterangan } = body
-  if (!tipe || !barang_id || !jumlah) return badRequest('tipe, barang_id, jumlah required')
-  if (!['masuk', 'keluar'].includes(tipe)) return badRequest('tipe harus masuk/keluar')
+  const parsed = mutasiSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+  const { tipe, barang_id, gudang_id, jumlah, keterangan } = parsed.data
   const { data: stokNow } = await supabaseAdmin.from('stok').select('jumlah').eq('barang_id', barang_id).maybeSingle()
   const saldoSebelum = stokNow?.jumlah ?? 0
-  const saldoSesudah = tipe === 'masuk' ? saldoSebelum + Number(jumlah) : saldoSebelum - Number(jumlah)
+  const saldoSesudah = tipe === 'masuk' ? saldoSebelum + jumlah : saldoSebelum - jumlah
   if (tipe === 'keluar' && saldoSesudah < 0) return badRequest('Stok tidak mencukupi')
 
   const mutasi = await supabaseAdmin.from('stok_mutasi').insert({
-    barang_id, gudang_id: gudang_id ?? null, tipe, jumlah: Number(jumlah),
+    barang_id, gudang_id: gudang_id ?? null, tipe, jumlah,
     saldo_sebelum: saldoSebelum, saldo_sesudah: saldoSesudah,
     keterangan: keterangan ?? '', ref_jenis: 'manual',
   }).select().single()

@@ -984,7 +984,7 @@ supplier                 → data supplier (termasuk marketplace, field: kontak 
 
 customer                 → data customer
 customer_pic             → multiple PIC per customer
-customer_top             → terms of payment per customer (net_30, net_60, cash, custom) — sudah ada DB & Drizzle schema, belum ada CRUD API/halaman
+customer_top             → terms of payment per customer (net_30, net_60, cash, custom) ✅ CRUD API + halaman detail customer
 
 karyawan                 → data karyawan RRI
 jabatan                  → master jabatan

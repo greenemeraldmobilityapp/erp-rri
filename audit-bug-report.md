@@ -23,7 +23,7 @@ Tanggal: 2026-05-23 (revisi: 2026-05-24)
 | 12 | Finance Dashboard Hardcoded Colors | LOW | | ✅ FIXED |
 | 13 | Error Boundary Tidak Dipakai | LOW | | ✅ FIXED |
 | **14** | **Error Masking di GET Handlers** | **HIGH** | 36 GET handler pakai `if(error\|\|!data) return notFound()` — DB error termasking 404 | ✅ **FIXED** |
-| **15** | **`customer_top` CRUD Missing** | **MEDIUM** | Table & schema ada, tapi tidak ada API/halaman CRUD | ⏳ Gap |
+| **15** | **`customer_top` CRUD Missing** | **MEDIUM** | Table & schema ada, tapi tidak ada API/halaman CRUD | ✅ **FIXED** |
 | **16** | **PRD vs Implementasi: `satuan` tabel** | **LOW** | PRD tulis tabel terpisah, realita free-text di barang | ✅ **PRD corrected** |
 | **17** | **PRD vs Implementasi: `supplier_kontak`** | **LOW** | PRD tulis tabel multiple kontak, belum diimplementasi | ⏳ Gap |
 
@@ -36,6 +36,8 @@ Tanggal: 2026-05-23 (revisi: 2026-05-24)
 | HIGH     | 7      |
 | MEDIUM   | 7      |
 | LOW      | 6      |
+
+**Fixed: 16 | Gaps remaining: 3**
 
 ---
 
@@ -245,18 +247,21 @@ if (!data) return notFound('...')        // legitimate missing → 404
 
 ---
 
-### 15. `customer_top` CRUD Missing ⏳ Gap
+### 15. `customer_top` CRUD Missing ✅ FIXED
 
 **Severity:** MEDIUM
 
-**File:** Tidak ada (missing)
+**File:** `src/app/api/v1/master/customer-top/route.ts` + `[id]/route.ts` (baru), `src/app/dashboard/master/customer/[id]/page.tsx` (updated)
 
 **Deskripsi:** Tabel `customer_top` sudah ada di database dan Drizzle schema (column: `id`, `customer_id`, `top`, `created_at`, `updated_at`), dan sudah digunakan oleh AI Data Agent queries. TAPI tidak ada:
 - API routes (`/api/v1/master/customer-top`)
 - Frontend pages untuk CRUD
 - UI untuk memilih TOP di form customer
 
-**Impact:** Terms of Payment (TOP) per customer tidak bisa dikelola melalui UI. Saat ini TOP hanya bisa di-set via direct database atau API `PUT /api/v1/master/customer` (yang mungkin tidak handle top).
+**Perbaikan (24 May 2026):**
+- **API:** `POST /api/v1/master/customer-top` — create; `GET /api/v1/master/customer-top?customer_id=X` — list by customer
+- **API:** `GET/PUT/DELETE /api/v1/master/customer-top/[id]` — detail, update, delete
+- **Frontend:** Card "Daftar Terms of Payment" di halaman detail customer dengan add/delete. Dropdown options: Net 30, Net 60, Cash, Custom. Option yang sudah dipakai di-disable untuk hindari duplikasi.
 
 ---
 
@@ -288,5 +293,5 @@ if (!data) return notFound('...')        // legitimate missing → 404
 ## Prioritas Perbaikan
 
 1. **Segera (sebelum production):** Bug #1, #2, #3, #4, #14
-2. **Sebelum production deploy:** Bug #5, #6, #7, #9, #15 (customer_top CRUD)
+2. **Sebelum production deploy:** Bug #5, #6, #7, #9
 3. **Nice to have:** Bug #8, #10, #11, #12, #13, #16, #17

@@ -162,10 +162,14 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 ### Documentation Corrections
 - [x] **PRD.md `satuan` table** — Corrected: `satuan` is a free-text field on `barang`, not a separate table.
 - [x] **PRD.md `supplier_kontak`** — Marked as planned but not implemented (supplier has single `kontak` field).
-- [x] **PRD.md `customer_top`** — Added note: table exists in DB & Drizzle schema but no CRUD API/halaman yet.
+- [x] **PRD.md `customer_top`** — Updated note: CRUD now implemented.
+
+### CRUD Customer TOP (Closed Gap)
+- [x] **API CRUD `/api/v1/master/customer-top`** — `GET` (list with `?customer_id` filter), `POST` (create). File: `route.ts`.
+- [x] **API CRUD `/api/v1/master/customer-top/[id]`** — `GET`, `PUT`, `DELETE`. File: `[id]/route.ts`.
+- [x] **Frontend UI** — Added "Daftar Terms of Payment" card on customer detail page (`[id]/page.tsx`) with add/delete capability. Options: Net 30, Net 60, Cash, Custom. Disabled options already assigned to avoid duplicates.
 
 ### Known Gaps (Not Fixed)
-- `customer_top` CRUD — Table exists in DB, but no API routes or frontend pages to manage it. Affects TOP selection on invoices/customer forms.
 - `supplier_kontak` — Planned many-to-many contact table not implemented.
 - `stok` route uses manual validation instead of Zod schema (inconsistent with other routes).
 

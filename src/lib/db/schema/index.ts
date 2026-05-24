@@ -3,6 +3,7 @@ import { userRoles } from "./user-roles";
 import { barang } from "./barang";
 import { kategoriBarang } from "./kategori-barang";
 import { supplier } from "./supplier";
+import { supplierKontak } from "./supplier-kontak";
 import { customer } from "./customer";
 import { customerPic } from "./customer-pic";
 import { customerTop } from "./customer-top";
@@ -79,6 +80,7 @@ export {
   barang,
   kategoriBarang,
   supplier,
+  supplierKontak,
   customer,
   customerPic,
   customerTop,

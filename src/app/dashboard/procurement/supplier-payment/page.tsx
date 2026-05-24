@@ -57,7 +57,7 @@ export default function SupplierPaymentPage() {
       return
     }
     try {
-      const r = await apiFetch('/api/v1/procurement/supplier-payment', {
+      const r = await apiFetch<SupplierPayment>('/api/v1/procurement/supplier-payment', {
         method: 'POST',
         body: JSON.stringify({
           purchaseOrderId: form.purchaseOrderId,
@@ -69,7 +69,7 @@ export default function SupplierPaymentPage() {
           keterangan: form.keterangan || undefined,
         }),
       })
-      if (r.data) setData(prev => [r.data as SupplierPayment, ...prev])
+      if (r.data) setData(prev => [r.data, ...prev])
       setOpen(false)
       setForm({ purchaseOrderId: '', supplierId: '', nominal: '', tanggalBayar: '', metode: 'transfer', buktiTransfer: '', keterangan: '' })
       toast.success('Pembayaran berhasil dicatat')
