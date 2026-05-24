@@ -426,7 +426,7 @@ Jika SQL execution gagal → return error message ke user (bukan generate fake d
 
 ```env
 # NVIDIA NIM Configuration
-NVIDIA_API_KEY="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"
+NVIDIA_API_KEY="lihat file .env"
 NVIDIA_BASE_URL="https://integrate.api.nvidia.com/v1"
 
 # Model IDs

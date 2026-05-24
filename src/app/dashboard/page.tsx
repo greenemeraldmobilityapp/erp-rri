@@ -151,24 +151,26 @@ export default async function DashboardPage() {
 
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><DollarSign className="h-5 w-5 text-muted-foreground" />Revenue & Profit</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-           <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
-           <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="warning" subtitle={`${piutangCount} faktur outstanding`} />
-           <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} color="destructive" subtitle="PO belum lunas" />
-          <StatCard label="Karyawan Aktif" value={karyawan.count ?? 0} icon={Users2} />
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-foreground">Revenue Trend</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-[60px]">
-                <RevenueChart data={revenueChartData} />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">6 bulan terakhir</p>
-            </CardContent>
-          </Card>
-        </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <StatCard label="Revenue Bulan Ini" value={`Rp ${revenueBulanIni.toLocaleString('id-ID')}`} icon={TrendingUp} color="success" subtitle={`${(kwitansis.data ?? []).length} kwitansi`} trend={revenueTrend} trendLabel="vs last month" />
+            <StatCard label="Piutang (AR)" value={`Rp ${totalPiutang.toLocaleString('id-ID')}`} icon={Banknote} color="warning" subtitle={`${piutangCount} faktur outstanding`} />
+            <StatCard label="Hutang (AP)" value={totalHutang} icon={TrendingDown} color="destructive" subtitle="PO belum lunas" />
+            <StatCard label="Karyawan Aktif" value={karyawan.count ?? 0} icon={Users2} />
+            <Card className="overflow-hidden border-t-2 border-t-[#A1A1AA] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)]">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm text-foreground">Revenue Trend</CardTitle>
+                <div className="rounded-full bg-muted p-2 text-muted-foreground">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[60px]">
+                  <RevenueChart data={revenueChartData} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">6 bulan terakhir</p>
+              </CardContent>
+            </Card>
+         </div>
       </section>
 
       <section>
@@ -229,11 +231,11 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5 text-destructive" />Butuh Tindakan</h2>
           <Card>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4">
-               {prCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95" asChild><Link href="/dashboard/purchase-request"><ClipboardList className="h-4 w-4 mr-2" />{prCount} PR perlu diproses</Link></Button>}
-               {poCount > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/purchase-order"><FileText className="h-4 w-4 mr-2 text-warning" />{poCount} PO perlu tindakan</Link></Button>}
-               {(fakturPajaks.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/faktur-pajak"><Receipt className="h-4 w-4 mr-2 text-warning" />{fakturPajaks.count} Faktur Pajak perlu diterbitkan</Link></Button>}
-               {lowStockItems.length > 0 && <Button variant="outline" className="justify-start h-auto py-3" asChild><Link href="/dashboard/inventory/stok"><AlertTriangle className="h-4 w-4 mr-2 text-destructive" />{lowStockItems.length} barang stok kosong</Link></Button>}
-               {(dos.count ?? 0) > 0 && <Button variant="ghost" className="justify-start h-auto py-3" asChild><Link href="/dashboard/delivery-order"><Package className="h-4 w-4 mr-2 text-muted-foreground" />{dos.count} DO perlu dikirim</Link></Button>}
+               {prCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/purchase-request"><ClipboardList className="h-4 w-4 mr-2" />{prCount} PR perlu diproses</Link></Button>}
+               {poCount > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/purchase-order"><FileText className="h-4 w-4 mr-2" />{poCount} PO perlu tindakan</Link></Button>}
+               {(fakturPajaks.count ?? 0) > 0 && <Button variant="default" className="justify-start h-auto py-3 bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200" asChild><Link href="/dashboard/faktur-pajak"><Receipt className="h-4 w-4 mr-2" />{fakturPajaks.count} Faktur Pajak perlu diterbitkan</Link></Button>}
+               {lowStockItems.length > 0 && <Button variant="destructive" className="justify-start h-auto py-3 transition-all duration-200" asChild><Link href="/dashboard/inventory/stok"><AlertTriangle className="h-4 w-4 mr-2" />{lowStockItems.length} barang stok kosong</Link></Button>}
+               {(dos.count ?? 0) > 0 && <Button variant="outline" className="justify-start h-auto py-3 transition-all duration-200" asChild><Link href="/dashboard/delivery-order"><Package className="h-4 w-4 mr-2" />{dos.count} DO perlu dikirim</Link></Button>}
             </CardContent>
           </Card>
         </section>
@@ -277,9 +279,9 @@ export default async function DashboardPage() {
              { href: '/dashboard/sales-order/tambah', label: 'Buat SO', icon: DollarSign },
              { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Bot },
            ].map(item => (
-             <Button key={item.href} variant="ghost" className="justify-start h-auto py-3" asChild>
-               <Link href={item.href}><item.icon className="h-4 w-4 mr-2" />{item.label}</Link>
-             </Button>
+              <Button key={item.href} variant="ghost" className="justify-start h-auto py-3 transition-all duration-200" asChild>
+                <Link href={item.href}><item.icon className="h-4 w-4 mr-2" />{item.label}</Link>
+              </Button>
            ))}
           </CardContent>
         </Card>
