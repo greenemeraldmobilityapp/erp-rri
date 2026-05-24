@@ -1366,6 +1366,1115 @@ ORDER BY order_count DESC`,
     params: [],
     description: 'Frekuensi order per customer dan rata-rata jarak antar order',
   },
+  // === INVOICE (additional) ===
+  {
+    id: 'INV016',
+    category: 'INVOICE',
+    intentName: 'INVOICE_PAID_THIS_MONTH',
+    exampleQuery: 'Invoice yang sudah dibayar bulan ini?',
+    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama, SUM(ii.harga * ii.jumlah) as total
+FROM invoice i JOIN customer c ON i.customer_id = c.id JOIN invoice_item ii ON i.id = ii.invoice_id
+WHERE i.status = 'paid' AND DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())
+GROUP BY i.id, c.nama ORDER BY i.tanggal`,
+    params: [],
+    description: 'Invoice yang sudah dibayar lunas bulan ini',
+  },
+  {
+    id: 'INV017',
+    category: 'INVOICE',
+    intentName: 'AR_CUSTOMER_BALANCE',
+    exampleQuery: 'Saldo piutang per customer?',
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as saldo_piutang
+FROM customer c LEFT JOIN invoice i ON c.id = i.customer_id AND i.status NOT IN ('paid', 'cancelled')
+LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
+GROUP BY c.nama HAVING COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
+ORDER BY saldo_piutang DESC`,
+    params: [],
+    description: 'Saldo piutang per customer yang masih outstanding',
+  },
+  {
+    id: 'INV018',
+    category: 'INVOICE',
+    intentName: 'INVOICE_WITH_DISCOUNT',
+    exampleQuery: 'Invoice yang memberikan diskon?',
+    sql: `SELECT i.nomor, i.tanggal, c.nama as customer_nama, ii.diskon, ii.harga, ii.jumlah
+FROM invoice i JOIN customer c ON i.customer_id = c.id JOIN invoice_item ii ON i.id = ii.invoice_id
+WHERE ii.diskon > 0 ORDER BY ii.diskon DESC`,
+    params: [],
+    description: 'Invoice yang memiliki item dengan diskon',
+  },
+  {
+    id: 'INV019',
+    category: 'INVOICE',
+    intentName: 'INVOICE_CANCELLED',
+    exampleQuery: 'Invoice yang dibatalkan?',
+    sql: `SELECT i.nomor, i.tanggal, i.status, c.nama as customer_nama
+FROM invoice i JOIN customer c ON i.customer_id = c.id
+WHERE i.status = 'cancelled' ORDER BY i.tanggal DESC`,
+    params: [],
+    description: 'Invoice yang statusnya dibatalkan',
+  },
+  {
+    id: 'INV020',
+    category: 'INVOICE',
+    intentName: 'INVOICE_PPN_TOTAL',
+    exampleQuery: 'Total PPN dari semua invoice?',
+    sql: `SELECT COALESCE(SUM(ii.harga * ii.jumlah * COALESCE(ii.ppn, 0)), 0) as total_ppn
+FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status != 'cancelled'`,
+    params: [],
+    description: 'Total PPN dari semua invoice yang tidak dibatalkan',
+  },
+  // === QUOTATION (additional) ===
+  {
+    id: 'QUO008',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_BY_SALES',
+    exampleQuery: 'Quotation oleh sales X bulan ini?',
+    sql: `SELECT q.nomor, q.tanggal, q.status, c.nama as customer_nama
+FROM quotation q JOIN customer c ON q.customer_id = c.id
+WHERE q.sales_id = $1 AND DATE_TRUNC('month', q.tanggal) = DATE_TRUNC('month', NOW())
+ORDER BY q.tanggal DESC`,
+    params: ['sales_id'],
+    description: 'Quotation yang dibuat oleh seorang sales bulan ini',
+  },
+  {
+    id: 'QUO010',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_WIN_RATE',
+    exampleQuery: 'Win rate quotation?',
+    sql: `SELECT COUNT(*) as total_quot, COUNT(CASE WHEN q.status = 'won' THEN 1 END) as won,
+ROUND(COUNT(CASE WHEN q.status = 'won' THEN 1 END)::numeric / NULLIF(COUNT(*), 0) * 100, 2) as win_rate
+FROM quotation q WHERE q.status IN ('won', 'lost', 'sent')`,
+    params: [],
+    description: 'Persentase quotation yang menjadi deal (win rate)',
+  },
+  {
+    id: 'QUO013',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_CONVERTED',
+    exampleQuery: 'Quotation yang sudah jadi sales order?',
+    sql: `SELECT q.nomor, q.tanggal, c.nama as customer_nama, so.nomor as so_nomor
+FROM quotation q JOIN customer c ON q.customer_id = c.id
+JOIN customer_po cpo ON cpo.quotation_id = q.id
+JOIN sales_order so ON so.customer_po_id = cpo.id
+ORDER BY so.tanggal DESC`,
+    params: [],
+    description: 'Quotation yang sudah terkonversi menjadi sales order',
+  },
+  {
+    id: 'QUO014',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_LOST',
+    exampleQuery: 'Quotation yang lost?',
+    sql: `SELECT q.nomor, q.tanggal, c.nama as customer_nama, q.keterangan
+FROM quotation q JOIN customer c ON q.customer_id = c.id
+WHERE q.status = 'lost' ORDER BY q.tanggal DESC`,
+    params: [],
+    description: 'Quotation yang statusnya lost (gagal deal)',
+  },
+  {
+    id: 'QUO015',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_TOTAL_THIS_MONTH',
+    exampleQuery: 'Total nilai quotation bulan ini?',
+    sql: `SELECT COALESCE(SUM(qi.harga_satuan * qi.jumlah * (1 + COALESCE(qi.ppn_per_item, 0))), 0) as total
+FROM quotation q JOIN quotation_item qi ON q.id = qi.quotation_id
+WHERE DATE_TRUNC('month', q.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total nilai semua quotation yang dibuat bulan ini',
+  },
+  {
+    id: 'QUO016',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_COUNT_BY_STATUS',
+    exampleQuery: 'Jumlah quotation per status?',
+    sql: `SELECT status, COUNT(*) as count FROM quotation GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah quotation dikelompokkan berdasarkan status',
+  },
+  {
+    id: 'QUO017',
+    category: 'QUOTATION',
+    intentName: 'QUOTATION_TOP_PRODUCTS',
+    exampleQuery: 'Produk paling sering di-quote?',
+    sql: `SELECT b.nama, COUNT(DISTINCT q.id) as total_quot, SUM(qi.jumlah) as total_qty
+FROM quotation_item qi JOIN barang b ON qi.barang_id = b.id JOIN quotation q ON q.id = qi.quotation_id
+GROUP BY b.nama ORDER BY total_quot DESC LIMIT 10`,
+    params: [],
+    description: '10 produk yang paling sering muncul di quotation',
+  },
+  // === SALES ORDER (additional) ===
+  {
+    id: 'SO011',
+    category: 'SALES_ORDER',
+    intentName: 'SALES_ORDER_DELIVERED_TODAY',
+    exampleQuery: 'Sales order yang dikirim hari ini?',
+    sql: `SELECT so.nomor, so.tanggal, c.nama as customer_nama, do.nomor as do_nomor
+FROM sales_order so JOIN customer c ON so.customer_id = c.id
+JOIN delivery_order do ON do.sales_order_id = so.id
+WHERE do.tanggal = CURRENT_DATE AND do.status = 'completed'
+ORDER BY do.tanggal`,
+    params: [],
+    description: 'Sales order yang deliverinya selesai hari ini',
+  },
+  {
+    id: 'SO012',
+    category: 'SALES_ORDER',
+    intentName: 'SALES_ORDER_TOTAL_VALUE_ACTIVE',
+    exampleQuery: 'Total nilai SO yang masih aktif?',
+    sql: `SELECT COALESCE(SUM(soi.jumlah * soi.harga_satuan), 0) as total_nilai
+FROM sales_order so JOIN sales_order_item soi ON so.id = soi.sales_order_id
+WHERE so.status NOT IN ('completed', 'cancelled')`,
+    params: [],
+    description: 'Total nilai dari semua sales order yang masih berjalan',
+  },
+  {
+    id: 'SO013',
+    category: 'SALES_ORDER',
+    intentName: 'SALES_ORDER_COUNT_BY_STATUS',
+    exampleQuery: 'Jumlah SO per status?',
+    sql: `SELECT status, COUNT(*) as count FROM sales_order GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah sales order per status',
+  },
+  {
+    id: 'SO014',
+    category: 'SALES_ORDER',
+    intentName: 'DELIVERY_TODAY_COUNT',
+    exampleQuery: 'Berapa delivery hari ini?',
+    sql: `SELECT COUNT(*) as total FROM delivery_order WHERE tanggal = CURRENT_DATE`,
+    params: [],
+    description: 'Jumlah delivery order yang dibuat hari ini',
+  },
+  {
+    id: 'SO015',
+    category: 'SALES_ORDER',
+    intentName: 'DO_COUNT_BY_STATUS',
+    exampleQuery: 'Status delivery order?',
+    sql: `SELECT status, COUNT(*) as count FROM delivery_order GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah delivery order per status',
+  },
+  // === PURCHASE (additional) ===
+  {
+    id: 'PO013',
+    category: 'PURCHASE',
+    intentName: 'PURCHASE_REQUEST_PENDING',
+    exampleQuery: 'Purchase request yang pending?',
+    sql: `SELECT pr.nomor, pr.tanggal, pr.status, pr.keterangan
+FROM purchase_request pr WHERE pr.status = 'pending' AND pr.is_active = true ORDER BY pr.tanggal`,
+    params: [],
+    description: 'Purchase request yang masih pending approval',
+  },
+  {
+    id: 'PO014',
+    category: 'PURCHASE',
+    intentName: 'PO_TOTAL_THIS_MONTH',
+    exampleQuery: 'Total PO bulan ini?',
+    sql: `SELECT COALESCE(SUM(poi.jumlah * poi.harga_satuan), 0) as total_po
+FROM purchase_order po JOIN purchase_order_item poi ON po.id = poi.purchase_order_id
+WHERE DATE_TRUNC('month', po.tanggal) = DATE_TRUNC('month', NOW()) AND po.status NOT IN ('cancelled')`,
+    params: [],
+    description: 'Total nilai purchase order yang dibuat bulan ini',
+  },
+  {
+    id: 'PO015',
+    category: 'PURCHASE',
+    intentName: 'TOP_SUPPLIER_BY_PO_COUNT',
+    exampleQuery: 'Supplier dengan PO terbanyak?',
+    sql: `SELECT s.nama, COUNT(po.id) as total_po, COALESCE(SUM(poi.jumlah * poi.harga_satuan), 0) as total_nilai
+FROM supplier s JOIN purchase_order po ON po.supplier_id = s.id AND po.is_active = true
+JOIN purchase_order_item poi ON po.id = poi.purchase_order_id
+GROUP BY s.nama ORDER BY total_po DESC LIMIT 10`,
+    params: [],
+    description: '10 supplier dengan jumlah PO terbanyak',
+  },
+  {
+    id: 'PO016',
+    category: 'PURCHASE',
+    intentName: 'PO_COUNT_BY_STATUS',
+    exampleQuery: 'Jumlah PO per status?',
+    sql: `SELECT status, COUNT(*) as count FROM purchase_order WHERE is_active = true GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah purchase order per status',
+  },
+  {
+    id: 'PO017',
+    category: 'PURCHASE',
+    intentName: 'GRN_RECENT',
+    exampleQuery: 'GRN terbaru?',
+    sql: `SELECT g.nomor, g.tanggal, g.status, s.nama as supplier_nama
+FROM grn g JOIN purchase_receiving pr ON g.purchase_receiving_id = pr.id
+JOIN purchase_order po ON pr.purchase_order_id = po.id
+JOIN supplier s ON po.supplier_id = s.id
+ORDER BY g.tanggal DESC LIMIT 20`,
+    params: [],
+    description: 'GRN (Goods Received Note) terbaru',
+  },
+  // === STOCK (additional) ===
+  {
+    id: 'STK011',
+    category: 'STOCK',
+    intentName: 'BARANG_TANPA_STOK',
+    exampleQuery: 'Barang yang stoknya 0?',
+    sql: `SELECT b.kode, b.nama, b.satuan, COALESCE(SUM(s.jumlah), 0) as stok_terkini
+FROM barang b LEFT JOIN stok s ON s.barang_id = b.id
+WHERE b.is_active = true GROUP BY b.id HAVING COALESCE(SUM(s.jumlah), 0) = 0 ORDER BY b.nama`,
+    params: [],
+    description: 'Barang yang stoknya kosong (0)',
+  },
+  {
+    id: 'STK012',
+    category: 'STOCK',
+    intentName: 'STOK_NILAI_PER_GUDANG',
+    exampleQuery: 'Nilai stok per gudang?',
+    sql: `SELECT g.nama, COALESCE(SUM(s.jumlah * b.harga_beli_default), 0) as nilai_stok
+FROM gudang g LEFT JOIN stok s ON s.gudang_id = g.id LEFT JOIN barang b ON s.barang_id = b.id
+GROUP BY g.nama ORDER BY nilai_stok DESC`,
+    params: [],
+    description: 'Total nilai stok yang disimpan per gudang',
+  },
+  {
+    id: 'STK013',
+    category: 'STOCK',
+    intentName: 'MUTASI_MASUK_TODAY',
+    exampleQuery: 'Stok masuk hari ini?',
+    sql: `SELECT b.nama, sm.jumlah, sm.keterangan FROM stok_mutasi sm
+JOIN barang b ON sm.barang_id = b.id WHERE sm.tipe = 'masuk' AND sm.tanggal = CURRENT_DATE`,
+    params: [],
+    description: 'Mutasi stok masuk yang terjadi hari ini',
+  },
+  {
+    id: 'STK014',
+    category: 'STOCK',
+    intentName: 'MUTASI_KELUAR_TODAY',
+    exampleQuery: 'Stok keluar hari ini?',
+    sql: `SELECT b.nama, sm.jumlah, sm.keterangan FROM stok_mutasi sm
+JOIN barang b ON sm.barang_id = b.id WHERE sm.tipe = 'keluar' AND sm.tanggal = CURRENT_DATE`,
+    params: [],
+    description: 'Mutasi stok keluar yang terjadi hari ini',
+  },
+  {
+    id: 'STK015',
+    category: 'STOCK',
+    intentName: 'MUTASI_TERBARU',
+    exampleQuery: 'Mutasi stok terbaru?',
+    sql: `SELECT sm.tanggal, sm.tipe, b.nama, sm.jumlah, sm.keterangan
+FROM stok_mutasi sm JOIN barang b ON sm.barang_id = b.id
+ORDER BY sm.tanggal DESC LIMIT 30`,
+    params: [],
+    description: '30 mutasi stok terbaru',
+  },
+  // === CONTRACT (additional) ===
+  {
+    id: 'KTR006',
+    category: 'CONTRACT',
+    intentName: 'KONTRAK_AKTIF_ALL',
+    exampleQuery: 'Semua kontrak yang aktif?',
+    sql: `SELECT k.nama, c.nama as customer_nama, k.tanggal_mulai, k.tanggal_selesai
+FROM kontrak k JOIN customer c ON k.customer_id = c.id WHERE k.is_active = true ORDER BY k.tanggal_mulai`,
+    params: [],
+    description: 'Daftar semua kontrak yang masih aktif',
+  },
+  {
+    id: 'KTR007',
+    category: 'CONTRACT',
+    intentName: 'KONTRAK_EXPIRED',
+    exampleQuery: 'Kontrak yang sudah expired?',
+    sql: `SELECT k.nama, c.nama as customer_nama, k.tanggal_mulai, k.tanggal_selesai
+FROM kontrak k JOIN customer c ON k.customer_id = c.id
+WHERE k.tanggal_selesai < NOW() AND k.is_active = true ORDER BY k.tanggal_selesai DESC`,
+    params: [],
+    description: 'Kontrak yang sudah melewati tanggal selesai',
+  },
+  {
+    id: 'KTR008',
+    category: 'CONTRACT',
+    intentName: 'KONTRAK_BY_CUSTOMER',
+    exampleQuery: 'Kontrak untuk customer ABC?',
+    sql: `SELECT k.nama, k.tanggal_mulai, k.tanggal_selesai, k.is_active
+FROM kontrak k JOIN customer c ON k.customer_id = c.id WHERE c.kode = $1 ORDER BY k.tanggal_mulai DESC`,
+    params: ['kode_customer'],
+    description: 'Kontrak yang dimiliki oleh customer tertentu',
+  },
+  {
+    id: 'KTR009',
+    category: 'CONTRACT',
+    intentName: 'KONTRAK_NILAI_TOTAL',
+    exampleQuery: 'Total nilai semua kontrak?',
+    sql: `SELECT COALESCE(SUM(ki.jumlah * ki.harga), 0) as total_nilai FROM kontrak_item ki
+JOIN kontrak k ON ki.kontrak_id = k.id WHERE k.is_active = true`,
+    params: [],
+    description: 'Total nilai dari semua kontrak aktif',
+  },
+  {
+    id: 'KTR010',
+    category: 'CONTRACT',
+    intentName: 'RFQ_COUNT_BY_STATUS',
+    exampleQuery: 'Jumlah RFQ per status?',
+    sql: `SELECT status, COUNT(*) as count FROM rfq WHERE is_active = true GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah RFQ dikelompokkan berdasarkan status',
+  },
+  // === FINANCE (additional) ===
+  {
+    id: 'JUR011',
+    category: 'FINANCE',
+    intentName: 'LABA_RUGI_MONTHLY',
+    exampleQuery: 'Laba rugi per bulan tahun ini?',
+    sql: `SELECT DATE_TRUNC('month', j.tanggal)::date as bulan,
+  COALESCE(SUM(CASE WHEN a.tipe = 'revenue' THEN ji.kredit - ji.debit ELSE 0 END), 0) as pendapatan,
+  COALESCE(SUM(CASE WHEN a.tipe = 'expense' THEN ji.debit - ji.kredit ELSE 0 END), 0) as biaya,
+  COALESCE(SUM(CASE WHEN a.tipe = 'revenue' THEN ji.kredit - ji.debit ELSE 0 END), 0) -
+  COALESCE(SUM(CASE WHEN a.tipe = 'expense' THEN ji.debit - ji.kredit ELSE 0 END), 0) as laba_bersih
+FROM jurnal j JOIN jurnal_item ji ON j.id = ji.jurnal_id JOIN coa a ON ji.akun_id = a.id
+WHERE EXTRACT(YEAR FROM j.tanggal) = EXTRACT(YEAR FROM NOW()) AND a.tipe IN ('revenue', 'expense')
+GROUP BY DATE_TRUNC('month', j.tanggal) ORDER BY bulan`,
+    params: [],
+    description: 'Laporan laba rugi per bulan untuk tahun berjalan',
+  },
+  {
+    id: 'JUR012',
+    category: 'FINANCE',
+    intentName: 'ARUS_KAS_MASUK',
+    exampleQuery: 'Arus kas masuk bulan ini?',
+    sql: `SELECT COALESCE(SUM(ji.debit), 0) as total_masuk
+FROM jurnal_item ji JOIN jurnal j ON ji.jurnal_id = j.id JOIN coa a ON ji.akun_id = a.id
+WHERE a.tipe = 'asset' AND a.kode LIKE '1-1%'
+AND DATE_TRUNC('month', j.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total arus kas masuk (debit akun kas) bulan ini',
+  },
+  {
+    id: 'JUR013',
+    category: 'FINANCE',
+    intentName: 'ARUS_KAS_KELUAR',
+    exampleQuery: 'Arus kas keluar bulan ini?',
+    sql: `SELECT COALESCE(SUM(ji.kredit), 0) as total_keluar
+FROM jurnal_item ji JOIN jurnal j ON ji.jurnal_id = j.id JOIN coa a ON ji.akun_id = a.id
+WHERE a.tipe = 'asset' AND a.kode LIKE '1-1%'
+AND DATE_TRUNC('month', j.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total arus kas keluar (kredit akun kas) bulan ini',
+  },
+  {
+    id: 'JUR014',
+    category: 'FINANCE',
+    intentName: 'JURNAL_TERBARU',
+    exampleQuery: 'Jurnal terbaru?',
+    sql: `SELECT j.nomor, j.tanggal, j.keterangan, COALESCE(SUM(ji.debit), 0) as total
+FROM jurnal j LEFT JOIN jurnal_item ji ON j.id = ji.jurnal_id
+GROUP BY j.id ORDER BY j.tanggal DESC, j.created_at DESC LIMIT 20`,
+    params: [],
+    description: '20 jurnal terbaru yang dibuat',
+  },
+  {
+    id: 'JUR015',
+    category: 'FINANCE',
+    intentName: 'CASHFLOW_MONTHLY',
+    exampleQuery: 'Cashflow bulanan tahun ini?',
+    sql: `SELECT DATE_TRUNC('month', j.tanggal)::date as bulan,
+  COALESCE(SUM(CASE WHEN a.kode LIKE '1-1%' THEN ji.debit ELSE 0 END), 0) as kas_masuk,
+  COALESCE(SUM(CASE WHEN a.kode LIKE '1-1%' THEN ji.kredit ELSE 0 END), 0) as kas_keluar
+FROM jurnal j JOIN jurnal_item ji ON j.id = ji.jurnal_id JOIN coa a ON ji.akun_id = a.id
+WHERE EXTRACT(YEAR FROM j.tanggal) = EXTRACT(YEAR FROM NOW()) AND a.kode LIKE '1-1%'
+GROUP BY DATE_TRUNC('month', j.tanggal) ORDER BY bulan`,
+    params: [],
+    description: 'Arus kas masuk dan keluar per bulan tahun ini',
+  },
+  {
+    id: 'JUR016',
+    category: 'FINANCE',
+    intentName: 'TOTAL_PPN_MASUKAN',
+    exampleQuery: 'Total PPN masukan?',
+    sql: `SELECT COALESCE(SUM(fp.ppn), 0) as total_ppn_masukan
+FROM faktur_pajak fp JOIN faktur_pajak_item fpi ON fp.id = fpi.faktur_pajak_id
+WHERE fp.status != 'cancelled' AND fp.jenis = 'masukan'`,
+    params: [],
+    description: 'Total PPN masukan (pembelian)',
+  },
+  {
+    id: 'JUR017',
+    category: 'FINANCE',
+    intentName: 'TOTAL_PPN_KELUARAN',
+    exampleQuery: 'Total PPN keluaran?',
+    sql: `SELECT COALESCE(SUM(fp.ppn), 0) as total_ppn_keluaran
+FROM faktur_pajak fp JOIN faktur_pajak_item fpi ON fp.id = fpi.faktur_pajak_id
+WHERE fp.status != 'cancelled' AND fp.jenis = 'keluaran'`,
+    params: [],
+    description: 'Total PPN keluaran (penjualan)',
+  },
+  {
+    id: 'JUR018',
+    category: 'FINANCE',
+    intentName: 'HUTANG_SUPPLIER_DETAIL',
+    exampleQuery: 'Hutang per supplier detail?',
+    sql: `SELECT s.nama, po.nomor as po_nomor, po.tanggal, po.status,
+  COALESCE(SUM(poi.jumlah * poi.harga_satuan), 0) as nilai
+FROM supplier s JOIN purchase_order po ON po.supplier_id = s.id AND po.is_active = true
+JOIN purchase_order_item poi ON po.id = poi.purchase_order_id
+WHERE po.status NOT IN ('paid', 'cancelled')
+GROUP BY s.nama, po.nomor, po.tanggal, po.status ORDER BY s.nama, po.tanggal`,
+    params: [],
+    description: 'Detail hutang per supplier per purchase order',
+  },
+  {
+    id: 'JUR019',
+    category: 'FINANCE',
+    intentName: 'BEBAN_BULAN_INI',
+    exampleQuery: 'Total beban bulan ini?',
+    sql: `SELECT COALESCE(SUM(ji.debit - ji.kredit), 0) as total_beban
+FROM jurnal_item ji JOIN jurnal j ON ji.jurnal_id = j.id JOIN coa a ON ji.akun_id = a.id
+WHERE a.tipe = 'expense' AND DATE_TRUNC('month', j.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total beban/expense bulan berjalan',
+  },
+  {
+    id: 'JUR020',
+    category: 'FINANCE',
+    intentName: 'PENDAPATAN_BULAN_INI',
+    exampleQuery: 'Total pendapatan bulan ini?',
+    sql: `SELECT COALESCE(SUM(ji.kredit - ji.debit), 0) as total_pendapatan
+FROM jurnal_item ji JOIN jurnal j ON ji.jurnal_id = j.id JOIN coa a ON ji.akun_id = a.id
+WHERE a.tipe = 'revenue' AND DATE_TRUNC('month', j.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total pendapatan/revenue bulan berjalan',
+  },
+  // === HR (additional) ===
+  {
+    id: 'HR006',
+    category: 'HR',
+    intentName: 'KARYAWAN_BY_JABATAN',
+    exampleQuery: 'Karyawan per jabatan?',
+    sql: `SELECT j.nama as jabatan, COUNT(kr.id) as total_karyawan
+FROM jabatan j LEFT JOIN karyawan kr ON kr.jabatan_id = j.id AND kr.is_active = true
+GROUP BY j.nama ORDER BY total_karyawan DESC`,
+    params: [],
+    description: 'Jumlah karyawan aktif per jabatan',
+  },
+  {
+    id: 'HR007',
+    category: 'HR',
+    intentName: 'KARYAWAN_LIST_AKTIF',
+    exampleQuery: 'List semua karyawan aktif?',
+    sql: `SELECT kr.kode, kr.nama, j.nama as jabatan FROM karyawan kr
+LEFT JOIN jabatan j ON kr.jabatan_id = j.id WHERE kr.is_active = true ORDER BY kr.nama`,
+    params: [],
+    description: 'Daftar semua karyawan yang masih aktif',
+  },
+  {
+    id: 'HR008',
+    category: 'HR',
+    intentName: 'ABSENSI_MONTHLY_REKAP',
+    exampleQuery: 'Rekap absensi bulan ini?',
+    sql: `SELECT a.status, COUNT(*) as jumlah FROM absensi a
+WHERE DATE_TRUNC('month', a.tanggal) = DATE_TRUNC('month', NOW())
+GROUP BY a.status ORDER BY jumlah DESC`,
+    params: [],
+    description: 'Rekap absensi bulan ini per status kehadiran',
+  },
+  {
+    id: 'HR009',
+    category: 'HR',
+    intentName: 'TOTAL_TUNJANGAN',
+    exampleQuery: 'Total tunjangan bulan ini?',
+    sql: `SELECT COALESCE(SUM(COALESCE(pg.tunjangan, 0)), 0) as total_tunjangan
+FROM penggajian pg WHERE DATE_TRUNC('month', pg.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total tunjangan yang dibayarkan bulan ini',
+  },
+  {
+    id: 'HR010',
+    category: 'HR',
+    intentName: 'TOTAL_POTONGAN',
+    exampleQuery: 'Total potongan bulan ini?',
+    sql: `SELECT COALESCE(SUM(COALESCE(pg.potongan, 0)), 0) as total_potongan
+FROM penggajian pg WHERE DATE_TRUNC('month', pg.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Total potongan gaji bulan ini',
+  },
+  {
+    id: 'HR011',
+    category: 'HR',
+    intentName: 'GAJI_RATA_RATA',
+    exampleQuery: 'Rata-rata gaji karyawan?',
+    sql: `SELECT ROUND(AVG(pg.gaji_pokok), 0) as rata_rata_gaji_pokok FROM penggajian pg
+WHERE DATE_TRUNC('month', pg.tanggal) = DATE_TRUNC('month', NOW())`,
+    params: [],
+    description: 'Rata-rata gaji pokok karyawan bulan ini',
+  },
+  {
+    id: 'HR012',
+    category: 'HR',
+    intentName: 'KARYAWAN_TERBARU',
+    exampleQuery: 'Karyawan terbaru?',
+    sql: `SELECT kode, nama, j.nama as jabatan FROM karyawan kr
+LEFT JOIN jabatan j ON kr.jabatan_id = j.id ORDER BY kr.created_at DESC LIMIT 10`,
+    params: [],
+    description: '10 karyawan terbaru yang bergabung',
+  },
+  {
+    id: 'HR013',
+    category: 'HR',
+    intentName: 'ABSENSI_SAKIT_IZIN',
+    exampleQuery: 'Karyawan yang sakit/izin bulan ini?',
+    sql: `SELECT kr.nama, a.status, COUNT(*) as jumlah
+FROM absensi a JOIN karyawan kr ON a.karyawan_id = kr.id
+WHERE a.status IN ('sakit', 'izin') AND DATE_TRUNC('month', a.tanggal) = DATE_TRUNC('month', NOW())
+GROUP BY kr.nama, a.status ORDER BY jumlah DESC`,
+    params: [],
+    description: 'Karyawan dengan absensi sakit atau izin bulan ini',
+  },
+  // === AI (additional) ===
+  {
+    id: 'AI007',
+    category: 'AI',
+    intentName: 'AI_DATA_HISTORY_RECENT',
+    exampleQuery: 'History DataAgent terbaru?',
+    sql: `SELECT dh.task_type, dh.status, dh.created_at FROM ai_data_history dh
+ORDER BY dh.created_at DESC LIMIT 20`,
+    params: [],
+    description: 'History tugas DataAgent terbaru',
+  },
+  {
+    id: 'AI008',
+    category: 'AI',
+    intentName: 'AI_AUTOMATION_ERRORS',
+    exampleQuery: 'Automation yang error?',
+    sql: `SELECT al.trigger_type, al.entity_type, al.error_message, al.created_at
+FROM ai_automation_log al WHERE al.status = 'error' ORDER BY al.created_at DESC LIMIT 20`,
+    params: [],
+    description: 'Automation trigger yang gagal/error',
+  },
+  {
+    id: 'AI009',
+    category: 'AI',
+    intentName: 'AI_AUTOMATION_BY_TRIGGER',
+    exampleQuery: 'Automation per trigger type?',
+    sql: `SELECT trigger_type, COUNT(*) as count, COUNT(CASE WHEN status = 'success' THEN 1 END) as success
+FROM ai_automation_log GROUP BY trigger_type ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah automation trigger per tipe',
+  },
+  {
+    id: 'AI010',
+    category: 'AI',
+    intentName: 'AI_NEGO_BY_RECOMMENDATION',
+    exampleQuery: 'Hasil negosiasi per rekomendasi?',
+    sql: `SELECT decision, COUNT(*) as count FROM ai_nego_history GROUP BY decision ORDER BY count DESC`,
+    params: [],
+    description: 'Distribusi hasil negosiasi AI per rekomendasi',
+  },
+  {
+    id: 'AI011',
+    category: 'AI',
+    intentName: 'AI_VISION_BY_DOC_TYPE',
+    exampleQuery: 'OCR per tipe dokumen?',
+    sql: `SELECT document_type, COUNT(*) as count FROM ai_vision_history GROUP BY document_type ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah OCR VisionAgent per tipe dokumen',
+  },
+  {
+    id: 'AI012',
+    category: 'AI',
+    intentName: 'AI_USAGE_BY_DATE_RANGE',
+    exampleQuery: 'Penggunaan AI agent antara tanggal 1-31 Mei 2026?',
+    sql: `SELECT 'nego' as agent, DATE(created_at) as tanggal, COUNT(*) as count
+FROM ai_nego_history WHERE created_at >= $1::date AND created_at < $2::date
+GROUP BY DATE(created_at)
+UNION ALL
+SELECT 'data' as agent, DATE(created_at) as tanggal, COUNT(*) as count
+FROM ai_data_history WHERE created_at >= $1::date AND created_at < $2::date
+GROUP BY DATE(created_at)
+UNION ALL
+SELECT 'vision' as agent, DATE(created_at) as tanggal, COUNT(*) as count
+FROM ai_vision_history WHERE created_at >= $1::date AND created_at < $2::date
+GROUP BY DATE(created_at)
+ORDER BY tanggal, agent`,
+    params: ['tanggal_mulai', 'tanggal_selesai'],
+    description: 'Penggunaan semua AI agent dalam rentang tanggal',
+  },
+  {
+    id: 'AI013',
+    category: 'AI',
+    intentName: 'AI_NEGO_HIGH_RISK',
+    exampleQuery: 'Negosiasi dengan risk tinggi?',
+    sql: `SELECT entity_type, entity_id, risk_score, decision, created_at
+FROM ai_nego_history WHERE risk_score >= 70 ORDER BY risk_score DESC LIMIT 20`,
+    params: [],
+    description: 'Negosiasi dengan skor risiko tinggi (>= 70)',
+  },
+  {
+    id: 'AI014',
+    category: 'AI',
+    intentName: 'AI_AUTOMATION_TODAY_COUNT',
+    exampleQuery: 'Berapa automation trigger hari ini?',
+    sql: `SELECT COUNT(*) as count FROM ai_automation_log WHERE created_at >= CURRENT_DATE`,
+    params: [],
+    description: 'Jumlah automation trigger yang berjalan hari ini',
+  },
+  // === CUSTOMER (additional) ===
+  {
+    id: 'CUST012',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_OVERDUE_LIST',
+    exampleQuery: 'Customer dengan invoice overdue?',
+    sql: `SELECT DISTINCT c.nama, c.kontak, COUNT(i.id) as total_overdue_invoice
+FROM customer c JOIN invoice i ON c.id = i.customer_id
+WHERE i.status NOT IN ('paid', 'cancelled') AND i.tanggal + INTERVAL '30 days' < NOW()
+GROUP BY c.nama, c.kontak ORDER BY total_overdue_invoice DESC`,
+    params: [],
+    description: 'Customer yang memiliki invoice overdue',
+  },
+  {
+    id: 'CUST013',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_TOP_PAYING',
+    exampleQuery: 'Customer dengan pembayaran tercepat?',
+    sql: `SELECT c.nama, ROUND(AVG(EXTRACT(EPOCH FROM (kw.tanggal - i.tanggal)) / 86400), 2) as rata_hari_bayar
+FROM customer c JOIN invoice i ON c.id = i.customer_id AND i.status = 'paid'
+JOIN kwitansi kw ON kw.invoice_id = i.id GROUP BY c.nama
+HAVING AVG(EXTRACT(EPOCH FROM (kw.tanggal - i.tanggal)) / 86400) > 0
+ORDER BY rata_hari_bayar LIMIT 10`,
+    params: [],
+    description: '10 customer dengan rata-rata pembayaran tercepat',
+  },
+  {
+    id: 'CUST014',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_SALES_THIS_YEAR',
+    exampleQuery: 'Penjualan per customer tahun ini?',
+    sql: `SELECT c.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_penjualan
+FROM customer c LEFT JOIN invoice i ON c.id = i.customer_id AND i.status NOT IN ('cancelled', 'draft')
+AND EXTRACT(YEAR FROM i.tanggal) = EXTRACT(YEAR FROM NOW())
+LEFT JOIN invoice_item ii ON i.id = ii.invoice_id
+GROUP BY c.nama ORDER BY total_penjualan DESC`,
+    params: [],
+    description: 'Total penjualan per customer tahun ini',
+  },
+  {
+    id: 'CUST015',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_TERMS_PAYMENT_LIST',
+    exampleQuery: 'Customer dengan TOP tertentu?',
+    sql: `SELECT kode, nama, terms_of_payment FROM customer WHERE is_active = true AND terms_of_payment IS NOT NULL ORDER BY terms_of_payment, nama`,
+    params: [],
+    description: 'Daftar customer beserta terms of payment',
+  },
+  {
+    id: 'CUST016',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_ACTIVE_COUNT',
+    exampleQuery: 'Berapa customer aktif?',
+    sql: `SELECT COUNT(*) as total FROM customer WHERE is_active = true`,
+    params: [],
+    description: 'Jumlah customer yang aktif',
+  },
+  {
+    id: 'CUST017',
+    category: 'CUSTOMER',
+    intentName: 'TOP_PRODUCT_BY_REVENUE',
+    exampleQuery: 'Produk dengan revenue tertinggi?',
+    sql: `SELECT b.nama, COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_revenue
+FROM invoice_item ii JOIN barang b ON ii.barang_id = b.id
+JOIN invoice i ON ii.invoice_id = i.id WHERE i.status NOT IN ('cancelled')
+GROUP BY b.nama ORDER BY total_revenue DESC LIMIT 10`,
+    params: [],
+    description: '10 produk dengan revenue tertinggi sepanjang masa',
+  },
+  {
+    id: 'CUST018',
+    category: 'CUSTOMER',
+    intentName: 'SALES_TOTAL_THIS_YEAR',
+    exampleQuery: 'Total penjualan tahun ini?',
+    sql: `SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) as total_penjualan
+FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id
+WHERE i.status NOT IN ('cancelled', 'draft') AND EXTRACT(YEAR FROM i.tanggal) = EXTRACT(YEAR FROM NOW())`,
+    params: [],
+    description: 'Total penjualan tahun berjalan',
+  },
+  {
+    id: 'CUST019',
+    category: 'CUSTOMER',
+    intentName: 'CUSTOMER_INVOICE_UNPAID',
+    exampleQuery: 'Customer dengan invoice belum dibayar?',
+    sql: `SELECT c.nama, COUNT(i.id) as invoice_count, COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) as total_belum_dibayar
+FROM customer c JOIN invoice i ON c.id = i.customer_id AND i.status != 'paid'
+JOIN invoice_item ii ON i.id = ii.invoice_id
+GROUP BY c.nama HAVING COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) > 0
+ORDER BY total_belum_dibayar DESC`,
+    params: [],
+    description: 'Customer dengan total invoice yang belum dibayar',
+  },
+  // === GUDANG (WAREHOUSE) ===
+  {
+    id: 'GUD001',
+    category: 'STOCK',
+    intentName: 'GUDANG_LIST',
+    exampleQuery: 'Daftar gudang?',
+    sql: `SELECT id, nama, alamat, is_active FROM gudang WHERE is_active = true ORDER BY nama`,
+    params: [],
+    description: 'Daftar semua gudang yang aktif',
+  },
+  {
+    id: 'GUD002',
+    category: 'STOCK',
+    intentName: 'GUDANG_STOK_TOTAL',
+    exampleQuery: 'Total stok per gudang?',
+    sql: `SELECT g.nama, COALESCE(SUM(s.jumlah), 0) as total_item FROM gudang g
+LEFT JOIN stok s ON s.gudang_id = g.id GROUP BY g.nama ORDER BY total_item DESC`,
+    params: [],
+    description: 'Jumlah total item stok yang disimpan per gudang',
+  },
+  {
+    id: 'GUD003',
+    category: 'STOCK',
+    intentName: 'GUDANG_BARANG_COUNT',
+    exampleQuery: 'Jumlah barang per gudang?',
+    sql: `SELECT g.nama, COUNT(DISTINCT s.barang_id) as jumlah_barang FROM gudang g
+LEFT JOIN stok s ON s.gudang_id = g.id AND s.jumlah > 0
+GROUP BY g.nama ORDER BY jumlah_barang DESC`,
+    params: [],
+    description: 'Jumlah varian barang yang disimpan per gudang',
+  },
+  // === BARANG (PRODUCT) ===
+  {
+    id: 'BRG001',
+    category: 'STOCK',
+    intentName: 'BARANG_LIST_AKTIF',
+    exampleQuery: 'List semua barang aktif?',
+    sql: `SELECT kode, nama, satuan, harga_jual_default, harga_beli_default, stok_minimum
+FROM barang WHERE is_active = true ORDER BY nama`,
+    params: [],
+    description: 'Daftar semua barang yang aktif',
+  },
+  {
+    id: 'BRG002',
+    category: 'STOCK',
+    intentName: 'BARANG_BY_KATEGORI',
+    exampleQuery: 'Barang per kategori?',
+    sql: `SELECT kb.nama as kategori, COUNT(b.id) as jumlah_barang
+FROM kategori_barang kb LEFT JOIN barang b ON b.kategori_id = kb.id AND b.is_active = true
+GROUP BY kb.nama ORDER BY kb.nama`,
+    params: [],
+    description: 'Jumlah barang per kategori',
+  },
+  {
+    id: 'BRG003',
+    category: 'STOCK',
+    intentName: 'BARANG_TERMAHAL',
+    exampleQuery: 'Barang dengan harga jual tertinggi?',
+    sql: `SELECT kode, nama, harga_jual_default FROM barang WHERE is_active = true
+ORDER BY harga_jual_default DESC NULLS LAST LIMIT 10`,
+    params: [],
+    description: '10 barang dengan harga jual termahal',
+  },
+  {
+    id: 'BRG004',
+    category: 'STOCK',
+    intentName: 'BARANG_TERMURAH',
+    exampleQuery: 'Barang dengan harga jual terendah?',
+    sql: `SELECT kode, nama, harga_jual_default FROM barang WHERE is_active = true AND harga_jual_default IS NOT NULL
+ORDER BY harga_jual_default LIMIT 10`,
+    params: [],
+    description: '10 barang dengan harga jual termurah',
+  },
+  {
+    id: 'BRG005',
+    category: 'STOCK',
+    intentName: 'BARANG_TANPA_HARGA_JUAL',
+    exampleQuery: 'Barang tanpa harga jual?',
+    sql: `SELECT kode, nama FROM barang WHERE is_active = true AND harga_jual_default IS NULL ORDER BY nama`,
+    params: [],
+    description: 'Barang yang belum memiliki harga jual default',
+  },
+  {
+    id: 'BRG006',
+    category: 'STOCK',
+    intentName: 'BARANG_TANPA_STOK_MINIMUM',
+    exampleQuery: 'Barang tanpa stok minimum?',
+    sql: `SELECT kode, nama FROM barang WHERE is_active = true AND (stok_minimum IS NULL OR stok_minimum = 0) ORDER BY nama`,
+    params: [],
+    description: 'Barang yang belum memiliki stok minimum',
+  },
+  // === PR ===
+  {
+    id: 'PR001',
+    category: 'PURCHASE',
+    intentName: 'PR_ALL',
+    exampleQuery: 'Semua purchase request?',
+    sql: `SELECT pr.nomor, pr.tanggal, pr.status, pr.keterangan
+FROM purchase_request pr WHERE pr.is_active = true ORDER BY pr.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua purchase request yang aktif',
+  },
+  {
+    id: 'PR002',
+    category: 'PURCHASE',
+    intentName: 'PR_APPROVED',
+    exampleQuery: 'Purchase request yang sudah disetujui?',
+    sql: `SELECT pr.nomor, pr.tanggal, pr.keterangan FROM purchase_request pr
+WHERE pr.status = 'approved' AND pr.is_active = true ORDER BY pr.tanggal DESC`,
+    params: [],
+    description: 'Purchase request yang sudah disetujui',
+  },
+  {
+    id: 'PR003',
+    category: 'PURCHASE',
+    intentName: 'PR_REJECTED',
+    exampleQuery: 'Purchase request yang ditolak?',
+    sql: `SELECT pr.nomor, pr.tanggal, pr.keterangan FROM purchase_request pr
+WHERE pr.status = 'rejected' ORDER BY pr.tanggal DESC`,
+    params: [],
+    description: 'Purchase request yang ditolak',
+  },
+  {
+    id: 'PR004',
+    category: 'PURCHASE',
+    intentName: 'PR_THIS_MONTH',
+    exampleQuery: 'Purchase request bulan ini?',
+    sql: `SELECT pr.nomor, pr.tanggal, pr.status FROM purchase_request pr
+WHERE DATE_TRUNC('month', pr.tanggal) = DATE_TRUNC('month', NOW()) ORDER BY pr.tanggal`,
+    params: [],
+    description: 'Purchase request yang dibuat bulan ini',
+  },
+  // === RETUR ===
+  {
+    id: 'RET001',
+    category: 'FINANCE',
+    intentName: 'RETUR_PENJUALAN_ALL',
+    exampleQuery: 'Semua retur penjualan?',
+    sql: `SELECT rp.nomor, rp.tanggal, c.nama as customer_nama, rp.status
+FROM retur_penjualan rp JOIN customer c ON rp.customer_id = c.id
+ORDER BY rp.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua retur penjualan',
+  },
+  {
+    id: 'RET002',
+    category: 'FINANCE',
+    intentName: 'RETUR_PEMBELIAN_ALL',
+    exampleQuery: 'Semua retur pembelian?',
+    sql: `SELECT rpb.nomor, rpb.tanggal, s.nama as supplier_nama, rpb.status
+FROM retur_pembelian rpb JOIN supplier s ON rpb.supplier_id = s.id
+ORDER BY rpb.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua retur pembelian',
+  },
+  {
+    id: 'RET003',
+    category: 'FINANCE',
+    intentName: 'RETUR_PENJUALAN_TOTAL_VALUE',
+    exampleQuery: 'Total nilai retur penjualan?',
+    sql: `SELECT COALESCE(SUM(rpi.jumlah * rpi.harga), 0) as total_nilai
+FROM retur_penjualan rp JOIN retur_penjualan_item rpi ON rp.id = rpi.retur_penjualan_id
+WHERE rp.status != 'cancelled'`,
+    params: [],
+    description: 'Total nilai retur penjualan yang tidak dibatalkan',
+  },
+  {
+    id: 'RET004',
+    category: 'FINANCE',
+    intentName: 'RETUR_PEMBELIAN_TOTAL_VALUE',
+    exampleQuery: 'Total nilai retur pembelian?',
+    sql: `SELECT COALESCE(SUM(rpbi.jumlah * rpbi.harga), 0) as total_nilai
+FROM retur_pembelian rpb JOIN retur_pembelian_item rpbi ON rpb.id = rpbi.retur_pembelian_id
+WHERE rpb.status != 'cancelled'`,
+    params: [],
+    description: 'Total nilai retur pembelian yang tidak dibatalkan',
+  },
+  // === KWITANSI ===
+  {
+    id: 'KWI001',
+    category: 'INVOICE',
+    intentName: 'KWITANSI_LIST',
+    exampleQuery: 'Semua kwitansi?',
+    sql: `SELECT k.nomor, k.tanggal, k.status, i.nomor as invoice_nomor
+FROM kwitansi k LEFT JOIN invoice i ON k.invoice_id = i.id
+ORDER BY k.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua kwitansi yang dibuat',
+  },
+  {
+    id: 'KWI002',
+    category: 'INVOICE',
+    intentName: 'KWITANSI_THIS_MONTH',
+    exampleQuery: 'Kwitansi bulan ini?',
+    sql: `SELECT k.nomor, k.tanggal, k.status FROM kwitansi k
+WHERE DATE_TRUNC('month', k.tanggal) = DATE_TRUNC('month', NOW()) ORDER BY k.tanggal`,
+    params: [],
+    description: 'Kwitansi yang dibuat bulan ini',
+  },
+  {
+    id: 'KWI003',
+    category: 'INVOICE',
+    intentName: 'KWITANSI_TOTAL_VALUE',
+    exampleQuery: 'Total nilai kwitansi bulan ini?',
+    sql: `SELECT COALESCE(SUM(k.jumlah_bayar), 0) as total_pembayaran
+FROM kwitansi k WHERE DATE_TRUNC('month', k.tanggal) = DATE_TRUNC('month', NOW()) AND k.status = 'completed'`,
+    params: [],
+    description: 'Total nilai pembayaran dari kwitansi bulan ini',
+  },
+  // === FAKTUR PAJAK ===
+  {
+    id: 'FP001',
+    category: 'FINANCE',
+    intentName: 'FAKTUR_PAJAK_LIST',
+    exampleQuery: 'Semua faktur pajak?',
+    sql: `SELECT fp.nomor, fp.tanggal, fp.status, fp.jenis FROM faktur_pajak fp
+ORDER BY fp.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua faktur pajak',
+  },
+  {
+    id: 'FP002',
+    category: 'FINANCE',
+    intentName: 'FAKTUR_PAJAK_THIS_MONTH',
+    exampleQuery: 'Faktur pajak bulan ini?',
+    sql: `SELECT fp.nomor, fp.tanggal, fp.status, fp.jenis FROM faktur_pajak fp
+WHERE DATE_TRUNC('month', fp.tanggal) = DATE_TRUNC('month', NOW()) ORDER BY fp.tanggal`,
+    params: [],
+    description: 'Faktur pajak yang dibuat bulan ini',
+  },
+  {
+    id: 'FP003',
+    category: 'FINANCE',
+    intentName: 'FAKTUR_PAJAK_COUNT_BY_STATUS',
+    exampleQuery: 'Jumlah faktur pajak per status?',
+    sql: `SELECT status, COUNT(*) as count FROM faktur_pajak GROUP BY status ORDER BY count DESC`,
+    params: [],
+    description: 'Jumlah faktur pajak per status',
+  },
+  // === NEGOSIASI ===
+  {
+    id: 'NEG001',
+    category: 'CUSTOMER',
+    intentName: 'NEGOSIASI_LIST',
+    exampleQuery: 'Semua negosiasi?',
+    sql: `SELECT q.nomor, q.tanggal, c.nama as customer_nama, q.status
+FROM quotation q WHERE q.is_active = true ORDER BY q.tanggal DESC LIMIT 50`,
+    params: [],
+    description: 'Semua negosiasi (quotation) yang aktif',
+  },
+  {
+    id: 'NEG002',
+    category: 'CUSTOMER',
+    intentName: 'NEGOSIASI_WON',
+    exampleQuery: 'Negosiasi yang menang?',
+    sql: `SELECT q.nomor, q.tanggal, c.nama as customer_nama FROM quotation q
+JOIN customer c ON q.customer_id = c.id WHERE q.status = 'won' ORDER BY q.tanggal DESC`,
+    params: [],
+    description: 'Negosiasi/quotation yang statusnya won',
+  },
+  {
+    id: 'NEG003',
+    category: 'CUSTOMER',
+    intentName: 'NEGOSIASI_LOST',
+    exampleQuery: 'Negosiasi yang kalah?',
+    sql: `SELECT q.nomor, q.tanggal, c.nama as customer_nama FROM quotation q
+JOIN customer c ON q.customer_id = c.id WHERE q.status = 'lost' ORDER BY q.tanggal DESC`,
+    params: [],
+    description: 'Negosiasi/quotation yang statusnya lost',
+  },
+  // === AUDIT ===
+  {
+    id: 'AUD001',
+    category: 'AI',
+    intentName: 'AUDIT_LOG_BY_ENTITY',
+    exampleQuery: 'Audit log untuk invoice?',
+    sql: `SELECT al.entity_type, al.entity_id, al.action, al.user_id, al.created_at
+FROM audit_log al WHERE al.entity_type = $1 ORDER BY al.created_at DESC LIMIT 50`,
+    params: ['entity_type'],
+    description: 'Audit log yang difilter berdasarkan tipe entitas',
+  },
+  {
+    id: 'AUD002',
+    category: 'AI',
+    intentName: 'AUDIT_LOG_USER_ACTIONS',
+    exampleQuery: 'Aktivitas user di audit log?',
+    sql: `SELECT al.user_id, al.action, COUNT(*) as count FROM audit_log al
+GROUP BY al.user_id, al.action ORDER BY count DESC LIMIT 20`,
+    params: [],
+    description: 'Ringkasan aktivitas user berdasarkan audit log',
+  },
+  {
+    id: 'AUD003',
+    category: 'AI',
+    intentName: 'AUDIT_LOG_ENTITIES',
+    exampleQuery: 'Entity paling sering di-audit?',
+    sql: `SELECT entity_type, COUNT(*) as count FROM audit_log
+GROUP BY entity_type ORDER BY count DESC`,
+    params: [],
+    description: 'Tipe entitas yang paling sering tercatat di audit log',
+  },
+  // === CROSS-MODULE ===
+  {
+    id: 'X001',
+    category: 'CUSTOMER',
+    intentName: 'FULL_CUSTOMER_OVERVIEW',
+    exampleQuery: 'Overview customer ABC?',
+    sql: `SELECT c.nama, c.kontak, c.terms_of_payment,
+  (SELECT COUNT(*) FROM invoice i WHERE i.customer_id = c.id AND i.is_active = true) as total_invoice,
+  (SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.customer_id = c.id) as total_revenue
+FROM customer c WHERE c.kode = $1`,
+    params: ['kode_customer'],
+    description: 'Overview lengkap customer: kontak, invoice count, total revenue',
+  },
+  {
+    id: 'X002',
+    category: 'PURCHASE',
+    intentName: 'FULL_SUPPLIER_OVERVIEW',
+    exampleQuery: 'Overview supplier ABC?',
+    sql: `SELECT s.nama, s.kontak, s.terms_of_payment,
+  (SELECT COUNT(*) FROM purchase_order po WHERE po.supplier_id = s.id AND po.is_active = true) as total_po,
+  (SELECT COALESCE(SUM(poi.jumlah * poi.harga_satuan), 0) FROM purchase_order po JOIN purchase_order_item poi ON po.id = poi.purchase_order_id WHERE po.supplier_id = s.id) as total_spend
+FROM supplier s WHERE s.kode = $1`,
+    params: ['kode_supplier'],
+    description: 'Overview lengkap supplier: kontak, PO count, total spend',
+  },
+  {
+    id: 'X003',
+    category: 'STOCK',
+    intentName: 'FULL_BARANG_OVERVIEW',
+    exampleQuery: 'Overview barang BRG-001?',
+    sql: `SELECT b.kode, b.nama, b.satuan, b.harga_jual_default, b.harga_beli_default, b.stok_minimum,
+  COALESCE(SUM(s.jumlah), 0) as total_stok,
+  (SELECT COUNT(*) FROM quotation_item qi JOIN quotation q ON qi.quotation_id = q.id WHERE qi.barang_id = b.id) as total_di_quotation,
+  (SELECT COUNT(*) FROM sales_order_item soi JOIN sales_order so ON soi.sales_order_id = so.id WHERE soi.barang_id = b.id) as total_di_so
+FROM barang b LEFT JOIN stok s ON s.barang_id = b.id WHERE b.kode = $1 GROUP BY b.id`,
+    params: ['kode_barang'],
+    description: 'Overview lengkap barang: harga, stok, jumlah di quotation & SO',
+  },
+  {
+    id: 'X004',
+    category: 'FINANCE',
+    intentName: 'DASHBOARD_KPI',
+    exampleQuery: 'KPI dashboard?',
+    sql: `SELECT
+  (SELECT COALESCE(SUM(ii.harga * ii.jumlah), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('cancelled') AND DATE_TRUNC('month', i.tanggal) = DATE_TRUNC('month', NOW())) as revenue_bulan_ini,
+  (SELECT COALESCE(SUM(ii.harga * ii.jumlah * (1 + COALESCE(ii.ppn, 0))), 0) FROM invoice i JOIN invoice_item ii ON i.id = ii.invoice_id WHERE i.status NOT IN ('paid', 'cancelled')) as total_piutang,
+  (SELECT COUNT(*) FROM purchase_request pr WHERE pr.status = 'pending') as pr_pending,
+  (SELECT COUNT(*) FROM quotation q WHERE q.status IN ('draft', 'sent')) as quotation_pending`,
+    params: [],
+    description: 'KPI dashboard: revenue bulan ini, total piutang, PR & quotation pending',
+  },
+  {
+    id: 'X005',
+    category: 'CUSTOMER',
+    intentName: 'PIPELINE_OVERVIEW',
+    exampleQuery: 'Pipeline penjualan?',
+    sql: `SELECT 'Quotation' as stage, COUNT(*) as count, COALESCE(SUM(qi.harga_satuan * qi.jumlah * (1 + COALESCE(qi.ppn_per_item, 0))), 0) as value
+FROM quotation q JOIN quotation_item qi ON q.id = qi.quotation_id WHERE q.status IN ('draft', 'sent')
+UNION ALL
+SELECT 'Sales Order' as stage, COUNT(*) as count, COALESCE(SUM(soi.jumlah * soi.harga_satuan), 0) as value
+FROM sales_order so JOIN sales_order_item soi ON so.id = soi.sales_order_id WHERE so.status NOT IN ('completed', 'cancelled')
+UNION ALL
+SELECT 'Delivery' as stage, COUNT(*) as count, 0 as value
+FROM delivery_order WHERE status NOT IN ('completed', 'cancelled')
+ORDER BY stage`,
+    params: [],
+    description: 'Pipeline penjualan dari quotation hingga delivery',
+  },
 ]
 
 export function getQueryById(id: string): QueryPattern | undefined {

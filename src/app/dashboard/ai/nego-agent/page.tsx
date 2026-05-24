@@ -9,6 +9,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
 import { CheckCircle2, AlertCircle, TrendingUp, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
@@ -102,7 +103,23 @@ export default function NegoAgentPage() {
 
       <Card className="flex-1 flex flex-col min-h-0">
         <CardContent className="flex flex-col h-full p-6">
-          {!result ? (
+          {loading ? (
+            <div className="space-y-4 max-w-2xl">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" /></div>
+              </div>
+              <div className="flex justify-end"><Skeleton className="h-10 w-44" /></div>
+            </div>
+          ) : !result ? (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-w-2xl">
                 <div className="grid grid-cols-2 gap-4">
@@ -170,7 +187,7 @@ export default function NegoAgentPage() {
                 </div>
               </form>
             </Form>
-          ) : (
+          ) : result ? (
             <div className="space-y-4">
               <div className="rounded-lg border overflow-hidden">
                 <div className="grid grid-cols-4 divide-x border-b">
@@ -235,7 +252,7 @@ export default function NegoAgentPage() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </div>

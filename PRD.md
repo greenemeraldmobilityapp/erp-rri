@@ -56,7 +56,7 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | Cache | Redis (Upstash) |
 | Notifikasi In-App | sonner |
 | Notifikasi WhatsApp | Fonnte (gratis 500 msg/hari) — sudah implementasi dengan 3 trigger: Quotation, DO Dikirim, PO Supplier |
-| AI Agent | opencode CLI (free model) + Playwright (Chrome on AWS VPS) |
+| AI Agent | NVIDIA NIM (free tier) — 3 agent architecture: NegoAgent (stepfun-ai/step-3.5-flash), DataAgent (minimaxai/minimax-m2.7), VisionAgent (microsoft/phi-4-multimodal-instruct) |
 | Testing (Unit) | Vitest |
 | Testing (E2E) | Playwright |
 | Storage | Supabase Storage (dengan CDN) |
@@ -291,30 +291,67 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 
 ### B. AI Agent Module
 
-Modul AI adalah otak cerdas ERP RRI. Model AI berjalan via opencode CLI menggunakan free model, dengan agent playwrite di Chrome Browser yang berjalan di VPS AWS.
+Modul AI adalah otak cerdas ERP RRI. Menggunakan **NVIDIA NIM (free tier)** dengan 3 agent architecture — model berjalan via OpenAI-compatible API di `https://integrate.api.nvidia.com/v1`.
 
-| Fitur AI | Deskripsi |
+#### Arsitektur 3 AI Agent
+
+| Agent | Model NVIDIA | Fungsi |
+|---|---|---|
+| **NegoAgent** | `stepfun-ai/step-3.5-flash` | Analisis negosiasi: margin, risk score, approval level, streaming reasoning |
+| **DataAgent** | `minimaxai/minimax-m2.7` | NL-to-SQL chat, price recommendation, invoice classify, report summary, smart reminder, PR routing, GRN check, contract alerts |
+| **VisionAgent** | `microsoft/phi-4-multimodal-instruct` | OCR dokumen (kontrak, invoice, receipt, delivery order) dari gambar/PDF |
+
+#### Fitur AI Lengkap
+
+| Fitur AI | Agent | Status | Deskripsi |
+|---|---|---|---|
+| **AI Search Harga** | Playwright (standalone) | ✅ | Scraping Shopee & Tokopedia via Playwright + mock fallback. Hasil: nama, harga, toko, rating, link. Referensi harga beli untuk Procurement |
+| **AI OCR Kontrak** | VisionAgent + regex fallback | ✅ | Upload PDF/gambar kontrak → AI extract barang & harga → simpan DB. Dual implementation: legacy regex + Phi-4 multimodal |
+| **AI Rekomendasi Harga** | DataAgent (priceRecommender) | ✅ | Rule-based + AI: harga beli termurah, margin default 15%, atau harga kontrak |
+| **AI Negosiasi Assistant** | NegoAgent | ✅ | Analisis margin dengan approval level (sales/manager/owner), risk score, streaming reasoning chain |
+| **AI Chat (NL-to-SQL)** | DataAgent | ✅ | 196 query pattern across 15+ kategori: invoice, AR, sales, inventory, finance, HR, contract. Intent Classifier → Query Builder → Response Formatter |
+| **Prediktif Rekomendasi Supplier** | DataAgent | ✅ | Ranking supplier berdasarkan: total PO, total spent, avg price, recency, breadth of barang. Score 0-100. Filter by barang & min PO |
+| **Auto-Suggest Barang** | DataAgent | ✅ | Auto-suggest nama barang saat input Quotation/PO. Prioritaskan histori customer, fallback ke global. Real-time search dengan debounce 300ms |
+| **Price Trend Analysis** | DataAgent | ✅ | Grafik tren harga barang per bulan dari histori PO. Statistik: rata-rata, min, max, perubahan %. Rekomendasi beli: "Sekarang — harga turun" / "Tunggu — harga naik" |
+| **Anomaly Detection** | DataAgent | ✅ | Deteksi 3 jenis anomaly: harga beli mahal (z-score >2.5), harga jual miring (z-score >3), margin kecil. Severity: high/medium/low. Filter rentang hari |
+
+#### Automation Triggers
+
+Sistem automation menghubungkan database events ke AI agents via 2 mekanisme:
+
+| Trigger | Sumber | Action DataAgent | Keterangan |
+|---|---|---|---|
+| INVOICE_CREATED | Supabase Webhook (INSERT on `invoice`) | INVOICE_CLASSIFY | Klasifikasi otomatis invoice baru |
+| QUOTATION_CREATED | Supabase Webhook (INSERT on `quotation`) | PRICE_RECOMMENDATION | Rekomendasi harga untuk quotation baru |
+| PR_SUBMITTED | Supabase Webhook (INSERT on `purchase_request`) | PR_ROUTING | Routing otomatis PR ke supplier |
+| GRN_CREATED | Supabase Webhook (INSERT on `grn`) | GRN_CHECK | QC otomatis barang masuk |
+| CONTRACT_NEARING_EXPIRY | Vercel Cron (daily) | CONTRACT_ALERTS | Notifikasi kontrak expired 30 hari |
+| AR_OVERDUE_30 | Vercel Cron (daily) | BULK_REMINDERS | Auto-reminder invoice overdue |
+
+#### Rate Limiting & Monitoring
+
+| Mekanisme | Implementasi |
 |---|---|
-| **AI Search Harga (Playwright)** | Agent otomatis mencari barang di Shopee & Tokopedia: buka browser, cari produk, scraping harga, toko, rating, link produk. Hasil ditampilkan ke user Procurement sebagai referensi harga termurah dan tercepat |
-| **AI OCR Kontrak** | Upload file PDF kontrak customer → AI OCR baca daftar barang & harga → masukkan langsung ke database sistem |
-| **AI Rekomendasi Harga** | Saat buat Quotation, AI rekomendasi harga jual berdasarkan: harga beli termurah (dari search), margin default 15%, atau harga kontrak jika ada |
-| **AI Negosiasi Assistant** | Membantu Sales merespon negosiasi dari Procurement customer dengan data harga & margin |
-| **Prediktif Rekomendasi Supplier** | AI rekomendasi supplier terbaik berdasarkan histori: harga termurah, kecepatan pengiriman, rating toko |
-| **Auto-Suggest Barang** | Saat ketik nama barang di Quotation/PO, AI auto-suggest dari histori barang yang pernah dibeli customer tersebut |
-| **Price Trend Analysis** | Grafik tren harga barang per supplier — tahu kapan harga sedang murah |
-| **Anomaly Detection** | Deteksi harga jual terlalu rendah/miring atau harga beli terlalu mahal, auto-flag ke Manager |
+| **Rate Limiting** | IP-based, per-agent configurable limits. Dual mode: InMemoryStore (default) + RedisStore (Upstash, via `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` env vars) |
+| **Webhook Secret** | `AI_WEBHOOK_SECRET` — shared secret antara Supabase Webhook → endpoint `/api/v1/ai/agents/automation/webhook` |
+| **Error Monitoring** | Endpoint `/api/v1/ai/agents/error-stats` — error rate per agent, avg latency, top error messages. Dashboard tab "Error Rate" di `/dashboard/ai/usage` |
+| **Response Caching** | 5-minute TTL in-memory cache via `src/lib/ai/cache.ts` |
 
-**Alur AI Search Harga:**
+#### API Endpoints
 
-```
-Procurement input barang yang dicari
-  → AI trigger Playwright di AWS VPS
-  → Chrome buka Shopee / Tokopedia
-  → Cari produk, ambil: nama, harga, toko, rating, link
-  → Simpan hasil ke database (search_history)
-  → Tampilkan di UI Procurement
-  → User pilih supplier terbaik → auto-fill ke PO
-```
+| Endpoint | Method | Deskripsi |
+|---|---|---|
+| `/api/v1/ai/agents/data-agent` | POST/GET | DataAgent: CHAT, PRICE_RECOMMENDATION, REPORT_SUMMARY, INVOICE_CLASSIFY, AUTO_INVOICE, SMART_REMINDER, PR_ROUTING, GRN_CHECK, CONTRACT_ALERTS |
+| `/api/v1/ai/agents/vision-agent` | POST/GET | VisionAgent OCR: kontrak, receipt, delivery, invoice, kwitansi |
+| `/api/v1/ai/agents/nego-agent` | POST/GET | NegoAgent: analisis margin + approval + risk |
+| `/api/v1/ai/agents/usage` | GET | Statistik penggunaan per agent, daily breakdown, top users |
+| `/api/v1/ai/agents/error-stats` | GET | Error rate monitoring per agent + top errors |
+| `/api/v1/ai/agents/automation/webhook` | POST | Supabase Database Webhook receiver |
+| `/api/v1/ai/rekomendasi-supplier` | GET | Ranking supplier dengan score 0-100 |
+| `/api/v1/ai/auto-suggest-barang` | GET | Auto-suggest barang by query + customer_id |
+| `/api/v1/ai/price-trend` | GET | Grafik tren harga per barang_id |
+| `/api/v1/ai/anomaly-detection` | GET | Deteksi anomaly transaksi |
+| `/api/v1/cron/automation` | GET | Cron trigger: contract alerts + AR reminders |
 
 ### C. Pre-Sales
 

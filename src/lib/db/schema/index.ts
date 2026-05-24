@@ -65,6 +65,10 @@ import { aiSearchResult } from "./ai-search-result";
 import { aiOcrHistory } from "./ai-ocr-history";
 import { auditLog } from "./audit-log";
 import { whatsappLog } from "./whatsapp-log";
+import { aiNegoHistory } from "./ai-nego-history";
+import { aiDataHistory } from "./ai-data-history";
+import { aiVisionHistory } from "./ai-vision-history";
+import { aiAutomationLog } from "./ai-automation-log";
 
 export {
   users,
@@ -133,5 +137,9 @@ export {
   aiSearchResult,
   aiOcrHistory,
   auditLog,
-  whatsappLog
+  whatsappLog,
+  aiNegoHistory,
+  aiDataHistory,
+  aiVisionHistory,
+  aiAutomationLog
 };

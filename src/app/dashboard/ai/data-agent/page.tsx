@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
 import { Bot, User, Loader2, Send, Search, Database, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -108,6 +109,19 @@ export default function DataAgentPage() {
                   ))
                 )}
 
+                {loading && messages.length > 0 && (
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-accent/10">
+                      <Bot className="h-4 w-4 text-accent" />
+                    </div>
+                    <div className="max-w-[80%] rounded-lg p-3 space-y-2">
+                      <Skeleton className="h-4 w-64" />
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-4 w-56" />
+                    </div>
+                  </div>
+                )}
+
                 {lastResponse && lastResponse.intent && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
                     <Database className="h-3 w-3" />
@@ -151,9 +165,9 @@ export default function DataAgentPage() {
               </div>
               <Separator />
               <div>
-                <h3 className="font-semibold mb-2">100+ Query Patterns</h3>
+                <h3 className="font-semibold mb-2">196 Query Patterns</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tersedia 100 pola query di 10 kategori: Invoice, Quotation, Sales Order, Purchase, Stock, Contract, Finance, HR, AI, Customer.
+                  Tersedia 196 pola query di 10+ kategori: Invoice, Quotation, Sales Order, Purchase, Stock, Contract, Finance, HR, AI, Customer, Gudang, Barang, Retur, Kwitansi, Faktur Pajak, Negosiasi, Audit.
                 </p>
               </div>
               <Separator />

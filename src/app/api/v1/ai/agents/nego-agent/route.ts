@@ -18,6 +18,39 @@ const analyzeSchema = z.object({
   use_streaming: z.boolean().optional().default(true),
 })
 
+/**
+ * @openapi
+ * /api/v1/ai/agents/nego-agent:
+ *   post:
+ *     tags: [AI Agent]
+ *     summary: Analisa negosiasi harga & margin
+ *     description: Menganalisa harga beli vs harga diminta, menghitung margin, menentukan approval level, dan memberikan rekomendasi (ACCEPT/COUNTER/REJECT)
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               barang_id:
+ *                 type: string
+ *                 example: BRG-001
+ *               harga_beli:
+ *                 type: number
+ *                 example: 50000
+ *               harga_diminta:
+ *                 type: number
+ *                 example: 75000
+ *     responses:
+ *       200:
+ *         description: Hasil analisa negosiasi
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
@@ -56,6 +89,28 @@ const historySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(50),
 })
 
+/**
+ * @openapi
+ * /api/v1/ai/agents/nego-agent:
+ *   get:
+ *     tags: [AI Agent]
+ *     summary: History negosiasi
+ *     description: Mengambil riwayat analisa negosiasi untuk user yang terautentikasi
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Jumlah history yang diambil (max 100)
+ *     responses:
+ *       200:
+ *         description: Array history negosiasi
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error

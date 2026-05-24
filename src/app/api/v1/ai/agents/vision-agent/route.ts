@@ -23,6 +23,50 @@ function mapTaskType(raw: string): VisionTaskType {
   return raw as VisionTaskType
 }
 
+/**
+ * @openapi
+ * /api/v1/ai/agents/vision-agent:
+ *   post:
+ *     tags: [AI Agent]
+ *     summary: OCR dokumen (kontrak, invoice, kwitansi, delivery order)
+ *     description: |
+ *       Menerima file (multipart), base64, atau URL gambar/PDF dan mengekstrak data menggunakan Phi-4 multimodal.
+ *       Tipe dokumen: kontrak, invoice, receipt, delivery, kwitansi, general
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               task_type:
+ *                 type: string
+ *                 enum: [invoice, receipt, delivery, kontrak, kwitansi, general]
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file_url:
+ *                 type: string
+ *                 format: uri
+ *               file_base64:
+ *                 type: string
+ *               task_type:
+ *                 type: string
+ *                 enum: [invoice, receipt, delivery, kontrak, kwitansi, general]
+ *     responses:
+ *       200:
+ *         description: Data terekstrak dari dokumen
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
@@ -112,6 +156,28 @@ const historySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(50),
 })
 
+/**
+ * @openapi
+ * /api/v1/ai/agents/vision-agent:
+ *   get:
+ *     tags: [AI Agent]
+ *     summary: History OCR VisionAgent
+ *     description: Mengambil riwayat OCR dokumen untuk user yang terautentikasi
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Jumlah history yang diambil (max 100)
+ *     responses:
+ *       200:
+ *         description: Array history OCR
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error

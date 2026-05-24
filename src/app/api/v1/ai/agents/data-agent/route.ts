@@ -36,6 +36,43 @@ const triggerSchema = z.object({
   payload: z.record(z.string(), z.unknown()),
 })
 
+/**
+ * @openapi
+ * /api/v1/ai/agents/data-agent:
+ *   post:
+ *     tags: [AI Agent]
+ *     summary: Eksekusi task DataAgent (chat, trigger, atau task)
+ *     description: |
+ *       Tiga mode operasi:
+ *       1. CHAT — NL-to-SQL query database ERP pakai bahasa Indonesia
+ *       2. TRIGGER — Automation trigger (INVOICE_CREATED, PR_SUBMITTED, dll)
+ *       3. TASK — Task spesifik (PRICE_RECOMMENDATION, REPORT_SUMMARY, dll)
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [CHAT, PRICE_RECOMMENDATION, REPORT_SUMMARY, INVOICE_CLASSIFY, SMART_REMINDER, PR_ROUTING, GRN_CHECK, CONTRACT_ALERTS]
+ *               query:
+ *                 type: string
+ *                 description: Pertanyaan untuk mode CHAT (NL-to-SQL)
+ *               trigger_type:
+ *                 type: string
+ *                 enum: [INVOICE_CREATED, QUOTATION_CREATED, PR_SUBMITTED, GRN_CREATED, CONTRACT_NEARING_EXPIRY, AR_OVERDUE_30]
+ *     responses:
+ *       200:
+ *         description: Hasil eksekusi DataAgent
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error

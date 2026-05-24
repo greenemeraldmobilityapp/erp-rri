@@ -170,7 +170,7 @@
 - [x] Global Search: hasil dikelompokkan per modul (Barang, Customer, PO, dll) — use Command component
 - [x] Delete confirmation: Gunakan AlertDialog untuk konfirmasi hapus
 - [x] TooltipProvider: wrap app dengan TooltipProvider untuk tooltip consistency
-- [ ] Loading skeleton untuk semua halaman (sudah partial) ⚠️ See `roadmap-skeleton.md` for full implementation plan
+- [x] Loading skeleton untuk semua halaman (AI agent pages: data-agent, nego-agent, vision-agent, usage ✅)
 - [x] Error boundary + fallback UI — ErrorBoundary component created
 - [x] 404 page custom untuk dashboard — dashboard/not-found.tsx
 - [x] Sidebar: active state visual (highlight halaman aktif) — usePathname, bg-accent, font-medium for current page

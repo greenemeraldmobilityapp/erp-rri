@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
 import { Upload, FileText, Loader2, AlertCircle, History } from 'lucide-react'
 import { toast } from 'sonner'
@@ -33,6 +34,7 @@ export default function VisionAgentPage() {
   const [loading, setLoading] = useState(false)
   const [history, setHistory] = useState<VisionResult[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [fileName, setFileName] = useState('')
 
@@ -88,12 +90,15 @@ export default function VisionAgentPage() {
   }
 
   const fetchHistory = async () => {
+    setHistoryLoading(true)
     try {
       const r = await apiFetch<VisionResult[]>('/api/v1/ai/agents/vision-agent')
       setHistory(r.data ?? [])
       setShowHistory(!showHistory)
     } catch {
       toast.error('Gagal mengambil history')
+    } finally {
+      setHistoryLoading(false)
     }
   }
 
@@ -237,7 +242,16 @@ export default function VisionAgentPage() {
         <Card className="mt-4">
           <CardContent className="p-4 max-h-48 overflow-y-auto">
             <h4 className="font-semibold mb-2 text-sm">History OCR</h4>
-            {history.length === 0 ? (
+            {historyLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-2">
+                    <div className="flex items-center gap-2 flex-1"><Skeleton className="h-4 w-40" /><Skeleton className="h-4 w-16 rounded-full" /></div>
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                ))}
+              </div>
+            ) : history.length === 0 ? (
               <p className="text-sm text-muted-foreground">Belum ada history</p>
             ) : (
               <div className="space-y-2">

@@ -77,6 +77,25 @@ const paramExtractors: Record<string, (query: string) => string | null> = {
     const m = q.match(/\b(20\d{2})\b/)
     return m?.[1] ?? null
   },
+  kode_karyawan: (q) => {
+    const m = q.match(/karyawan\s+(\w[\w\s]+?)(?:\?|$|bulan)/i)
+    if (m) return m[1].trim()
+    const m2 = q.match(/\b(KRY-\d+|KAR-\d+)\b/i)
+    return m2?.[1] ?? null
+  },
+  sales_id: (q) => {
+    const m = q.match(/sales\s+(\w[\w\s]+?)(?:\?|$|bulan)/i)
+    return m?.[1]?.trim() ?? null
+  },
+  entity_type: (q) => {
+    const m = q.match(/untuk\s+(\w[\w\s]+?)(?:\?|$)/i)
+    if (m) return m[1].trim()
+    const entities = ['invoice', 'quotation', 'customer', 'supplier', 'barang', 'kontrak', 'purchase order', 'sales order']
+    for (const e of entities) {
+      if (q.toLowerCase().includes(e)) return e
+    }
+    return null
+  },
 }
 
 function detectIntentsByKeyword(query: string): Array<{ patternId: string; confidence: number }> {

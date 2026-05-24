@@ -414,11 +414,11 @@ Jika SQL execution gagal → return error message ke user (bukan generate fake d
 - [x] Integration dengan existing OCR page
 
 ### Phase 5: Integration
-- [ ] Wire automation triggers ke database events
-- [ ] Add rate limiting middleware
-- [ ] Add usage dashboard (per user, per agent)
-- [ ] Fallback to rule-based jika AI timeout
-- [ ] Documentation: API reference
+- [x] Wire automation triggers ke database events (webhook + CRON)
+- [x] Add rate limiting middleware
+- [x] Add usage dashboard (per user, per agent) + date range + user search
+- [x] Fallback to rule-based jika AI timeout
+- [x] Documentation: API reference (OpenAPI spec via next-openapi-gen)
 
 ---
 
@@ -495,10 +495,12 @@ const response = await client.chat.completions.create({
 
 ## Next Steps (Future)
 
-1. **Add more query patterns** untuk DataAgent (target: 200+)
+1. ~~**Add more query patterns** untuk DataAgent (target: 200+)~~ ✅ 196 patterns
 2. **Redis-based rate limiting** (in-memory saat ini)
-3. **Usage dashboard filtering** — date range, user search
-4. **Documentation** — API reference untuk semua agent endpoints (OpenAPI spec)
+3. ~~**Usage dashboard filtering** — date range, user search~~ ✅
+4. ~~**Documentation** — API reference untuk semua agent endpoints (OpenAPI spec)~~ ✅
+5. **Skeleton loading states** — data-agent, nego-agent, vision-agent, usage ✅
+6. **More intent param extractors** — sales_id, kode_karyawan, entity_type ✅
 
 ---
 

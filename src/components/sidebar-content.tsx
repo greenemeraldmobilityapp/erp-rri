@@ -7,7 +7,7 @@ import { ChevronDown } from 'lucide-react'
 import {
   Home, Package, Users, Building2, UserCircle, BookOpen, FileText, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
-  PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck,
+  PieChart, Banknote, Bot, ScanLine, Lightbulb, MessageSquare, Clock, DollarSign, ShieldCheck, Store, AlertTriangle, ListOrdered,
   ClipboardList, Bell, Sun, Moon, LucideIcon,
 } from 'lucide-react'
 import { useTheme } from '@/components/theme/theme-provider'
@@ -87,7 +87,11 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Search },
     { href: '/dashboard/ai/ocr-kontrak', label: 'OCR Kontrak', icon: ScanLine },
     { href: '/dashboard/ai/rekomendasi-harga', label: 'Rekomendasi Harga', icon: Lightbulb },
+    { href: '/dashboard/ai/rekomendasi-supplier', label: 'Rekomendasi Supplier', icon: Store },
     { href: '/dashboard/ai/negosiasi-assistant', label: 'Negosiasi', icon: MessageSquare },
+    { href: '/dashboard/ai/auto-suggest-barang', label: 'Auto-Suggest Barang', icon: ListOrdered },
+    { href: '/dashboard/ai/price-trend', label: 'Price Trend', icon: TrendingUp },
+    { href: '/dashboard/ai/anomaly-detection', label: 'Anomaly Detection', icon: AlertTriangle },
   ]},
   { label: 'HR', icon: Users2, children: [
     { href: '/dashboard/absensi', label: 'Absensi', icon: Clock },

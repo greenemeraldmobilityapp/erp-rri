@@ -144,6 +144,2709 @@
     }
   },
   "paths": {
+    "/v1/absensi": {
+      "get": {
+        "operationId": "get-v1-absensi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-absensi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/customer-po": {
+      "get": {
+        "operationId": "get-v1-customer-po",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-customer-po",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/delivery-order": {
+      "get": {
+        "operationId": "get-v1-delivery-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-delivery-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/di": {
+      "get": {
+        "operationId": "get-v1-di",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-di",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/export": {
+      "get": {
+        "operationId": "get-v1-export",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/faktur-pajak": {
+      "get": {
+        "operationId": "get-v1-faktur-pajak",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-faktur-pajak",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/grn": {
+      "get": {
+        "operationId": "get-v1-grn",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-grn",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/invoice": {
+      "get": {
+        "operationId": "get-v1-invoice",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-invoice",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/jurnal": {
+      "get": {
+        "operationId": "get-v1-jurnal",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-jurnal",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/kwitansi": {
+      "get": {
+        "operationId": "get-v1-kwitansi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-kwitansi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/negoiasi": {
+      "get": {
+        "operationId": "get-v1-negoiasi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-negoiasi",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/penggajian": {
+      "get": {
+        "operationId": "get-v1-penggajian",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-penggajian",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-order": {
+      "get": {
+        "operationId": "get-v1-purchase-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-purchase-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-receiving": {
+      "get": {
+        "operationId": "get-v1-purchase-receiving",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-purchase-receiving",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-request": {
+      "get": {
+        "operationId": "get-v1-purchase-request",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-purchase-request",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/quotation": {
+      "get": {
+        "operationId": "get-v1-quotation",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-quotation",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/retur-pembelian": {
+      "get": {
+        "operationId": "get-v1-retur-pembelian",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-retur-pembelian",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/retur-penjualan": {
+      "get": {
+        "operationId": "get-v1-retur-penjualan",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-retur-penjualan",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/rfq": {
+      "get": {
+        "operationId": "get-v1-rfq",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-rfq",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/sales-order": {
+      "get": {
+        "operationId": "get-v1-sales-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-sales-order",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/search": {
+      "post": {
+        "operationId": "post-v1-search",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/stok": {
+      "get": {
+        "operationId": "get-v1-stok",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-stok",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/absensi/{id}": {
+      "get": {
+        "operationId": "get-v1-absensi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-absensi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-absensi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/negosiasi-assistant": {
+      "post": {
+        "operationId": "post-v1-ai-negosiasi-assistant",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/ocr-kontrak": {
+      "get": {
+        "operationId": "get-v1-ai-ocr-kontrak",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-ai-ocr-kontrak",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/rekomendasi-harga": {
+      "post": {
+        "operationId": "post-v1-ai-rekomendasi-harga",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/search-harga": {
+      "get": {
+        "operationId": "get-v1-ai-search-harga",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-ai-search-harga",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/cron/ar-reminder": {
+      "get": {
+        "operationId": "get-v1-cron-ar-reminder",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "invoices_checked": {
+                      "type": "number"
+                    },
+                    "reminders_sent": {
+                      "type": "object"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "invoices_checked",
+                    "reminders_sent",
+                    "details"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/cron/automation": {
+      "get": {
+        "operationId": "get-v1-cron-automation",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "run_at": {
+                      "type": "string"
+                    },
+                    "trigger_results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "trigger": {
+                            "type": "object"
+                          },
+                          "entity_count": {
+                            "type": "number"
+                          },
+                          "results": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "entity_id": {
+                                  "type": "object"
+                                },
+                                "status": {
+                                  "type": "object"
+                                },
+                                "error": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object"
+                                    },
+                                    {
+                                      "type": "object"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "entity_id",
+                                "status"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "trigger",
+                          "entity_count",
+                          "results"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "run_at",
+                    "trigger_results"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/customer-po/{id}": {
+      "get": {
+        "operationId": "get-v1-customer-po-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-customer-po-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-customer-po-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/delivery-order/{id}": {
+      "get": {
+        "operationId": "get-v1-delivery-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-delivery-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-delivery-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/di/{id}": {
+      "get": {
+        "operationId": "get-v1-di-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-di-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-di-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/faktur-pajak/{id}": {
+      "get": {
+        "operationId": "get-v1-faktur-pajak-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-faktur-pajak-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-faktur-pajak-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/grn/{id}": {
+      "get": {
+        "operationId": "get-v1-grn-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-grn-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-grn-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/invoice/{id}": {
+      "get": {
+        "operationId": "get-v1-invoice-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-invoice-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-invoice-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/jurnal/{id}": {
+      "get": {
+        "operationId": "get-v1-jurnal-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-jurnal-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-jurnal-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/kwitansi/{id}": {
+      "get": {
+        "operationId": "get-v1-kwitansi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-kwitansi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-kwitansi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
     "/v1/master/barang": {
       "get": {
         "operationId": "get-v1-master-barang",
@@ -323,6 +3026,62 @@
                   "required": [
                     "data"
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/master/gudang": {
+      "get": {
+        "operationId": "get-v1-master-gudang",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-master-gudang",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
@@ -720,6 +3479,1523 @@
         }
       }
     },
+    "/v1/negoiasi/{id}": {
+      "get": {
+        "operationId": "get-v1-negoiasi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-negoiasi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-negoiasi-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/penggajian/{id}": {
+      "get": {
+        "operationId": "get-v1-penggajian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-penggajian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-penggajian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-order/{id}": {
+      "get": {
+        "operationId": "get-v1-purchase-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-purchase-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-purchase-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-receiving/{id}": {
+      "get": {
+        "operationId": "get-v1-purchase-receiving-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-purchase-receiving-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-purchase-receiving-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/purchase-request/{id}": {
+      "get": {
+        "operationId": "get-v1-purchase-request-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-purchase-request-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-purchase-request-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/quotation/{id}": {
+      "get": {
+        "operationId": "get-v1-quotation-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-quotation-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-quotation-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/retur-pembelian/{id}": {
+      "get": {
+        "operationId": "get-v1-retur-pembelian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-retur-pembelian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-retur-pembelian-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/retur-penjualan/{id}": {
+      "get": {
+        "operationId": "get-v1-retur-penjualan-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-retur-penjualan-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-retur-penjualan-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/rfq/{id}": {
+      "get": {
+        "operationId": "get-v1-rfq-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-rfq-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-rfq-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/sales-order/{id}": {
+      "get": {
+        "operationId": "get-v1-sales-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-sales-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-sales-order-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/agents/data-agent": {
+      "post": {
+        "operationId": "post-v1-ai-agents-data-agent",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/agents/nego-agent": {
+      "get": {
+        "operationId": "get-v1-ai-agents-nego-agent",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-ai-agents-nego-agent",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/agents/usage": {
+      "get": {
+        "operationId": "get-v1-ai-agents-usage",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/agents/vision-agent": {
+      "get": {
+        "operationId": "get-v1-ai-agents-vision-agent",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-ai-agents-vision-agent",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/delivery-order/{id}/pdf": {
+      "get": {
+        "operationId": "get-v1-delivery-order-{id}-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/delivery-order/{id}/scan": {
+      "post": {
+        "operationId": "post-v1-delivery-order-{id}-scan",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/invoice/{id}/pdf": {
+      "get": {
+        "operationId": "get-v1-invoice-{id}-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/kwitansi/{id}/pdf": {
+      "get": {
+        "operationId": "get-v1-kwitansi-{id}-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/laporan/arus-kas/pdf": {
+      "get": {
+        "operationId": "get-v1-laporan-arus-kas-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/laporan/laba-rugi/pdf": {
+      "get": {
+        "operationId": "get-v1-laporan-laba-rugi-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/laporan/neraca/pdf": {
+      "get": {
+        "operationId": "get-v1-laporan-neraca-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
     "/v1/master/barang/{id}": {
       "get": {
         "operationId": "get-v1-master-barang-{id}",
@@ -1031,6 +5307,122 @@
       },
       "delete": {
         "operationId": "delete-v1-master-customer-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/master/gudang/{id}": {
+      "get": {
+        "operationId": "get-v1-master-gudang-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-v1-master-gudang-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-master-gudang-{id}",
         "summary": "",
         "description": "",
         "tags": [
@@ -1744,6 +6136,259 @@
             "description": "Path parameter: id"
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/quotation/{id}/pdf": {
+      "get": {
+        "operationId": "get-v1-quotation-{id}-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/rfq/{id}/documents": {
+      "get": {
+        "operationId": "get-v1-rfq-{id}-documents",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-v1-rfq-{id}-documents",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-v1-rfq-{id}-documents",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/slip-gaji/{id}/pdf": {
+      "get": {
+        "operationId": "get-v1-slip-gaji-{id}-pdf",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/stok/kartu/{id}": {
+      "get": {
+        "operationId": "get-v1-stok-kartu-{id}",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/v1/ai/agents/automation/webhook": {
+      "post": {
+        "operationId": "post-v1-ai-agents-automation-webhook",
+        "summary": "",
+        "description": "",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response",

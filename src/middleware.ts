@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { checkRateLimit, getRateLimitHeaders } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -21,18 +21,17 @@ export async function middleware(request: NextRequest) {
       config = { windowMs: 60_000, maxRequests: 50 }
     }
 
-    const result = checkRateLimit(key, config)
+    const { success, headers } = await checkRateLimit(key, config.maxRequests, config.windowMs)
     const response = NextResponse.next()
-    const headers = getRateLimitHeaders(key)
 
     for (const [k, v] of Object.entries(headers)) {
       response.headers.set(k, v)
     }
 
-    if (!result.allowed) {
+    if (!success) {
       return NextResponse.json(
         { error: 'Too many requests. Silakan coba lagi nanti.', code: 'RATE_LIMIT_EXCEEDED' },
-        { status: 429, headers: { ...headers, 'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)) } }
+        { status: 429, headers: { ...headers, 'Retry-After': headers['X-RateLimit-Reset'] } }
       )
     }
 

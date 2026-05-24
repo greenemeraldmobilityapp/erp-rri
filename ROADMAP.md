@@ -108,3 +108,20 @@
 - [ ] ~~Deploy ke Vercel~~ — dilewati
 
 > **Catatan:** Testing Setup & Deploy ke Vercel sengaja dilewati untuk saat ini. Fokus dilanjutkan ke ROADMAP_UI/UX.md untuk enhancement UI/UX semua halaman.
+
+## Fase 9 — AI Agent Enhancement (May 2026)
+- [x] Skeleton loading states di 4 halaman AI (data-agent, nego-agent, vision-agent, usage)
+- [x] Query patterns DataAgent dari 100 → 196 (15+ kategori)
+- [x] Filter usage dashboard — date range picker + search user
+- [x] Documentation OpenAPI spec untuk 4 AI agent endpoints (nego, data, vision, usage)
+- [x] Redis-based rate limiting (in-memory fallback + Upstash Redis support via env vars)
+- [x] Supabase Database Webhooks (setup script at `scripts/setup-webhooks.sh`)
+- [x] Error rate monitoring — `/api/v1/ai/agents/error-stats` + Error Rate tab di usage dashboard
+- [x] Migration `0005_ai_error_tracking.sql` — add `status` + `error_message` columns to all agent history tables
+
+## Fase 10 — PRD Gap Features (May 2026)
+- [x] **Prediktif Rekomendasi Supplier** — `src/lib/ai/rekomendasi-supplier.ts` + API + dashboard page + sidebar
+- [x] **Auto-Suggest Barang** — `src/lib/ai/auto-suggest-barang.ts` + API + dashboard page + sidebar
+- [x] **Price Trend Analysis** — `src/lib/ai/price-trend.ts` + API + dashboard page (recharts chart) + sidebar
+- [x] **Anomaly Detection** — `src/lib/ai/anomaly-detection.ts` (z-score stats) + API + dashboard page + sidebar
+- [x] **PRD.md update** — tech stack NVIDIA NIM, 3-agent architecture, automation triggers, rate limiting, error monitoring, 4 new features
