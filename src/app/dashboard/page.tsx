@@ -43,7 +43,7 @@ function StatCard({ label, value, icon: Icon, color, subtitle, trend, trendLabel
         <CardTitle className={`text-sm font-semibold uppercase tracking-wider ${color ? 'text-foreground' : 'text-muted-foreground'}`}>
           {label}
         </CardTitle>
-        <div className={`rounded-full p-2 ${color ? 'bg-[#0000FF]/10 text-[#0000FF]' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`rounded-full p-2 ${color ? 'bg-primary/10 text-primary dark:bg-[#3B82F6]/10 dark:text-[#3B82F6]' : 'bg-muted text-muted-foreground'}`}>
           <Icon className="h-4 w-4" />
         </div>
       </CardHeader>
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
             <Card className="overflow-hidden border-t-2 border-t-[#A1A1AA] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm text-foreground">Revenue Trend</CardTitle>
-                <div className="rounded-full bg-muted p-2 text-muted-foreground">
+                <div className="rounded-full bg-primary/10 p-2 text-primary dark:bg-[#3B82F6]/10 dark:text-[#3B82F6]">
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </CardHeader>
@@ -208,10 +208,10 @@ export default async function DashboardPage() {
       <section>
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-muted-foreground" />Procurement</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="PR Aktif" value={prCount} icon={ClipboardList} color={prCount > 0 ? 'amber' : undefined} subtitle="Menunggu diproses" />
-          <StatCard label="PO Terbuka" value={poCount} icon={FileText} color={poCount > 0 ? 'amber' : undefined} subtitle="Belum dikirim / dikonfirmasi" />
-          <StatCard label="Pending Receiving" value={receiving.count ?? 0} icon={Package} color={(receiving.count ?? 0) > 0 ? 'amber' : undefined} />
-          <StatCard label="Pending GRN" value={grns.count ?? 0} icon={ClipboardList} color={(grns.count ?? 0) > 0 ? 'amber' : undefined} />
+          <StatCard label="PR Aktif" value={prCount} icon={ClipboardList} color={prCount > 0 ? 'warning' : undefined} subtitle="Menunggu diproses" />
+          <StatCard label="PO Terbuka" value={poCount} icon={FileText} color={poCount > 0 ? 'warning' : undefined} subtitle="Belum dikirim / dikonfirmasi" />
+          <StatCard label="Pending Receiving" value={receiving.count ?? 0} icon={Package} color={(receiving.count ?? 0) > 0 ? 'warning' : undefined} />
+          <StatCard label="Pending GRN" value={grns.count ?? 0} icon={ClipboardList} color={(grns.count ?? 0) > 0 ? 'warning' : undefined} />
         </div>
       </section>
 
@@ -220,8 +220,8 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Barang" value={barangsStok.count ?? 0} icon={Package} />
           <StatCard label="Total Stok" value={totalStok.toLocaleString('id-ID')} icon={Building2} subtitle="Unit tersedia" />
-          <StatCard label="Stok Kosong" value={lowStockItems.length} icon={AlertTriangle} color={lowStockItems.length > 0 ? 'red' : undefined} subtitle="Perlu re-stock" />
-          <StatCard label="DO Pending" value={dos.count ?? 0} icon={Truck} color={(dos.count ?? 0) > 0 ? 'amber' : undefined} />
+           <StatCard label="Stok Kosong" value={lowStockItems.length} icon={AlertTriangle} color={lowStockItems.length > 0 ? 'destructive' : undefined} subtitle="Perlu re-stock" />
+          <StatCard label="DO Pending" value={dos.count ?? 0} icon={Truck} color={(dos.count ?? 0) > 0 ? 'warning' : undefined} />
         </div>
       </section>
 

@@ -292,7 +292,7 @@ export default function EditSupplierPage() {
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <Button variant="link" asChild>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" asChild>
             <Link href="/dashboard/supplier">
               Kembali ke Daftar Supplier
             </Link>

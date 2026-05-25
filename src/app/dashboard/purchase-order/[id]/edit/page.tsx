@@ -25,10 +25,10 @@ export default function EditPoPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card><CardContent className="space-y-4 pt-6">
           <div className="space-y-2"><label className="text-sm font-medium">Status</label>
-            <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+            <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-green-200/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">{statusOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
           <div className="space-y-2"><label className="text-sm font-medium">Terms of Payment</label><Input {...register('terms_of_payment')} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/purchase-order">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
+        <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/purchase-order">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
       </form>
     </div>
   )

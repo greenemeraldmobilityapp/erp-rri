@@ -22,7 +22,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
-// Shimmer animation for loading skeleton
+// Shimmer animation + dot pattern + floating particles
 const shimmerStyle = `
   .shimmer {
     background: linear-gradient(90deg, bg-white/10 0%, bg-white/20 20%, bg-white/10 40%, bg-white/10 100%);
@@ -33,6 +33,34 @@ const shimmerStyle = `
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+  }
+
+  .dot-pattern {
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .float-1 {
+    animation: floatUpDown 6s ease-in-out infinite;
+  }
+  .float-2 {
+    animation: floatUpDown 8s ease-in-out infinite reverse;
+  }
+  .float-3 {
+    animation: floatUpDown 7s ease-in-out infinite 2s;
+  }
+
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .glow-pulse {
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
   }
 `
 
@@ -88,16 +116,25 @@ export default function LoginPage() {
    return (
      <>
        <style jsx global>{shimmerStyle}</style>
-        <div className="min-h-screen bg-gradient-to-br from-background/80 to-background/90 flex items-center justify-center p-4 relative overflow-hidden">
-       {/* Decorative elements */}
-       {mounted && (
-         <>
-          <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-30"></div>
-            <div className="absolute bottom-20 right-20 w-48 h-48 bg-accent/10 rounded-full blur-3xl opacity-20"></div>
-            <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-accent rounded-full"></div>
-            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-primary/50 rounded-full"></div>
-         </>
-       )}
+        <div className="min-h-screen bg-gradient-to-br from-[#0000FF] via-[#0000D9] to-[#0A0E27] flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Dot pattern overlay */}
+        <div className="absolute inset-0 dot-pattern pointer-events-none" />
+
+        {/* Decorative elements */}
+        {mounted && (
+          <>
+            {/* Large radial glow behind card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#0000FF]/20 rounded-full blur-[120px] glow-pulse pointer-events-none" />
+
+            {/* Floating shapes */}
+            <div className="absolute top-16 left-16 w-20 h-20 border border-[#A1A1AA]/20 rounded-full float-1 pointer-events-none" />
+            <div className="absolute top-1/4 right-20 w-3 h-3 bg-[#A1A1AA]/30 rounded-full float-2 pointer-events-none" />
+            <div className="absolute bottom-1/3 left-1/5 w-4 h-4 bg-[#A1A1AA]/20 rounded-full float-3 pointer-events-none" />
+            <div className="absolute bottom-20 right-1/4 w-16 h-16 border border-[#A1A1AA]/10 rounded-lg rotate-45 float-2 pointer-events-none" />
+            <div className="absolute top-2/3 right-12 w-2 h-2 bg-[#A1A1AA]/40 rounded-full float-1 pointer-events-none" />
+            <div className="absolute top-1/3 left-12 w-1 h-1 bg-white/30 rounded-full float-3 pointer-events-none" />
+          </>
+        )}
        
          {/* Luxury header */}
          <div className="absolute top-8 left-0 right-0 flex justify-center">
@@ -112,7 +149,7 @@ export default function LoginPage() {
          </div>
        
        {/* Login card */}
-        <Card className="w-full max-w-md border-0 sm:border bg-card/80 backdrop-blur-sm border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)]">
+        <Card className="w-full max-w-md border-l-4 border-l-[#A1A1AA] bg-card/70 backdrop-blur-xl border border-border/50 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)]">
          <CardHeader className="space-y-3 pb-6 text-center">
             <div className="flex justify-center mb-4">
                 <div className="p-3 bg-accent/10 rounded-full">
@@ -214,7 +251,7 @@ export default function LoginPage() {
                <Button
                  type="submit"
                  disabled={loading || showSkeleton}
-                 className="w-full h-12 text-base font-semibold rounded-lg bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200"
+                  className="w-full h-12 text-base font-semibold text-white rounded-lg bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95 transition-all duration-200"
                >
                 {loading ? 'Memproses...' : 'Masuk'}
               </Button>

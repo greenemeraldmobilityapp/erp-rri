@@ -132,7 +132,7 @@ export default function EditBarangPage() {
         </div>
       </form>
       <div className="mt-6">
-        <Button variant="link" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>Kembali ke Daftar Barang</Button>
+        <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>Kembali ke Daftar Barang</Button>
       </div>
       <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>

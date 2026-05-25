@@ -49,7 +49,7 @@ export default function TambahNegoiasiPage() {
                 <div className="space-y-2"><label className="text-xs font-medium">Alasan</label><Input {...form.register(`items.${i}.alasan`)} /></div>
               </div>
             ))}</CardContent></Card>
-          <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/negoiasi">Batal</Link></Button>
+          <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/negoiasi">Batal</Link></Button>
             <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? 'Menyimpan...' : 'Simpan'}</Button></div>
         </form>
       </Form>

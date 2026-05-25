@@ -244,8 +244,8 @@ export default function EditQuotationPage() {
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" asChild>
-            <Link href="/dashboard/quotation">Batal</Link>
+<Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90">
+             <Link href="/dashboard/quotation">Batal</Link>
           </Button>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

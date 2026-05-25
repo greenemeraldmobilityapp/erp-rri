@@ -70,7 +70,7 @@ export default function DetailJabatanPage() {
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/dashboard/master/jabatan")}>
+            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/master/jabatan")}>
               Kembali
             </Button>
             <Button onClick={() => router.push(`/dashboard/master/jabatan/${id}/edit`)}>

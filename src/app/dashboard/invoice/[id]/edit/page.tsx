@@ -27,7 +27,7 @@ export default function EditInvoicePage() {
           <div className="space-y-2"><label className="text-sm font-medium">PPN Rate</label><Input type="number" step="0.01" {...register('ppn_rate')} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">PPh Rate</label><Input type="number" step="0.01" {...register('pph_rate')} /></div>
         </div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/invoice">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" asChild><Link href="/dashboard/invoice">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
     </div>
   )
 }

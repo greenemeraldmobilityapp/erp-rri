@@ -39,7 +39,7 @@ export default function EditNegoiasiPage() {
             </select></div>
           <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={3} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/negoiasi">Batal</Link></Button>
+        <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/negoiasi">Batal</Link></Button>
           <Button type="submit" disabled={submitting}>{submitting ? 'Menyimpan...' : 'Update'}</Button></div>
       </form>
     </div>

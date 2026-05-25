@@ -148,7 +148,7 @@ export default function DetailSupplierPage() {
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/dashboard/master/supplier")}>
+            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/master/supplier")}>
               Kembali
             </Button>
             <Button onClick={() => router.push(`/dashboard/master/supplier/${id}/edit`)}>

@@ -59,7 +59,7 @@ export default function TambahKategoriPage() {
         title="Tambah Kategori Barang"
         description="Input data kategori baru"
         actions={
-          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))}>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))}>
             Kembali
           </Button>
         }

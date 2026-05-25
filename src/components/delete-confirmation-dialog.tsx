@@ -45,7 +45,7 @@ export function DeleteConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
+          <AlertDialogCancel className="bg-red-500/70 text-white hover:bg-red-500/90 border-0" disabled={isLoading}>Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault()

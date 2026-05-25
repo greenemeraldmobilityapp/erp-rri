@@ -242,7 +242,7 @@ export default function EditCOAPage() {
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <Button variant="link" onClick={() => confirmLeave(() => router.push('/dashboard/master/coa'))}>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/coa'))}>
             Kembali ke Daftar Akun
           </Button>
         </div>

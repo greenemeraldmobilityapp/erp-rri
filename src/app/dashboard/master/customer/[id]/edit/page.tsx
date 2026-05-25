@@ -241,7 +241,7 @@ export default function EditCustomerPage() {
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <Button variant="link" onClick={() => confirmLeave(() => router.push('/dashboard/customer'))}>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/customer'))}>
             Kembali ke Daftar Customer
           </Button>
         </div>

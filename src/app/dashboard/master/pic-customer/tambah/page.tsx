@@ -84,7 +84,7 @@ export default function TambahPICCustomerPage() {
         title="Tambah PIC Customer"
         description="Input data PIC customer baru"
         actions={
-          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/pic-customer'))}>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/pic-customer'))}>
             Kembali
           </Button>
         }

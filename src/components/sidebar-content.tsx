@@ -150,7 +150,7 @@ function SidebarNavLink({ href, icon: Icon, label, collapsed }: { href: string; 
       className={cn(
         'flex items-center px-3 py-2 rounded-md text-sm transition-colors duration-200',
         active
-          ? 'bg-accent font-medium text-foreground'
+          ? 'bg-primary text-primary-foreground font-medium'
           : 'text-foreground/80 hover:bg-accent hover:text-accent-foreground',
       )}
     >

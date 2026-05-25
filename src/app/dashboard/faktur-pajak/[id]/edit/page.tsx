@@ -29,7 +29,7 @@ export default function EditFakturPajakPage() {
           <div className="space-y-2"><label className="text-sm font-medium">PPN</label><Input type="number" step="0.01" {...register('ppn')} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">PPh</label><Input type="number" step="0.01" {...register('pph')} /></div>
         </div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/faktur-pajak">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" asChild><Link href="/dashboard/faktur-pajak">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
     </div>
   )
 }

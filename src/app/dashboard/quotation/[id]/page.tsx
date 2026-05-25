@@ -97,7 +97,7 @@ export default function QuotationDetailPage() {
         description={`${data.nomor} - ${data.customer?.nama || ""}`}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
+            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
             <Button variant="outline" asChild>
               <a href={`/api/v1/quotation/${id}/pdf`} target="_blank" rel="noopener noreferrer">
                 <Eye className="h-4 w-4 mr-2" />Preview PDF

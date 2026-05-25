@@ -28,7 +28,7 @@ export function ConfirmLeaveDialog({ open, onConfirm, onCancel }: ConfirmLeaveDi
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Batal</AlertDialogCancel>
+          <AlertDialogCancel className="bg-red-500/70 text-white hover:bg-red-500/90 border-0" onClick={onCancel}>Batal</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>Ya, Tinggalkan</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

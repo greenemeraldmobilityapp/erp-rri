@@ -105,7 +105,7 @@ export default function TambahInvoicePage() {
               <div className="flex justify-between font-bold text-base border-t pt-2"><span>Grand Total</span><span>{grandTotal.toLocaleString('id-ID')}</span></div>
             </div>
           </CardContent></Card>
-          <div className="flex justify-end gap-3"><Button type="button" variant="outline" asChild><Link href="/dashboard/invoice">Batal</Link></Button>
+          <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" asChild><Link href="/dashboard/invoice">Batal</Link></Button>
             <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan Invoice'}</Button></div>
         </form>
       </Form>

@@ -85,7 +85,7 @@ export default function TambahKaryawanPage() {
         title="Tambah Karyawan"
         description="Input data karyawan baru"
         actions={
-          <Button variant="outline" onClick={() => confirmLeave(() => router.push('/dashboard/master/karyawan'))}>
+          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/karyawan'))}>
             Kembali
           </Button>
         }
