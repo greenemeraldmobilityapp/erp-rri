@@ -225,7 +225,7 @@ export default function EditKontrakPage() {
 
       <div className="mt-6">
         <div className="flex justify-between items-center">
-          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
+          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
             Kembali ke Daftar Kontrak
           </Button>
         </div>

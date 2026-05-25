@@ -68,7 +68,7 @@ export default function TambahBarangPage() {
         title="Tambah Barang"
         description="Input data barang baru"
         actions={
-          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>
+          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>
             Kembali
           </Button>
         }

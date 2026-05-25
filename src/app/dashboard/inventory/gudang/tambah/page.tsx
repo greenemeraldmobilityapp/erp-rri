@@ -18,7 +18,7 @@ export default function TambahGudangPage() {
         <div className="space-y-2"><label className="text-sm font-medium">Nama *</label><Input name="nama" required placeholder="Gudang Utama" /></div>
         <div className="space-y-2"><label className="text-sm font-medium">Lokasi</label><Input name="lokasi" placeholder="Jl. Raya ..." /></div>
         <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea name="keterangan" rows={2} /></div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/inventory/gudang">Batal</Link></Button>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="cancel"><Link href="/dashboard/inventory/gudang">Batal</Link></Button>
         <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan'}</Button></div></form>
     </div>
   )

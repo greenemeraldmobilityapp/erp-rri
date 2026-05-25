@@ -82,7 +82,7 @@ export default function TambahKontrakPage() {
         title="Tambah Kontrak"
         description="Input data kontrak baru"
         actions={
-          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
+          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))}>
             Kembali
           </Button>
         }

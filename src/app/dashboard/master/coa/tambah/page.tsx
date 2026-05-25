@@ -89,7 +89,7 @@ export default function TambahCOAPage() {
         title="Tambah Akun (COA)"
         description="Input data akun baru"
         actions={
-          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/coa'))}>
+          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/coa'))}>
             Kembali
           </Button>
         }

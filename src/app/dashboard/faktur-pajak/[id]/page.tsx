@@ -315,7 +315,7 @@ export default function FakturPajakDetailPage({ params }: { params: Promise<{ id
       </Card>
 
       <div className="flex justify-end gap-2">
-        <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" asChild>
+        <Button variant="back" asChild>
           <Link href="/dashboard/faktur-pajak">Kembali</Link>
         </Button>
         <Button variant="outline" onClick={() => window.print()}>

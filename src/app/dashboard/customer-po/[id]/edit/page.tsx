@@ -39,7 +39,7 @@ export default function EditPoPage() {
           <div className="space-y-2"><label className="text-sm font-medium">Nomor PO Customer</label><Input {...register('nomor_po_customer')} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Terms of Payment</label><Input {...register('terms_of_payment')} /></div>
         </CardContent></Card>
-        <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/customer-po">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
+        <div className="flex justify-end gap-3"><Button type="button" variant="cancel"><Link href="/dashboard/customer-po">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div>
       </form>
     </div>
   )

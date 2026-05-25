@@ -70,7 +70,7 @@ export default function DetailKategoriBarangPage() {
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/master/kategori-barang")}>
+            <Button variant="back" onClick={() => router.push("/dashboard/master/kategori-barang")}>
               Kembali
             </Button>
             <Button onClick={() => router.push(`/dashboard/master/kategori-barang/${id}/edit`)}>

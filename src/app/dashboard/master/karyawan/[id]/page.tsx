@@ -82,7 +82,7 @@ export default function DetailKaryawanPage() {
         description="Informasi lengkap"
         actions={
           <div className="flex gap-2">
-            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/master/karyawan")}>
+            <Button variant="back" onClick={() => router.push("/dashboard/master/karyawan")}>
               Kembali
             </Button>
             <Button onClick={() => router.push(`/dashboard/master/karyawan/${id}/edit`)}>

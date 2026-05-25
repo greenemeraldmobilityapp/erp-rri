@@ -129,7 +129,7 @@ export default function RfqDetailPage() {
         description={`${data.nomor} - ${data.supplier?.nama || ""}`}
         actions={
           <div className="flex gap-2">
-            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => router.push("/dashboard/rfq")}>Kembali</Button>
+            <Button variant="back" onClick={() => router.push("/dashboard/rfq")}>Kembali</Button>
             <Button variant="outline" onClick={() => router.push(`/dashboard/rfq/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
             <DeleteConfirmationDialog
               onConfirm={handleDelete}

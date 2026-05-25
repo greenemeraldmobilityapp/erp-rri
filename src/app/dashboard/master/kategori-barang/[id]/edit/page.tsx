@@ -82,7 +82,7 @@ export default function EditKategoriPage() {
         </div>
       </form>
       <div className="mt-6">
-        <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))}>Kembali ke Daftar Kategori</Button>
+        <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/kategori-barang'))}>Kembali ke Daftar Kategori</Button>
       </div>
       <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>

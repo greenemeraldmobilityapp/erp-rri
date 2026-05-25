@@ -261,7 +261,7 @@ export function BarcodeScanner({ barangOptions, onScanComplete, trigger }: Barco
         </div>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button className="bg-red-500/70 text-white hover:bg-red-500/90" onClick={() => setOpen(false)}>Batal</Button>
+          <Button variant="cancel" onClick={() => setOpen(false)}>Batal</Button>
           <Button onClick={handleDone} disabled={scannedItems.length === 0}>
             Selesai ({scannedCount} item)
           </Button>

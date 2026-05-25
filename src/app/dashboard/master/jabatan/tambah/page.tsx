@@ -59,7 +59,7 @@ export default function TambahJabatanPage() {
         title="Tambah Jabatan"
         description="Input data jabatan baru"
         actions={
-          <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/jabatan'))}>
+          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/jabatan'))}>
             Kembali
           </Button>
         }

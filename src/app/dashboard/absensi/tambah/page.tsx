@@ -44,7 +44,7 @@ export default function TambahAbsensiPage() {
           <FormField control={form.control} name="keterangan" render={({ field }) => (
             <FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
           )} />
-        </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" onClick={() => router.push('/dashboard/absensi')}>Batal</Button>
+        </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="cancel" onClick={() => router.push('/dashboard/absensi')}>Batal</Button>
           <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan'}</Button></div></form>
       </Form>
     </div>

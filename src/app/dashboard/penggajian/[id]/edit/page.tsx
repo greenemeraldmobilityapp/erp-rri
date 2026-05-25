@@ -32,7 +32,7 @@ export default function EditPenggajianPage() {
         <div><p className="text-sm">Gaji Bersih: <strong>Rp {((Number(gp) || 0) + (Number(tj) || 0) - (Number(pt) || 0)).toLocaleString('id-ID')}</strong></p></div>
         <div className="space-y-2"><label className="text-sm font-medium">Tgl Pembayaran</label><Input type="date" {...register('tanggal_pembayaran')} /></div>
         <div className="space-y-2"><label className="text-sm font-medium">Keterangan</label><Textarea {...register('keterangan')} rows={3} /></div>
-      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" asChild><Link href="/dashboard/penggajian">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
+      </CardContent></Card><div className="flex justify-end gap-3"><Button type="button" variant="cancel" asChild><Link href="/dashboard/penggajian">Batal</Link></Button><Button type="submit" disabled={submitting}>{submitting ? '...' : 'Update'}</Button></div></form>
     </div>
   )
 }

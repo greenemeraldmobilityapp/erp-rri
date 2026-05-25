@@ -19,12 +19,12 @@ export default function NotFound() {
             Halaman yang Anda cari tidak tersedia atau telah dipindahkan.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => window.history.back()}>
+            <Button variant="back" onClick={() => window.history.back()}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Kembali
             </Button>
             <Link href="/dashboard">
-              <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90">
+              <Button variant="back">
                 <Home className="w-4 h-4 mr-2" />
                 Kembali ke Dashboard
               </Button>

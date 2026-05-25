@@ -23,7 +23,7 @@ export function FormActions({
   return (
     <div className={`flex items-center justify-end gap-3 pt-4 border-t ${className ?? ''}`}>
       {onCancel && (
-        <Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90" onClick={onCancel} disabled={loading}>
+        <Button type="button" variant="cancel" onClick={onCancel} disabled={loading}>
           {cancelText}
         </Button>
       )}

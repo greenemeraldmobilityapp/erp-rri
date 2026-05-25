@@ -148,7 +148,7 @@ export default function EditKaryawanPage() {
         </div>
       </form>
       <div className="mt-6">
-        <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90" onClick={() => confirmLeave(() => router.push('/dashboard/master/karyawan'))}>Kembali ke Daftar Karyawan</Button>
+        <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/karyawan'))}>Kembali ke Daftar Karyawan</Button>
       </div>
       <ConfirmLeaveDialog open={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
     </div>

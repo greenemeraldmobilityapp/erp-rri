@@ -99,7 +99,7 @@ export default function TambahReceivingPage() {
               <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1 })}><Plus className="h-4 w-4 mr-1" />Tambah Item</Button>
               </>}
           </CardContent></Card>
-          <div className="flex justify-end gap-3"><Button type="button" className="bg-red-500/70 text-white hover:bg-red-500/90"><Link href="/dashboard/purchase-receiving">Batal</Link></Button>
+          <div className="flex justify-end gap-3"><Button type="button" variant="cancel"><Link href="/dashboard/purchase-receiving">Batal</Link></Button>
             <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan'}</Button></div>
         </form>
       </Form>

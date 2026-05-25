@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   Muat Ulang
                 </Button>
                 <Link href="/dashboard">
-                  <Button className="bg-zinc-500/70 text-white hover:bg-zinc-500/90">
+                  <Button variant="back">
                     <Home className="w-4 h-4 mr-2" />
                     Kembali ke Dashboard
                   </Button>

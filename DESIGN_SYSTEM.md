@@ -38,6 +38,8 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
  * default — Aksi utama (submit, simpan).
    *Luxury Styling:* bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95
  * destructive — Hapus, batalkan permanen.
+ * cancel — Batalkan formulir (Batal). `bg-red-500/70 text-white hover:bg-red-500/90`
+ * back — Kembali ke halaman sebelumnya. `bg-zinc-500/70 text-white hover:bg-zinc-500/90`
  * outline — Aksi sekunder (batal, cancel).
  * ghost — Aksi ringan, opsi jajaran tabel (edit inline).
  * link — Navigasi tautan teks.
@@ -94,6 +96,8 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
 ❌ Jangan pakai Input dengan custom dropdown untuk search.
 ### 3.17 Sidebar (Navigation)
 ✅ Pakai <SidebarProvider>, <Sidebar>, <SidebarHeader>, <SidebarContent>, <SidebarFooter>, <SidebarTrigger>.
+✅ **Nav link active state:** `bg-primary text-primary-foreground font-medium` — global via CSS variable `--primary`.
+   Light: `#0000FF` — Dark: `#3B82F6` (otomatis mengikuti `globals.css`).
 ❌ Jangan pakai custom sidebar implementation.
 ### 3.18 Chart (Data Visualization)
 ✅ Pakai <ChartContainer>, <ChartTooltip>, #0000FF atau #3B82F6 kustom tema pada Recharts integration.
