@@ -59,7 +59,7 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | AI Agent | NVIDIA NIM (free tier) — 3 agent architecture: NegoAgent (stepfun-ai/step-3.5-flash), DataAgent (minimaxai/minimax-m2.7), VisionAgent (microsoft/phi-4-multimodal-instruct) |
 | Testing (Unit) | Vitest |
 | Testing (E2E) | Playwright |
-| Storage | Supabase Storage (dengan CDN) |
+| Storage | Google Drive API (Shared Drive) — all files via Service Account |
 | Image Optimization | browser-image-compression + WebP conversion |
 | Deploy | Vercel |
 | Platform | Web Browser (Responsive: Mobile, Tablet, Desktop) |
@@ -149,70 +149,101 @@ Tema dirancang untuk enterprise/government — fokus pada accessibility, high co
 
 ## 5. Storage & File Management
 
-### 5.1 Supabase Storage Strategy
-Menggunakan Supabase Storage dengan bucket terstruktur dan optimasi penyimpanan untuk menghemat biaya.
+### 5.1 Google Drive Storage Strategy (Menggantikan Supabase Storage)
+File storage menggunakan **Google Drive API** melalui **Service Account** dengan **Shared Drive** akun Google Workspace for Education (100GB+).
 
-### 5.2 Struktur Bucket
+**Alasan migrasi dari Supabase Storage:**
+- Fitur **kolaborasi & preview** Google Docs Viewer (PDF, gambar, spreadsheet bisa di-preview langsung di browser)
+- **Share link** ke eksternal (supplier, customer) via Google Drive share dialog — akses "Anyone with link"
+- **Version history** built-in — rollback tanpa implementasi sendiri
+- **Biaya storage** 100GB+ dari akun Education gratis
+
+### 5.2 Struktur Folder di Google Drive
 
 ```
-avatars/                  → Foto profil user/karyawan
-  └── {userId}/avatar.jpg
-
-barang/                   → Foto barang
-  └── {barangId}/foto-1.jpg
-  └── {barangId}/foto-2.jpg
-
-dokumen/                  → File dokumen (PDF kontrak, RFQ, dll)
-  └── kontrak/{kontrakId}/kontrak.pdf
-  └── rfq/{rfqId}/rfq.pdf
-
-temporary/                → File sementara (auto-delete setelah 24 jam)
-  └── export/{sessionId}/laporan.xlsx
+📁 RRI-ERP (Shared Drive)
+├── 📁 dokumen/
+│   ├── 📁 rfq/{rfqId}/
+│   ├── 📁 kontrak/{kontrakId}/
+│   ├── 📁 invoice/{invoiceId}/
+│   └── 📁 kontrak-ocr/
+├── 📁 avatars/{userId}/
+├── 📁 barang/{barangId}/
+└── 📁 temporary/
 ```
 
-### 5.3 Optimasi Penyimpanan (Hemat Biaya)
+### 5.3 Optimasi Penyimpanan
 
 | Teknik | Implementasi | Manfaat |
 |---|---|---|
-| **Compress sebelum upload** | `browser-image-compression` library di client-side. Kompres gambar sebelum dikirim ke Supabase | Ukuran file turun 60-80% |
-| **Konversi ke WebP** | Semua gambar otomatis dikonversi ke format WebP (lebih kecil dari JPEG/PNG) | Ukuran file turun 30% tambahan |
-| **Delete file lama** | Setiap update file gambar/file: hapus file existing di bucket, baru upload yang baru. Tidak ada file sampah menumpuk | Tidak ada file sampah menumpuk |
+| **Compress sebelum upload** | `browser-image-compression` library di client-side | Ukuran file turun 60-80% |
+| **Konversi ke WebP** | Semua gambar otomatis dikonversi ke format WebP | Ukuran file turun 30% tambahan |
+| **Delete file lama** | Setiap update file: hapus file existing via Drive API, baru upload yang baru | Tidak ada file sampah menumpuk |
 | **Max dimensi** | Foto barang: max 1920px. Avatar: max 200px. Foto profil: max 600px | File size terkontrol |
 | **Max file size** | Client-side + server-side validation: Foto = max 5MB, Dokumen PDF = max 10MB | Mencegah abuse |
 | **Whitelist tipe file** | Hanya izinkan: `image/jpeg`, `image/png`, `image/webp`, `application/pdf` | Keamanan storage |
-| **Supabase CDN** | Setiap file di-serve via CDN — cepat diakses, cache otomatis | Performa loading |
-| **Blur placeholder** | Gambar ditampilkan dengan blur placeholder saat loading — UX tetap mulus tanpa harus download full resolution dulu | User experience |
-| **Sliced** | Sliced images via URL params if premium features enabled | Optional |
+| **Anyone with link** | Setiap file setelah upload langsung di-set permission "Anyone with link can view" | File bisa di-share ke eksternal tanpa login |
+| **Google Docs Viewer** | File bisa di-preview via embedded viewer atau link langsung | Tidak perlu download untuk lihat | 
+| **Rate limit handling** | 10 requests/second — implementasi queue/retry untuk upload massal | Tidak kena quota error |
 
-### 5.4 Alur Upload File
+### 5.4 Arsitektur Upload File
 
 ```
-User pilih file
-  ↓
-Validasi tipe file & ukuran (client-side)
-  ↓
-Compress gambar + konversi ke WebP (browser-image-compression)
-  ↓
-Cek: apakah ada file existing di path yang sama?
-  ├── YA → Hapus file lama dari Supabase Storage
-  └── TIDAK → LANJUT
-  ↓
-Upload file baru ke Supabase Storage
-  ↓
-Simpan public URL ke database
-  ↓
-Tampilkan ke user
+┌──────────────────────────────────────────────────────────┐
+│ Client (Browser)                                         │
+│ upload file → FormData → apiFetchFormData()              │
+└────────────────────┬─────────────────────────────────────┘
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│ API Route (Next.js)                                      │
+│ verifyAuth() → validasi tipe/ukuran → buffer             │
+│ → StorageService.upload(buffer, path, mimeType)          │
+│ → simpan fileId + webViewLink ke DB                      │
+│ → return response                                        │
+└────────────────────┬─────────────────────────────────────┘
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│ StorageService (src/lib/storage/)                        │
+│ GoogleAuth (JWT Service Account)                         │
+│ → ensure folder path exists (buat folder jika belum)     │
+│ → Google Drive API: Files.create (upload ke Shared Drive)│
+│ → set permission: Anyone with link (reader)              │
+│ → return { fileId, webViewLink, webContentLink }        │
+└──────────────────────────────────────────────────────────┘
 ```
 
-### 5.5 Rekomendasi Tambahan untuk Profesionalisme
+### 5.5 Storage Service Layer
 
-| Rekomendasi | Keterangan |
-|---|---|
-| **Supabase Image Transformations** | Fitur berbayar tapi sangat worth it: bisa request ukuran gambar on-the-fly via URL parameter (`?width=200&height=200&format=webp`). Tidak perlu simpan multiple resolusi |
-| **RLS Policy per Bucket** | Setiap bucket punya Row Level Security — hanya role tertentu yang bisa upload/hapus. Finance tidak bisa hapus foto barang, Gudang tidak bisa hapus dokumen kontrak |
-| **Signed URLs untuk Dokumen Sensitif** | Untuk file kontrak PDF yang bersifat rahasia, akses via signed URL yang expire dalam 1 jam — bukan public URL |
-| **Auto-cleanup Temporary** | Bucket `temporary/` di-cleanup otomatis setiap 24 jam via Supabase cron atau trigger. File cocok untuk auto-cleanup: Export laporan (Excel/PDF), preview dokumen, import bulk Excel, hasil screenshot AI Search, file upload gagal/cancel, cache generate PDF | Tidak ada file sampah menumpuk |
-| **File Naming Convention** | `{modul}/{id}/{timestamp}-{originalName}.webp` — tidak ada nama file yang bentrok |
+Abstraction layer di `src/lib/storage/`:
+
+| File | Fungsi |
+|------|--------|
+| `types.ts` | Interface `IStorageService` + type definitions |
+| `google-drive.ts` | Implementasi Google Drive API (upload, getUrl, delete, list) |
+| `index.ts` | Re-export `storageService` |
+
+**Environment Variables:**
+```env
+GOOGLE_DRIVE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+GOOGLE_DRIVE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GOOGLE_DRIVE_SHARED_DRIVE_ID=shared_drive_id_here
+```
+
+### 5.6 Keamanan File
+
+- **Anyone with link (readonly)** — semua file bisa diakses oleh siapa pun yang memiliki link (tanpa login Google)
+- File disimpan di **Shared Drive** — tidak terikat ke akun personal, dikelola oleh tim IT
+- **Service Account** hanya bisa upload/edit/delete file — tidak bisa manage members atau shared drive itu sendiri
+- `drive_file_id` disimpan di database sebagai referensi permanen ke file di Google Drive
+- Delete: file dihapus permanen dari Google Drive via API (bukan di-trash)
+
+### 5.7 File Naming Convention
+
+```
+{modul}/{id}/{timestamp}-{originalName}
+```
+
+Contoh: `dokumen/rfq/abc123/1712345678-PO-001.pdf`
 
 ## 6. Scalability & Arsitektur
 

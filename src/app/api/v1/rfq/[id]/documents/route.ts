@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
+import { storageService } from '@/lib/storage'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(req)
@@ -37,15 +38,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung. Gunakan PDF, JPG, PNG, WebP, atau Excel')
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const fileName = `dokumen/rfq/${id}/${Date.now()}-${file.name}`
+  const filePath = `dokumen/rfq/${id}/${Date.now()}-${file.name}`
 
-  const { error: uploadError } = await supabaseAdmin.storage.from('dokumen').upload(fileName, buffer, {
-    contentType: file.type,
-    upsert: false,
-  })
-  if (uploadError) return internalError('Gagal upload file: ' + uploadError.message)
-
-  const { data: { publicUrl } } = supabaseAdmin.storage.from('dokumen').getPublicUrl(fileName)
+  let uploadResult
+  try {
+    uploadResult = await storageService.upload(buffer, filePath, file.type)
+  } catch (err) {
+    return internalError('Gagal upload file ke Google Drive: ' + (err instanceof Error ? err.message : 'unknown error'))
+  }
 
   const { data: doc, error: dbError } = await supabaseAdmin
     .from('rfq_document')
@@ -53,13 +53,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       id: crypto.randomUUID(),
       rfq_id: id,
       file_name: file.name,
-      file_url: publicUrl,
+      file_url: uploadResult.webViewLink,
+      drive_file_id: uploadResult.fileId,
     })
     .select()
     .single()
 
   if (dbError) {
-    await supabaseAdmin.storage.from('dokumen').remove([fileName])
+    await storageService.delete(uploadResult.fileId).catch(() => {})
     return internalError('Gagal menyimpan: ' + dbError.message)
   }
 
@@ -84,9 +85,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   if (findError || !doc) return notFound('Dokumen tidak ditemukan')
 
-  const filePath = doc.file_url.replace(/^.+\/(dokumen\/rfq\/.+)$/, '$1')
-
-  await supabaseAdmin.storage.from('dokumen').remove([filePath])
+  if (doc.drive_file_id) {
+    await storageService.delete(doc.drive_file_id).catch(() => {})
+  }
 
   const { error: delError } = await supabaseAdmin
     .from('rfq_document')

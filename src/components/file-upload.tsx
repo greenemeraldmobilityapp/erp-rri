@@ -3,11 +3,13 @@
 import { useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Upload, FileText, Trash2, ExternalLink } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface DocumentFile {
   id: string
   file_name: string
   file_url: string
+  drive_file_id?: string | null
   uploaded_at: string
 }
 
@@ -97,11 +99,18 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" asChild>
-                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" asChild>
+                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Buka di Google Drive</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>

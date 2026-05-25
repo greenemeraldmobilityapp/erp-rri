@@ -6,5 +6,6 @@ export const kontrakFile = pgTable("kontrak_file", {
  kontrakId: text("kontrak_id").notNull(),
  fileName: text("file_name").notNull(),
  fileUrl: text("file_url").notNull(),
+ driveFileId: text("drive_file_id"),
  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });

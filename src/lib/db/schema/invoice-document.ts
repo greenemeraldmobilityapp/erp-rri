@@ -7,5 +7,6 @@ export const invoiceDocument = pgTable("invoice_document", {
  documentType: text("document_type").notNull(),
  fileName: text("file_name").notNull(),
  fileUrl: text("file_url").notNull(),
+ driveFileId: text("drive_file_id"),
  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });

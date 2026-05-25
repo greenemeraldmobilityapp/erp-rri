@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
 import { extractTextFromPdf, parseExtractedText, saveOcrResult } from '@/lib/ai/ocr-kontrak'
+import { storageService } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -18,24 +19,22 @@ export async function POST(request: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer())
 
-  // Upload to Supabase Storage
-  const fileName = `dokumen/kontrak-ocr/${Date.now()}-${file.name}`
-  const { error: uploadError } = await supabaseAdmin.storage.from('dokumen').upload(fileName, buffer, {
-    contentType: 'application/pdf', upsert: false,
-  })
-  if (uploadError) return internalError('Gagal upload file')
+  const filePath = `dokumen/kontrak-ocr/${Date.now()}-${file.name}`
+  let uploadResult
+  try {
+    uploadResult = await storageService.upload(buffer, filePath, 'application/pdf')
+  } catch (err) {
+    return internalError('Gagal upload file ke Google Drive: ' + (err instanceof Error ? err.message : 'unknown error'))
+  }
 
-  const { data: { publicUrl } } = supabaseAdmin.storage.from('dokumen').getPublicUrl(fileName)
-
-  // Extract text from PDF
   const text = await extractTextFromPdf(buffer)
   const items = parseExtractedText(text)
 
-  // Save result
   try {
-    const result = await saveOcrResult(auth.user!.id, file.name, publicUrl, items)
+    const result = await saveOcrResult(auth.user!.id, file.name, uploadResult.webViewLink, items, uploadResult.fileId)
     return NextResponse.json({ data: { ...result, extracted_items: items } })
   } catch (err) {
+    await storageService.delete(uploadResult.fileId).catch(() => {})
     return internalError(err instanceof Error ? err.message : 'Gagal menyimpan')
   }
 }

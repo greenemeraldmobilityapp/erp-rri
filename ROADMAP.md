@@ -222,3 +222,39 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 ### Verification
 - Build: `npm run build` — 0 errors, 0 warnings
 - Lint: `npm run lint` — 0 errors, 3 warnings (pre-existing)
+
+## Fase 15 — Google Drive Storage (May 2026)
+
+### Infrastructure
+- [x] **GOOGLE-DRIVE-SETUP.md** — Panduan setup Google Cloud Project + Service Account + Shared Drive untuk tim IT RRI
+- [x] **Env vars** — Added `GOOGLE_DRIVE_CLIENT_EMAIL`, `GOOGLE_DRIVE_PRIVATE_KEY`, `GOOGLE_DRIVE_SHARED_DRIVE_ID` to `.env.example`
+- [x] **Dependency** — Installed `googleapis` npm package
+
+### Storage Service Layer
+- [x] **types.ts** — `IStorageService` interface + `UploadResult`, `StoredFile` types
+- [x] **google-drive.ts** — Implementation: JWT auth (Service Account), folder creation (recursive), file upload with "Anyone with link" permission, getUrl, delete, list with Shared Drive support
+- [x] **index.ts** — Re-exports `storageService`
+
+### API Routes Migration (Supabase Storage → Google Drive)
+- [x] **RFQ Documents** (`/api/v1/rfq/[id]/documents`) — Upload, delete, and rollback now use `storageService`. Saves `drive_file_id` + `webViewLink` to DB.
+- [x] **OCR Kontrak** (`/api/v1/ai/ocr-kontrak`) — File upload via Google Drive. Stores `webViewLink` in `file_url`, `driveFileId` in `ai_ocr_history`.
+- [x] **System Health** (`/api/v1/system/health`) — Storage check via `storageService.list()`. Reports `provider: google_drive`.
+
+### Database
+- [x] **Drizzle schema update** — Added `driveFileId` (`drive_file_id`, nullable `text`) to: `rfq_document`, `kontrak_file`, `invoice_document`, `retur_penjualan_document`, `retur_pembelian_document`, `ai_ocr_history`
+- [x] **Supabase migration** `0015_add_drive_file_id` — Applied to production DB
+
+### Frontend
+- [x] **FileUpload component** — Added tooltip "Buka di Google Drive" on external link button. Now displays Drive file links.
+
+### Documentation
+- [x] **PRD.md v4.1** — Rewrote Section 5 (Storage): Google Drive strategy, architecture, folder structure, security model, env vars
+- [x] **ROADMAP.md** — Added Fase 15 with full checklist
+
+### Next Steps (After IT Setup)
+- [ ] Setup GCP + Service Account + Shared Drive oleh tim IT RRI
+- [ ] Add 3 env vars (`GOOGLE_DRIVE_CLIENT_EMAIL`, `GOOGLE_DRIVE_PRIVATE_KEY`, `GOOGLE_DRIVE_SHARED_DRIVE_ID`) ke `.env`
+- [ ] Test upload → verify file appears in Shared Drive via Google Drive UI
+- [ ] Test delete → verify file removed from Drive
+- [ ] Test "Anyone with link" → open link in incognito, should see file preview
+- [ ] Implement image pipeline (compress + WebP) — browser-image-compression already installed

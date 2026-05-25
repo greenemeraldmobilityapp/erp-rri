@@ -6,5 +6,6 @@ export const returPembelianDocument = pgTable("retur_pembelian_document", {
  returPembelianId: text("retur_pembelian_id").notNull(),
  fileName: text("file_name").notNull(),
  fileUrl: text("file_url").notNull(),
+ driveFileId: text("drive_file_id"),
  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });

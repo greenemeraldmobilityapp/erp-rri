@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { storageService } from '@/lib/storage'
 
 /**
  * @openapi
@@ -25,14 +26,15 @@ export async function GET(request: NextRequest) {
   const { error: dbError } = await supabaseAdmin.from('users').select('id').limit(1)
   const dbLatency = Date.now() - dbStart
 
-  let storageUsage = 0
+  let storageFiles = 0
+  let storageConnected = false
   try {
-    const { data: buckets } = await supabaseAdmin.storage.listBuckets()
-    for (const bucket of buckets ?? []) {
-      const { data: files } = await supabaseAdmin.storage.from(bucket.name).list()
-      if (files) storageUsage += files.length
-    }
-  } catch {}
+    const files = await storageService.list('')
+    storageFiles = files.length
+    storageConnected = true
+  } catch {
+    storageConnected = false
+  }
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const { count: recentErrors } = await supabaseAdmin
@@ -56,7 +58,9 @@ export async function GET(request: NextRequest) {
       error: dbError?.message ?? null,
     },
     storage: {
-      total_files: storageUsage,
+      connected: storageConnected,
+      total_files: storageFiles,
+      provider: 'google_drive',
     },
     errors: {
       count_7d: recentErrors ?? 0,

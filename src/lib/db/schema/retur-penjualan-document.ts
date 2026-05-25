@@ -6,5 +6,6 @@ export const returPenjualanDocument = pgTable("retur_penjualan_document", {
  returPenjualanId: text("retur_penjualan_id").notNull(),
  fileName: text("file_name").notNull(),
  fileUrl: text("file_url").notNull(),
+ driveFileId: text("drive_file_id"),
  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
 });
