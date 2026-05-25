@@ -73,6 +73,8 @@ import { aiNegoHistory } from "./ai-nego-history";
 import { aiDataHistory } from "./ai-data-history";
 import { aiVisionHistory } from "./ai-vision-history";
 import { aiAutomationLog } from "./ai-automation-log";
+import { siteSettings } from "./site-settings";
+import { dataArchive } from "./data-archive";
 
 export {
   users,
@@ -149,5 +151,7 @@ export {
   aiNegoHistory,
   aiDataHistory,
   aiVisionHistory,
-  aiAutomationLog
+  aiAutomationLog,
+  siteSettings,
+  dataArchive
 };

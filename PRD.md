@@ -577,9 +577,9 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 | **Role-Based Navigation** ✅ | Sidebar & menu menyesuaikan role user — tidak lihat menu yang bukan haknya. Implementasi filter by role di `sidebar-nav.tsx` |
 | **User Onboarding** | Walkthrough interaktif saat pertama login — user baru langsung paham cara pakai ERP. Tur 12 step dalam 6 grup mencakup semua modul. Tombol "Panduan" permanen di sidebar untuk replay. Bisa dinonaktifkan/aktifkan via profil (field `onboarding_disabled` di tabel `users`) |
 | **Multi-Bahasa (future)** | Persiapan i18n jika nanti ada customer atau kebutuhan internasional |
-| **Maintenance Mode** | Satu toggle di settings — user lihat halaman "Sedang Perbaikan" |
+| **Maintenance Mode** ✅ | Toggle di `/dashboard/system/maintenance` — API + DB + layout guard + halaman maintenance |
 | **Soft Delete** | Semua data hanya di-soft-delete (`deleted_at`), tidak pernah hilang permanen |
-| **Data Archiving** | Data lama (>1 tahun) bisa di-archive ke tabel khusus atau bucket storage khusus untuk mengoptimasi performa query utama. Proses archiving bisa dijadwalkan bulan sekali. |
+| **Data Archiving** ✅ | Data lama (>1 tahun) bisa di-archive ke `data_archive` table. Halaman `/dashboard/system/archive`. API: `POST /api/v1/system/archive`. Proses archiving dijadwalkan manual via admin. |
 | **System Health Monitoring** ✅ | Monitoring uptime, error rate, database health, storage usage — Halaman `/dashboard/system/health` + API `/api/v1/system/health` |
 
 ## 10. User Roles & Hak Akses
@@ -981,8 +981,8 @@ user_roles               → mapping user ke role
 barang                   → master barang (field: satuan — free-text, bukan tabel terpisah)
 kategori_barang          → kategori barang
 
-supplier                 → data supplier (termasuk marketplace, field: kontak — single contact)
-                         (planned: supplier_kontak — multiple kontak, belum diimplementasi)
+supplier                  → data supplier (termasuk marketplace, field: kontak — single contact)
+                         (+ supplier_kontak — multiple kontak ✅ API + detail page kontak management)
 
 customer                 → data customer
 customer_pic             → multiple PIC per customer

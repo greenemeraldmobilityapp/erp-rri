@@ -199,3 +199,26 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 
 ### Verification
 - Lint: `npm run lint` — 0 errors, 3 warnings (pre-existing, intentional)
+
+## Fase 14 — PRD Gap Closure (May 2026)
+
+### P0 — Implemented
+- [x] **Maintenance Mode** — Toggle di `/dashboard/system/maintenance`. API: `GET/POST /api/v1/system/maintenance`. `site_settings` table (key-value). `MaintenanceGuard` component di dashboard layout — non-admin users melihat halaman "Sedang Perbaikan". Sidebar link di System group (owner/admin only).
+- [x] **Data Archiving** — Halaman `/dashboard/system/archive`. API: `GET/POST /api/v1/system/archive`. `data_archive` table (JSONB storage). Arsip data transaksi >12 bulan dari 13 tabel utama. Sidebar link di System group.
+
+### Zod Validation Gaps
+- [x] **Gudang API** — Added Zod schema validation to POST (`createSchema`) and PUT (`updateSchema`) handlers at `/api/v1/master/gudang` and `[id]`.
+- [x] **Stock Opname API** — Added Zod schema for POST (`createSchema` with nested items) and PUT (`updateSchema`) at `/api/v1/inventory/stock-opname` and `[id]`.
+- [x] **Supplier API Zod Fix** — Corrected stale schemas at `supplier/route.ts` and `supplier/[id]/route.ts`: replaced wrong fields (`email`, `no_telp`, `alamat`, `npwp`) with actual DB columns (`nama_toko`, `link_toko`, `no_rekening`, `terms_of_payment`, `is_marketplace`, `is_active`). Uses snake_case matching frontend POST body.
+
+### Supplier Enhancement
+- [x] **Supplier Edit Page** — Created missing page at `/dashboard/master/supplier/[id]/edit`. Full form: nama, kode, nama_toko, link_toko, no_rekening, kontak, TOP, marketplace toggle, active toggle. Uses `apiFetch` + Zod validation.
+- [x] **Supplier Kontak Email Field** — Added email input field in kontak form on detail page (`[id]/page.tsx`). POST body updated to include email.
+
+### Known Gaps (Not Fixed)
+- `supplier_kontak` — Already has DB table, API routes, and detail page kontak management. Missing: inline kontak management on supplier create page (still uses legacy single `kontak` text field).
+- `customer_pic` — Has no API routes (unlike `supplier_kontak` which is fully wired).
+
+### Verification
+- Build: `npm run build` — 0 errors, 0 warnings
+- Lint: `npm run lint` — 0 errors, 3 warnings (pre-existing)

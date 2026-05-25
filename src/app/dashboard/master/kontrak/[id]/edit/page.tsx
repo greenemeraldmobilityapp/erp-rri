@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
@@ -26,7 +27,7 @@ export default function EditKontrakPage() {
   const pathname = usePathname();
   const id = pathname.split('/').at(-2);
 
-  const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<KontrakFormValues>({
+  const { register, handleSubmit, formState: { errors, isDirty }, reset, watch, setValue } = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),
   });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
@@ -181,12 +182,7 @@ export default function EditKontrakPage() {
           <label htmlFor="tanggalMulai" className="block text-sm font-medium mb-1">
             Tanggal Mulai
           </label>
-          <input
-            id="tanggalMulai"
-            type="date"
-            {...register('tanggalMulai')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.tanggalMulai ? 'border-destructive' : ''}`}
-          />
+          <DatePicker value={watch('tanggalMulai')} onChange={(v) => setValue('tanggalMulai', v)} />
           {errors.tanggalMulai && <p className="text-destructive text-sm mt-1">{errors.tanggalMulai.message}</p>}
         </div>
 
@@ -194,12 +190,7 @@ export default function EditKontrakPage() {
           <label htmlFor="tanggalSelesai" className="block text-sm font-medium mb-1">
             Tanggal Selesai
           </label>
-          <input
-            id="tanggalSelesai"
-            type="date"
-            {...register('tanggalSelesai')}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.tanggalSelesai ? 'border-destructive' : ''}`}
-          />
+          <DatePicker value={watch('tanggalSelesai')} onChange={(v) => setValue('tanggalSelesai', v)} />
           {errors.tanggalSelesai && <p className="text-destructive text-sm mt-1">{errors.tanggalSelesai.message}</p>}
         </div>
 

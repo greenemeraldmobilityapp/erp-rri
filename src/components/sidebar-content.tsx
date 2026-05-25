@@ -5,7 +5,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { ChevronDown, Settings, Activity } from 'lucide-react'
+import { ChevronDown, Settings, Activity, Wrench, Archive } from 'lucide-react'
 import {
   Home, Package, Users, Building2, UserCircle, BookOpen,   FileText, FileSpreadsheet, FolderTree, Briefcase, Users2,
   Search, ShoppingCart, Landmark, Receipt, ReceiptText, BookOpenCheck, TrendingUp, TrendingDown,
@@ -112,6 +112,8 @@ const menuItems: MenuItem[] = [
   { label: 'System', icon: ShieldCheck, children: [
     { href: '/dashboard/system/users', label: 'User Management', icon: Users },
     { href: '/dashboard/system/health', label: 'System Health', icon: Activity },
+    { href: '/dashboard/system/maintenance', label: 'Maintenance', icon: Wrench },
+    { href: '/dashboard/system/archive', label: 'Data Archive', icon: Archive },
     { href: '/dashboard/system/profile', label: 'Profil', icon: Settings },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },

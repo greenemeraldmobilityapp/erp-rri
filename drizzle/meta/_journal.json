@@ -71,6 +71,20 @@
       "when": 1779689091435,
       "tag": "0009_material_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1779726018364,
+      "tag": "0010_first_thunderball",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1779726657670,
+      "tag": "0011_luxuriant_skrulls",
+      "breakpoints": true
     }
   ]
 }

@@ -39,9 +39,26 @@
  *         $ref: '#/components/responses/Unauthorized'
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
-import { notFound, internalError } from '@/lib/api/errors'
+import { badRequest, notFound, internalError } from '@/lib/api/errors'
+
+const updateItemSchema = z.object({
+  barangId: z.string().min(1),
+  stokSistem: z.coerce.number().int().default(0),
+  stokFisik: z.coerce.number().int().optional(),
+  selisih: z.coerce.number().int().default(0),
+  keterangan: z.string().optional(),
+})
+
+const updateSchema = z.object({
+  petugas: z.string().min(1).optional(),
+  status: z.string().optional(),
+  keterangan: z.string().optional(),
+  gudangId: z.string().optional(),
+  items: z.array(updateItemSchema).optional(),
+})
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(request)
@@ -59,22 +76,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (auth.error) return auth.error
   const { id } = await params
   const body = await request.json()
+  const parsed = updateSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const updates: Record<string, unknown> = {}
-  if (body.petugas) updates.petugas = body.petugas
-  if (body.status) updates.status = body.status
-  if (body.keterangan !== undefined) updates.keterangan = body.keterangan
-  if (body.gudangId) updates.gudang_id = body.gudangId
+  if (parsed.data.petugas) updates.petugas = parsed.data.petugas
+  if (parsed.data.status) updates.status = parsed.data.status
+  if (parsed.data.keterangan !== undefined) updates.keterangan = parsed.data.keterangan
+  if (parsed.data.gudangId) updates.gudang_id = parsed.data.gudangId
 
   const { data, error } = await supabaseAdmin.from('stock_opname').update(updates).eq('id', id).select().single()
   if (error) return internalError(error.message)
   if (!data) return notFound('Stock opname tidak ditemukan')
 
-  if (body.items) {
+  if (parsed.data.items) {
     await supabaseAdmin.from('stock_opname_item').delete().eq('stock_opname_id', id)
-    if (body.items.length) {
+    if (parsed.data.items.length) {
       const { error: itemError } = await supabaseAdmin.from('stock_opname_item').insert(
-        body.items.map((item: { barangId: string; stokFisik?: number; stokSistem?: number; selisih?: number; keterangan?: string }) => ({
+        parsed.data.items.map((item) => ({
           stock_opname_id: id,
           barang_id: item.barangId,
           stok_sistem: item.stokSistem ?? 0,

@@ -7,10 +7,12 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 const schema = z.object({
   nama: z.string().min(1, 'Nama supplier harus diisi').optional(),
   kode: z.string().min(1, 'Kode supplier harus diisi').optional(),
-  email: z.string().email('Email tidak valid').optional().or(z.literal('')),
-  no_telp: z.string().optional(),
-  alamat: z.string().optional(),
-  npwp: z.string().optional(),
+  nama_toko: z.string().optional(),
+  link_toko: z.string().optional(),
+  no_rekening: z.string().optional(),
+  kontak: z.string().optional(),
+  terms_of_payment: z.string().optional(),
+  is_marketplace: z.boolean().optional(),
   is_active: z.boolean().optional(),
 })
 

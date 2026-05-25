@@ -54,6 +54,7 @@ export default function DetailSupplierPage() {
   const [newNama, setNewNama] = useState('')
   const [newJabatan, setNewJabatan] = useState('')
   const [newNoHp, setNewNoHp] = useState('')
+  const [newEmail, setNewEmail] = useState('')
   const [adding, setAdding] = useState(false)
 
   useEffect(() => {
@@ -84,10 +85,10 @@ export default function DetailSupplierPage() {
     try {
       await apiFetch('/api/v1/master/supplier-kontak', {
         method: 'POST',
-        body: JSON.stringify({ supplier_id: id, nama: newNama, jabatan: newJabatan || undefined, no_hp: newNoHp || undefined }),
+        body: JSON.stringify({ supplier_id: id, nama: newNama, jabatan: newJabatan || undefined, no_hp: newNoHp || undefined, email: newEmail || undefined }),
       })
       toast.success('Kontak berhasil ditambahkan')
-      setNewNama(''); setNewJabatan(''); setNewNoHp('')
+      setNewNama(''); setNewJabatan(''); setNewNoHp(''); setNewEmail('')
       const { data: kontaks } = await apiFetch<SupplierKontak[]>(`/api/v1/master/supplier-kontak?supplier_id=${id}`)
       setKontakRecords(kontaks ?? [])
     } catch (err) {
@@ -249,6 +250,8 @@ export default function DetailSupplierPage() {
             </div>
             <div className="flex gap-2">
               <input type="text" placeholder="No. HP" value={newNoHp} onChange={(e) => setNewNoHp(e.target.value)}
+                className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
+              <input type="email" placeholder="Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
                 className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
               <Button size="sm" onClick={handleAdd} disabled={!newNama || adding}>
                 {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}

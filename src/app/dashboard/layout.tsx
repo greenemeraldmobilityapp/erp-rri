@@ -10,6 +10,7 @@ import { SidebarContent } from '@/components/sidebar-content'
 import { MobileSidebar } from '@/components/mobile-sidebar'
 import { AuthGuardClient } from './auth-guard-client'
 import { ErrorBoundaryProvider } from '@/components/error-boundary-provider'
+import { MaintenanceGuard } from '@/components/maintenance-guard'
 
 export const dynamic = "force-dynamic"
 
@@ -20,6 +21,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <OnboardingProvider>
         <AuthGuardClient>
           <ErrorBoundaryProvider>
+            <MaintenanceGuard>
             <div className="flex min-h-screen bg-background">
               <aside className="hidden md:flex w-64 flex-col border-r bg-card">
                 <div className="p-4 border-b space-y-3" data-tour="sidebar-header">
@@ -37,6 +39,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </div>
               </main>
             </div>
+            </MaintenanceGuard>
           </ErrorBoundaryProvider>
         </AuthGuardClient>
       </OnboardingProvider>

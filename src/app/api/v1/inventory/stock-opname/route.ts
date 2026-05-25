@@ -23,9 +23,24 @@
  *         $ref: '#/components/responses/Unauthorized'
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { verifyAuth } from '@/lib/api/auth'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { badRequest, internalError } from '@/lib/api/errors'
+
+const stockOpnameItemSchema = z.object({
+  barangId: z.string().min(1),
+  stokSistem: z.coerce.number().int().default(0),
+  keterangan: z.string().optional(),
+})
+
+const createSchema = z.object({
+  nomor: z.string().min(1, 'Nomor wajib diisi'),
+  petugas: z.string().min(1, 'Petugas wajib diisi'),
+  gudangId: z.string().optional(),
+  keterangan: z.string().optional(),
+  items: z.array(stockOpnameItemSchema).optional(),
+})
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
@@ -44,20 +59,21 @@ export async function POST(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
   const body = await request.json()
-  if (!body.nomor || !body.petugas) return badRequest('Nomor dan petugas wajib diisi')
+  const parsed = createSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const { data, error } = await supabaseAdmin.from('stock_opname').insert({
-    nomor: body.nomor,
-    gudang_id: body.gudangId ?? null,
-    petugas: body.petugas,
+    nomor: parsed.data.nomor,
+    gudang_id: parsed.data.gudangId ?? null,
+    petugas: parsed.data.petugas,
     status: 'draft',
-    keterangan: body.keterangan ?? null,
+    keterangan: parsed.data.keterangan ?? null,
   }).select().single()
   if (error) return internalError(error.message)
 
-  if (body.items?.length) {
+  if (parsed.data.items?.length) {
     const { error: itemError } = await supabaseAdmin.from('stock_opname_item').insert(
-      body.items.map((item: { barangId: string; stokSistem: number; keterangan?: string }) => ({
+      parsed.data.items.map((item) => ({
         stock_opname_id: data.id,
         barang_id: item.barangId,
         stok_sistem: item.stokSistem ?? 0,

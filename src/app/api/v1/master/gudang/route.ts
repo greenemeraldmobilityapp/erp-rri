@@ -23,9 +23,16 @@
  *         $ref: '#/components/responses/Unauthorized'
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
+
+const createSchema = z.object({
+  nama: z.string().min(1, 'Nama gudang harus diisi'),
+  lokasi: z.string().optional(),
+  keterangan: z.string().optional(),
+})
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAuth(req)
@@ -40,7 +47,9 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error
   const body = await request.json().catch(() => null)
   if (!body) return badRequest('Invalid JSON body')
-  const { data, error } = await supabaseAdmin.from('gudang').insert(body).select().single()
+  const parsed = createSchema.safeParse(body)
+  if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
+  const { data, error } = await supabaseAdmin.from('gudang').insert(parsed.data).select().single()
   if (error) return internalError(error)
   return NextResponse.json({ data })
 }
