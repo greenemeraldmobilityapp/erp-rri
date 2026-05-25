@@ -57,6 +57,20 @@
       "when": 1779652021858,
       "tag": "0007_add_audit_log_user_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779688927217,
+      "tag": "0008_mean_doctor_doom",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779689091435,
+      "tag": "0009_material_tinkerer",
+      "breakpoints": true
     }
   ]
 }

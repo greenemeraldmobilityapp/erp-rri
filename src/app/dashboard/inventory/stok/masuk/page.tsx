@@ -73,7 +73,7 @@ export default function StokMasukPage() {
       toast.success('Stok masuk dicatat!')
       router.push('/dashboard/inventory/stok')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error')
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
     }

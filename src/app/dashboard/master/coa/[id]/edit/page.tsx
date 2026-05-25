@@ -32,7 +32,7 @@ const TIPE_OPTIONS = [
 export default function EditCOAPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const id = pathname.split('/').pop();
+  const id = pathname.split('/').at(-2);
 
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<COAFormValues>({
     resolver: zodResolver(coaSchema),

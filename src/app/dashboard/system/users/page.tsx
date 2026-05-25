@@ -69,7 +69,7 @@ export default function UserManagementPage() {
         method: 'POST',
         body: JSON.stringify(newUser),
       })
-      toast.success('User berhasil dibuat')
+      toast.success('Pengguna berhasil dibuat')
       setOpen(false)
       setNewUser({ email: '', password: '', name: '', role: 'sales' })
       fetchUsers()
@@ -86,7 +86,7 @@ export default function UserManagementPage() {
       })
       toast.success(`${user.is_active ? 'Menonaktifkan' : 'Mengaktifkan'} ${user.name}`)
       fetchUsers()
-    } catch { toast.error('Gagal update user') }
+    } catch { toast.error('Gagal memperbarui pengguna') }
   }
 
   const filtered = data.filter(

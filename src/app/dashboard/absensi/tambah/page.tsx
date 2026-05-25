@@ -17,7 +17,7 @@ export default function TambahAbsensiPage() {
   useEffect(() => { apiFetch<Array<{ id: string; nama: string; nik: string; is_active: boolean }>>('/api/v1/master/karyawan').then(r => { const d = r.data ?? []; setKOpts(d.filter(k => k.is_active !== false).map(x => ({ value: x.id, label: `[${x.nik}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')) }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/absensi', { method: 'POST', body: JSON.stringify(data) }); toast.success('Absensi dicatat!'); router.push('/dashboard/absensi') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-xl space-y-6">

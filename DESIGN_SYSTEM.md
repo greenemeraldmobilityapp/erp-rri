@@ -20,7 +20,7 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
 | bg-background | #F9FAFB | #111827 | Latar kanvas halaman (60% dominasi visual) |
 | text-foreground | #111827 | #F9FAFB | Body text utama (Tajam & kontras tinggi) |
 | text-muted-foreground | #6B7280 | #9CA3AF | Label, placeholder, deskripsi, teks sekunder |
-| bg-muted | #F3F4F6 | #1F2937 | Table header, seksi penunjang, alternating rows |
+| bg-muted | #F3F4F6 | #1F2937 | Seksi penunjang, alternating rows |
 | bg-card | #FFFFFF | #1F2937 | Kartu, kontainer form, kontainer tabel |
 | text-card-foreground | #111827 | #F9FAFB | Text on card bg |
 | bg-destructive | #EF4444 | #F87171 | Hapus, error, tindakan pembatalan |
@@ -55,6 +55,7 @@ Gunakan **selalu** CSS variables, jangan hardcoded Tailwind values:
 ❌ Jangan pakai raw <input type="checkbox">.
 ### 3.5 Table
 ✅ Pakai <Table>, <TableHeader>, <TableBody>, <TableRow>, <TableHead>, <TableCell>.
+✅ **TableHead** (`table.tsx`): `bg-primary/5 text-primary font-medium` — global via base component. Light: `#0000FF` at 5% bg / `#0000FF` text. Dark: `#3B82F6` at 5% bg / `#3B82F6` text.
 ❌ Jangan pakai raw <table>, <th>, <tr>, <td>.
 ### 3.6 Badge
 ✅ Pakai <Badge> dengan variant:
@@ -110,7 +111,8 @@ Aturan spasi huruf (*letter-spacing*) wajib diterapkan pada judul entitas utama 
 | Section title | text-lg font-heading font-semibold tracking-tight | Lexend |
 | Card title | text-xl font-heading font-semibold tracking-tight | Lexend |
 | Body | text-sm leading-relaxed | Source Sans 3 |
-| Label / Table Head | text-xs font-semibold uppercase tracking-wider text-muted-foreground | Source Sans 3 |
+| Label | text-xs font-semibold uppercase tracking-wider text-muted-foreground | Source Sans 3 |
+| Table Head | text-sm font-medium bg-primary/5 text-primary | Source Sans 3 |
 | Muted | text-sm text-muted-foreground | Source Sans 3 |
 ## 5. Icons
  * Semua ikon dari **Lucide** (lucide-react)
@@ -313,7 +315,7 @@ Setiap blok grup informasi wajib dibungkus dalam wadah <Card> mewah dengan struk
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 
 <Table>
-  <TableHeader className="bg-muted">
+  <TableHeader>
     <TableRow>
       <TableHead>Kode Akun</TableHead>
       <TableHead>Deskripsi Mata Anggaran</TableHead>

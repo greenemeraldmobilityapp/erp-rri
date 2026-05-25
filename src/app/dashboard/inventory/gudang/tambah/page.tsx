@@ -9,7 +9,7 @@ export default function TambahGudangPage() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true); const fd = new FormData(e.currentTarget)
     try { await apiFetch('/api/v1/master/gudang', { method: 'POST', body: JSON.stringify({ nama: fd.get('nama'), lokasi: fd.get('lokasi'), keterangan: fd.get('keterangan') }) }); toast.success('Gudang berhasil!'); router.push('/dashboard/inventory/gudang') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-xl space-y-6">

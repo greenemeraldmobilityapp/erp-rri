@@ -11,7 +11,7 @@ export default function EditGudangPage() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true); const fd = new FormData(e.currentTarget)
     try { await apiFetch(`/api/v1/master/gudang/${params.id}`, { method: 'PUT', body: JSON.stringify({ nama: fd.get('nama'), lokasi: fd.get('lokasi'), keterangan: fd.get('keterangan') }) }); toast.success('Gudang diupdate!'); router.push('/dashboard/inventory/gudang') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
   return (

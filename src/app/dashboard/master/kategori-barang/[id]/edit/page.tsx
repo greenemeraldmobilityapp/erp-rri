@@ -21,7 +21,7 @@ type FormValues = z.input<typeof schema>;
 export default function EditKategoriPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const id = pathname.split('/').pop();
+  const id = pathname.split('/').at(-2);
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<FormValues>({ resolver: zodResolver(schema) });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(isDirty);
   const [loading, setLoading] = useState(false);

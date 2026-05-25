@@ -55,7 +55,7 @@ export default function StokPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'stok-barang.csv'; a.click()
     URL.revokeObjectURL(url)
-    toast.success('Data stok diexport!')
+    toast.success('Data stok diekspor!')
   }
 
   return (

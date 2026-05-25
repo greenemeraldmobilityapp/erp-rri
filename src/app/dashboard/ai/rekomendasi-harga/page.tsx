@@ -34,7 +34,7 @@ export default function RekomendasiHargaPage() {
       setRekom(r.data);
       setSearched(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error');
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setLoading(false);
     }

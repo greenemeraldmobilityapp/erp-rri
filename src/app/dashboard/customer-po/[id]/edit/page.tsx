@@ -26,7 +26,7 @@ export default function EditPoPage() {
       }
       toast.success('Diupdate!'); router.push('/dashboard/customer-po')
     }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
   return (

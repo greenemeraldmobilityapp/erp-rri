@@ -22,7 +22,7 @@ export default function EditNegoiasiPage() {
 
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch(`/api/v1/negoiasi/${params.id}`, { method: 'PUT', body: JSON.stringify(data) }); toast.success('Diupdate!'); router.push('/dashboard/negoiasi') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>

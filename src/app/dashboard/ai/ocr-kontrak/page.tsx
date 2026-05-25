@@ -63,7 +63,7 @@ export default function OcrKontrakPage() {
       const historyData = await apiFetch<OcrHistory[]>('/api/v1/ai/ocr-kontrak');
       setHistory(historyData.data ?? []);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error');
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setProcessing(false);
     }

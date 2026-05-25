@@ -23,7 +23,7 @@ export default function TambahPoPage() {
   }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/customer-po', { method: 'POST', body: JSON.stringify(data) }); toast.success('PO berhasil!'); router.push('/dashboard/customer-po') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-3xl space-y-6">

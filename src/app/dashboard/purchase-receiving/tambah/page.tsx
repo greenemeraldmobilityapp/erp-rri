@@ -43,8 +43,8 @@ export default function TambahReceivingPage() {
   }, [selectedPoId, setValue])
 
   const onSubmit = async (data: FV) => {
-    setSubmitting(true); try { await apiFetch('/api/v1/purchase-receiving', { method: 'POST', body: JSON.stringify(data) }); toast.success('Receiving berhasil!'); router.push('/dashboard/purchase-receiving') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    setSubmitting(true); try { await apiFetch('/api/v1/purchase-receiving', { method: 'POST', body: JSON.stringify(data) }); toast.success('Penerimaan berhasil!'); router.push('/dashboard/purchase-receiving') }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-3xl space-y-6">

@@ -25,7 +25,7 @@ type PICFormValues = z.input<typeof picSchema>;
 export default function EditPICCustomerPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const id = pathname.split('/').pop();
+  const id = pathname.split('/').at(-2);
 
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<PICFormValues>({
     resolver: zodResolver(picSchema),

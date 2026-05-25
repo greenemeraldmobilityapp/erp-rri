@@ -24,7 +24,7 @@ type KontrakFormValues = z.input<typeof kontrakSchema>;
 export default function EditKontrakPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const id = pathname.split('/').pop();
+  const id = pathname.split('/').at(-2);
 
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),

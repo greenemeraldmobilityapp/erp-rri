@@ -17,7 +17,7 @@ export default function TambahNegoiasiPage() {
   useEffect(() => { apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/quotation').then(r => setQtnOpts((r.data ?? []).map(q => ({ value: q.id, label: q.nomor })))).catch(() => toast.error('Gagal memuat data')) }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/negoiasi', { method: 'POST', body: JSON.stringify(data) }); toast.success('Negosiasi berhasil!'); router.push('/dashboard/negoiasi') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-3xl space-y-6">

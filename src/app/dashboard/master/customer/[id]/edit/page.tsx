@@ -27,7 +27,7 @@ type CustomerFormValues = z.input<typeof customerSchema>;
 export default function EditCustomerPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const id = pathname.split('/').pop();
+  const id = pathname.split('/').at(-2);
   
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),

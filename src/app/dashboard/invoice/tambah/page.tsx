@@ -35,7 +35,7 @@ export default function TambahInvoicePage() {
   const onSubmit = async (data: FV) => {
     const items = data.items.map(i => ({ ...i, ppn: i.ppn ?? calcPPN(i), pph: i.pph ?? (pphRate ? calcPPh(i) : undefined) }))
     setSubmitting(true); try { await apiFetch('/api/v1/invoice', { method: 'POST', body: JSON.stringify({ ...data, items }) }); toast.success('Invoice berhasil!'); router.push('/dashboard/invoice') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   if (loading) return <FormSkeleton />
   return (

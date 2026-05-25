@@ -82,12 +82,12 @@ export function MasterDataTable<T extends { id: string }>({
             <TableHeader>
               <TableRow>
                 {showRowNumber && (
-                  <TableHead className="w-12 text-xs text-muted-foreground">#</TableHead>
+                  <TableHead className="w-12 text-xs">#</TableHead>
                 )}
                 {columns.map((col, idx) => (
                   <TableHead
                     key={idx}
-                    className={`${col.sortKey ? "cursor-pointer select-none hover:text-foreground" : ""} ${col.headerClassName ?? ""}`}
+                    className={`${col.sortKey ? "cursor-pointer select-none hover:text-primary" : ""} ${col.headerClassName ?? ""}`}
                     onClick={col.sortKey ? () => toggleSort(col.sortKey!) : undefined}
                   >
                     <div className="flex items-center gap-1">

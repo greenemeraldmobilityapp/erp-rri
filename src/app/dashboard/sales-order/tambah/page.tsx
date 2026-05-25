@@ -24,7 +24,7 @@ export default function TambahSoPage() {
   }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/sales-order', { method: 'POST', body: JSON.stringify(data) }); toast.success('SO berhasil!'); router.push('/dashboard/sales-order') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-3xl space-y-6">

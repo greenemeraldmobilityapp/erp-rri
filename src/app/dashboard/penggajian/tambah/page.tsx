@@ -58,7 +58,7 @@ export default function TambahPenggajianPage() {
       toast.success('Penggajian berhasil disimpan!'); 
       router.push('/dashboard/penggajian') 
     }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } 
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } 
     finally { setSubmitting(false) }
   }
 

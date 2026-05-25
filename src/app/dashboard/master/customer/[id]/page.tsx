@@ -91,7 +91,7 @@ export default function DetailCustomerPage() {
         method: 'POST',
         body: JSON.stringify({ customer_id: id, top: newTop }),
       })
-      toast.success('Terms of Payment berhasil ditambahkan')
+      toast.success('Syarat Pembayaran berhasil ditambahkan')
       setNewTop('')
       const { data: records } = await apiFetch<CustomerTop[]>(`/api/v1/master/customer-top?customer_id=${id}`)
       setTopRecords(records ?? [])
@@ -105,7 +105,7 @@ export default function DetailCustomerPage() {
   const handleDeleteTop = async (topId: string) => {
     try {
       await apiFetch(`/api/v1/master/customer-top/${topId}`, { method: 'DELETE' })
-      toast.success('Terms of Payment berhasil dihapus')
+      toast.success('Syarat Pembayaran berhasil dihapus')
       setTopRecords((prev) => prev.filter((r) => r.id !== topId))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Gagal menghapus')

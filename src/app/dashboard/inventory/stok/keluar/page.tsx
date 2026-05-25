@@ -72,7 +72,7 @@ export default function StokKeluarPage() {
       toast.success('Stok keluar dicatat!')
       router.push('/dashboard/inventory/stok')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error')
+      toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
     }

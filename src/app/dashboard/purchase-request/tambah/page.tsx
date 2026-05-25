@@ -21,7 +21,7 @@ export default function TambahPrPage() {
   }, [])
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/purchase-request', { method: 'POST', body: JSON.stringify(data) }); toast.success('PR berhasil!'); router.push('/dashboard/purchase-request') }
-    catch (err) { toast.error(err instanceof Error ? err.message : 'Error') } finally { setSubmitting(false) }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
   return (
     <div className="max-w-3xl space-y-6">
