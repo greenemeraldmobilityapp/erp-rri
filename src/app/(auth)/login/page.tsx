@@ -8,7 +8,7 @@ import { supabase } from '@/lib/db/client'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -112,7 +112,7 @@ export default function LoginPage() {
          </div>
        
        {/* Login card */}
-        <Card className="w-full max-w-md border-0 shadow-2xl sm:border sm:shadow-xl bg-card/80 backdrop-blur-sm border border-border/50">
+        <Card className="w-full max-w-md border-0 sm:border bg-card/80 backdrop-blur-sm border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01),0_4px_6px_-4px_rgba(0,0,0,0.01)]">
          <CardHeader className="space-y-3 pb-6 text-center">
             <div className="flex justify-center mb-4">
                 <div className="p-3 bg-accent/10 rounded-full">
@@ -156,7 +156,7 @@ export default function LoginPage() {
                )}
 
            <div className="space-y-2">
-             <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</Label>
              <div className="relative">
                 <Input
                   id="email"
@@ -168,12 +168,9 @@ export default function LoginPage() {
                   aria-invalid={!!errors.email}
                   className="h-12 pl-10 rounded-lg border border-border bg-muted/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
                 />
-               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                   <polyline points="22,6 12,13 2,6" />
-                 </svg>
-               </div>
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Mail className="h-5 w-5" />
+                </div>
              </div>
              {errors.email && (
                <p className="text-sm font-medium text-destructive flex items-center gap-1" role="alert">
@@ -183,7 +180,7 @@ export default function LoginPage() {
            </div>
 
            <div className="space-y-2">
-             <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</Label>
              <div className="relative">
                 <Input
                   id="password"
@@ -194,13 +191,9 @@ export default function LoginPage() {
                   aria-invalid={!!errors.password}
                   className="h-12 pl-10 rounded-lg border border-border bg-muted/50 hover:border-accent/50 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
                 />
-               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                   <circle cx="12" cy="16" r="1" />
-                   <path d="m7 11 2.5 4.5L17 11" />
-                 </svg>
-               </div>
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Lock className="h-5 w-5" />
+                </div>
                <button
                  type="button"
                  onClick={() => setShowPassword(!showPassword)}

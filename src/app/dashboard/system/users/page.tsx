@@ -41,9 +41,19 @@ export default function UserManagementPage() {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const r = await apiFetch<{ data: UserData[] }>('/api/v1/users', { method: 'GET' })
-      if (mountedRef.current) setData(r.data?.data ?? [])
-    } catch { if (mountedRef.current) setData([]) }
+      const r = await apiFetch<UserData[]>('/api/v1/users', { method: 'GET' })
+      if (mountedRef.current) {
+        setData(r.data ?? [])
+        if (!r.data?.length) {
+          toast.warning('Data user kosong. Tambahkan user baru.')
+        }
+      }
+    } catch (err: unknown) {
+      if (mountedRef.current) {
+        setData([])
+        toast.error(err instanceof Error ? err.message : 'Gagal memuat data user')
+      }
+    }
     finally { if (mountedRef.current) setLoading(false) }
   }
 

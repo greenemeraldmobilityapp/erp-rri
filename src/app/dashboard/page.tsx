@@ -12,7 +12,6 @@ import GudangDashboard from '@/components/dashboards/gudang'
 import FinanceDashboard from '@/components/dashboards/finance'
 import { StatusBadge } from '@/components/status-badge'
 import { RevenueChart } from '@/components/revenue-chart'
-import { PageHeader } from '@/components/page-header'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
