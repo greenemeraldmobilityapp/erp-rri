@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm"
 import { pgTable, text, timestamp, integer, real } from "drizzle-orm/pg-core";
 
-export const rfqItem = pgTable("rfq_item", {
+export const rfqSupplierItem = pgTable("rfq_supplier_item", {
  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
- rfqId: text("rfq_id").notNull(),
+ rfqSupplierId: text("rfq_supplier_id").notNull(),
  barangId: text("barang_id").notNull(),
  jumlah: integer("jumlah").notNull(),
  satuan: text("satuan"),

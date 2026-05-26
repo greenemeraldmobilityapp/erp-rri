@@ -79,7 +79,7 @@ export default function EditRfqPage() {
         harga_target: number | null
         keterangan: string | null
       }>
-    }>(`/api/v1/rfq/${id}`)
+    }>(`/api/v1/rfq-supplier/${id}`)
       .then((res) => {
         const rfq = res.data
         reset({
@@ -106,7 +106,7 @@ export default function EditRfqPage() {
   const onSubmit = async (data: RfqFormValues) => {
     setSubmitting(true)
     try {
-      await apiFetch(`/api/v1/rfq/${params.id}`, {
+      await apiFetch(`/api/v1/rfq-supplier/${params.id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
       })

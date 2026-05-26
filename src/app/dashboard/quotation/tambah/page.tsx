@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2, Upload, FileText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { FormSkeleton } from '@/components/ui/skeleton'
 
@@ -73,6 +73,9 @@ export default function TambahQuotationPage() {
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [fileUploading, setFileUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -96,7 +99,7 @@ export default function TambahQuotationPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>>('/api/v1/master/barang'),
-      apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/rfq'),
+      apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/rfq-customer'),
     ]).then(([customers, barang, rfqs]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}`, alamat: c.alamat ?? '' })))
       const bOptions = (barang.data ?? []).map(b => ({
@@ -142,16 +145,28 @@ export default function TambahQuotationPage() {
   const onSubmit = async (data: QtnFormValues) => {
     setSubmitting(true)
     try {
-      await apiFetch('/api/v1/quotation', {
+      const res = await apiFetch<{ id: string }>('/api/v1/quotation', {
         method: 'POST',
         body: JSON.stringify(data),
       })
+
+      if (uploadFile) {
+        setFileUploading(true)
+        const toastId = toast.loading('Mengupload file RFQ...')
+        const formData = new FormData()
+        formData.append('file', uploadFile)
+        const { apiFetchFormData } = await import('@/lib/api/client')
+        await apiFetchFormData(`/api/v1/quotation/${res.data.id}/documents`, formData)
+        toast.success('File RFQ berhasil diupload!', { id: toastId })
+      }
+
       toast.success('Quotation berhasil dibuat!')
       router.push('/dashboard/quotation')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
+      setFileUploading(false)
     }
   }
 
@@ -187,6 +202,24 @@ export default function TambahQuotationPage() {
                 <FormField control={control} name="lampiran" render={({ field }) => (
                   <FormItem><FormLabel>Lampiran</FormLabel><FormControl><Input {...field} placeholder="Softcopy Penawaran Harga" /></FormControl><FormMessage /></FormItem>
                 )} />
+              </div>
+              <div className="flex items-center gap-3 rounded-lg border p-3">
+                <span className="text-sm font-medium shrink-0">File RFQ Customer:</span>
+                {uploadFile ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs max-w-[200px]">
+                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{uploadFile.name}</span>
+                    <button type="button" onClick={() => setUploadFile(null)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Belum ada file</span>
+                )}
+                <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); if (e.target) e.target.value = ''; }} />
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="ml-auto shrink-0">
+                  <Upload className="h-3.5 w-3.5 mr-1" /> Pilih File
+                </Button>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="perihal" render={({ field }) => (

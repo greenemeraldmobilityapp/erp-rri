@@ -68,7 +68,7 @@ interface Quotation {
   is_active: boolean
   created_at: string
   customer: { id: string; nama: string; kode: string }
-  rfq: { nomor: string } | null
+  rfq_customer: { nomor: string } | null
   items: QuotationItem[]
 }
 

@@ -25,7 +25,7 @@ interface Kontrak {
   id: string
   nomor_kontrak: string | null
   nama: string
-  customer: { nama: string }[]
+  customer: { nama: string } | null
   tanggal_mulai: string | null
   tanggal_selesai: string | null
   is_active: boolean
@@ -43,8 +43,9 @@ export default function KontrakPage() {
       .from("kontrak")
       .select(`
         id,
+        nomor_kontrak,
         nama,
-        customer!inner(nama),
+        customer!customer_id(nama),
         tanggal_mulai,
         tanggal_selesai,
         is_active,
@@ -53,7 +54,7 @@ export default function KontrakPage() {
       .order("created_at", { ascending: false })
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as Kontrak[])
+        else setData((result || []) as unknown as Kontrak[])
         setLoading(false)
       })
   }, [])
@@ -143,7 +144,7 @@ export default function KontrakPage() {
   const columns: Column<Kontrak>[] = [
     { header: "Nomor Kontrak", accessor: (item) => item.nomor_kontrak || "-", sortKey: "nomor_kontrak" },
     { header: "Nama Kontrak", accessor: (item) => item.nama, sortKey: "nama" },
-    { header: "Customer", accessor: (item) => item.customer?.[0]?.nama || "-" },
+    { header: "Customer", accessor: (item) => item.customer?.nama || "-" },
     { header: "Tanggal Mulai", accessor: (item) => formatDate(item.tanggal_mulai), sortKey: "tanggal_mulai" },
     { header: "Tanggal Selesai", accessor: (item) => formatDate(item.tanggal_selesai), sortKey: "tanggal_selesai" },
     { header: "Status", accessor: (item) => statusBadge(item.is_active), sortKey: "is_active" },

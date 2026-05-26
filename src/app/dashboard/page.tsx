@@ -67,7 +67,7 @@ export default async function DashboardPage() {
     recentQuotation, recentSO, recentInvoice, recentPO,
     lastMonthKwitansis,
     sixMonthRevenue,
-    rfq,
+    rfqCustomer,
     invoiceItems, customersData, kategoriBarang, stokDetail, barangDetail,
     allInvoices,
   ] = await Promise.all([
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
     supabase.from('purchase_order').select('id, nomor, tanggal, status').order('created_at', { ascending: false }).limit(5),
     supabase.from('kwitansi').select('*, total').gte('created_at', lastMonthFirstDay).lte('created_at', lastMonthLastDay),
     supabase.from('kwitansi').select('created_at, total').gte('created_at', sixMonthsAgo).order('created_at', { ascending: true }),
-    supabase.from('rfq').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
+    supabase.from('rfq_customer').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
     supabase.from('invoice_item').select('invoice_id, harga, jumlah, diskon'),
     supabase.from('customer').select('id, nama'),
     supabase.from('kategori_barang').select('id, nama'),
@@ -232,7 +232,7 @@ export default async function DashboardPage() {
          <h2 className="text-lg font-heading font-semibold tracking-tight mb-3 flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-muted-foreground" />Sales Pipeline</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Quotation', count: rfq.count ?? 0, sub: 'RFQ dikirim ke supplier', icon: FileText, variant: 'primary' as const },
+            { label: 'RFQ Customer', count: rfqCustomer.count ?? 0, sub: 'Permintaan dari customer', icon: FileText, variant: 'primary' as const },
             { label: 'Quot. Diterima', count: quotations.count ?? 0, sub: 'Menunggu respon', icon: FileText, variant: 'info' as const },
             { label: 'PO Customer', count: custPos.count ?? 0, sub: 'Deal confirmed', icon: ShoppingCart, variant: 'success' as const },
             { label: 'Sales Order', count: sos.count ?? 0, sub: 'Dalam proses', icon: DollarSign, variant: 'success' as const },

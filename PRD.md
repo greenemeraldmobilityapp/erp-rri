@@ -324,14 +324,14 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Barang** | Data barang (nama, kode, kategori, satuan, spesifikasi, justification, image_url, harga beli default, harga jual default). Justification & image_url untuk lampiran Quotation SPH. |
+| **Barang** | Data barang (nama, kode, kategori, satuan, spesifikasi, justification, image_url, harga beli default, harga jual default, stok minimum, is_active). Kolom `kontrak_id` (FK ke kontrak, ON DELETE CASCADE) untuk barang yang dibuat dari import kontrak — jika kontrak dihapus, barang ikut terhapus otomatis. Justification & image_url untuk lampiran Quotation SPH. |
 | **Kategori Barang** | Pengelompokan barang (Cleaning Service, ATK, Peralatan, dll) |
 | **Supplier** | Data supplier — termasuk supplier marketplace (Shopee, Tokopedia) dengan field: nama toko, link toko, no. rekening, kontak. Untuk marketplace: field tambahan seperti link produk, marketplace, nama toko. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
 | **Customer** | Data customer, alamat, kontak. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
 | **PIC Customer** | Multiple PIC per customer (nama, jabatan, no. HP, email). Tracking per RFQ/DI/Kontrak — setiap dokumen bisa diassign ke PIC berbeda |
 | **Karyawan** | Data karyawan RRI (data pribadi, jabatan, gaji pokok) |
 | **Chart of Accounts (COA)** | Daftar akun untuk pembukuan keuangan |
-| **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Upload file PDF kontrak → AI OCR (NVIDIA NIM Phi-4) extract data kontrak + item barang → preview → edit → confirm → auto-create barang master + kontrak + items. Field: nomor kontrak, nama kontrak, customer, tanggal mulai/selesai/tanda tangan, penandatangan RRI & Customer (nama + jabatan), catatan. Upload 3 jenis dokumen: Kontrak PDF, RFQ dari Customer, Delivery Instruction (DI). Free-text items dengan kode_barang, nama_barang, satuan (tidak wajib linked ke master barang). |
+| **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Import item barang via paste JSON dari Gemini AI (ekstraksi manual PDF) → preview → edit → confirm → auto-create barang master + kontrak items. Barang import terikat ke kontrak (`kontrak_id` FK) — jika kontrak dihapus, barang ikut terhapus (ON DELETE CASCADE). Field: nomor kontrak, nama kontrak, customer, tanggal mulai/selesai/tanda tangan, penandatangan RRI & Customer (nama + jabatan), catatan. Upload 3 jenis dokumen: Kontrak PDF, RFQ dari Customer, Delivery Instruction (DI). Free-text items dengan kode_barang, nama_barang, satuan (tidak wajib linked ke master barang). |
 | **Harga Barang** | Histori harga beli dari supplier dan harga jual ke customer |
 | **Bulk Import Excel** ✅ | Import master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import`, API `POST /api/v1/tools/bulk-import`, sidebar Master Data group |
 
@@ -403,12 +403,12 @@ Sistem automation menghubungkan database events ke AI agents via 2 mekanisme:
 
 Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC Customer.
 
-**Jalur RFQ → Quotation → PO Customer:**
+**Jalur RFQ Customer → Quotation → PO Customer:**
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ (Request for Quotation)** | Merekam RFQ dari customer. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar) via Lampiran |
-| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_id (referensi), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (format dash). |
+| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar) via Lampiran. API: `/api/v1/rfq-customer`. Nomor otomatis: `RFQC/RRI/YY/MM/0001` |
+| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (format dash). |
 | **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal |
 | **Quotation → PO** | Konversi quotation yang deal menjadi PO customer — auto-generate Sales Order |
 
@@ -435,6 +435,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 
 | Sub-Modul | Deskripsi |
 |---|---|
+| **RFQ Supplier** | Request for Quotation ke Supplier — RRI meminta harga dari supplier. Tabel: `rfq_supplier`, `rfq_supplier_item`, `rfq_supplier_document`. API: `/api/v1/rfq-supplier`. UI: `/dashboard/rfq`. Nomor otomatis: `RFQ/RRI/YY/MM/0001` |
 | **Purchase Request (PR)** | Permintaan pembelian ketika stok tidak mencukupi. Auto-generate jika SO butuh barang yang stoknya kurang |
 | **Supplier Search** | Cari supplier — bisa dari database seller existing, atau via AI Search (Shopee/Tokopedia) |
 | **Purchase Order (PO)** | Order pembelian ke supplier. Untuk marketplace: field tambahan (link produk, nama toko, marketplace, no. resi) |
@@ -612,7 +613,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 | **Audit Trail** | Setiap create/update/delete tercatat: siapa, kapan, IP, data sebelum & sesudah. Tidak bisa dihapus |
 | **Activity Log** | Timeline per transaksi — lihat histori lengkap satu SO/PO/Invoice dari awal sampai selesai |
 | **Digital Approval** | Approve/Reject dengan digital signature (nama + timestamp) |
-| **Global Search** | Satu search bar (shortcut `/` atau `Cmd+K`) untuk mencari di 28 tabel: barang, customer, supplier, karyawan, PO, PR, SO, Customer PO, DO, Invoice, Quotation, RFQ, DI, GRN, Faktur Pajak, Kwitansi, Retur Jual/Beli, Jurnal, Negosiasi, Kontrak, Absensi, COA, Jabatan, Kategori Barang, Gudang, PIC Customer, Stock Opname, Pembayaran Supplier, Penggajian |
+| **Global Search** | Satu search bar (shortcut `/` atau `Cmd+K`) untuk mencari di tabel: barang, customer, supplier, karyawan, PO, PR, SO, Customer PO, DO, Invoice, Quotation, RFQ Supplier, RFQ Customer, DI, GRN, Faktur Pajak, Kwitansi, Retur Jual/Beli, Jurnal, Negosiasi, Kontrak, Absensi, COA, Jabatan, Kategori Barang, Gudang, PIC Customer, Stock Opname, Pembayaran Supplier, Penggajian |
 | **Export Excel / CSV** | Semua halaman list data bisa di-export — Owner & Manager sering minta data dalam Excel |
 | **Bulk Import Excel** ✅ | Input master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import` |
 | **Dark Mode** | Toggle dark/light mode — nyaman dipakai malam hari |
@@ -1025,6 +1026,7 @@ users                    → auth + profil (semua role)
 user_roles               → mapping user ke role
 
 barang                   → master barang (field: satuan — free-text, bukan tabel terpisah)
+                         (+ kontrak_id — FK ke kontrak, ON DELETE CASCADE. Barang import dari kontrak terhapus otomatis saat kontrak dihapus)
 kategori_barang          → kategori barang
 
 supplier                  → data supplier (termasuk marketplace, field: kontak — single contact)

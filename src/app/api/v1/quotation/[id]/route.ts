@@ -49,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: qtn, error: qtnError } = await supabaseAdmin
     .from('quotation')
-    .select('*, customer!customer_id(id, nama, kode), rfq!rfq_id(nomor)')
+    .select('*, customer!customer_id(id, nama, kode), rfq_customer!rfq_id(nomor)')
     .eq('id', id)
     .single()
 

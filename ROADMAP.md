@@ -297,3 +297,11 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
   - Page batching (`PAGE_BATCH_SIZE=3`): PDF >3 pages diproses per-batch, hasil item digabung (dedup by kode), metadata diambil dari batch pertama yang punya nilai.
   - Prompt fix: signatory keys `nama`/`jabatan` (bukan `name`/`title`), harga IDR angka bulat tanpa pemisah ribuan (contoh: 3700 untuk "3.700"), tanggal dicari dari teks kontrak.
   - Post-processing OCR route handler: fallback `name`→`nama`, `title`→`jabatan` untuk signatory; auto-correct Indonesian thousand-separator format pada harga (deteksi jika <1000, kalikan 1000).
+
+## Fase 18 — Import Barang dari Kontrak + Gemini AI (May 2026)
+- [x] DB schema: `barang` kolom `kontrak_id` (FK ke kontrak.id, ON DELETE CASCADE) — barang import terhapus otomatis saat kontrak dihapus
+- [x] Migration `0015_classy_ultragirl` — applied to Supabase
+- [x] API `POST /api/v1/master/barang/import-from-kontrak` — import batch barang + kontrak_item dari JSON array (paste dari Gemini AI)
+- [x] Halaman Tambah Barang — 2 tab: "Input Manual" (existing) + "Import dari Kontrak" (baru: pilih kontrak → pilih kategori → paste JSON dari Gemini AI → preview → import)
+- [x] Gemini prompt — ditampilkan di UI (bisa copy) untuk ekstrak data barang dari PDF kontrak via chat Gemini AI
+- [x] Build: `npm run build` — 0 errors, warnings only

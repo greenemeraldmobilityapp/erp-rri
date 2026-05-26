@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Pencil, Trash2 } from "lucide-react"
+import { Loader2, Trash2 } from "lucide-react"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
 import { PageHeader } from "@/components/page-header"
@@ -33,34 +33,35 @@ const workflowSteps = [
   { key: "closed", label: "Ditutup" },
 ]
 
-interface RFQItem {
+interface RFQCustomerItem {
   id: string
-  barang_id: string
+  barang_id: string | null
+  nama_barang: string | null
   jumlah: number
-  satuan: string
-  harga_target: number
+  satuan: string | null
   keterangan: string | null
-  barang: { id: string; nama: string; kode: string; satuan: string }
+  barang: { id: string; nama: string; kode: string; satuan: string } | null
 }
 
-interface RFQ {
+interface RFQCustomer {
   id: string
   nomor: string
-  supplier_id: string
+  customer_id: string
   tanggal: string
+  perihal: string | null
   status: string
   keterangan: string | null
   is_active: boolean
   created_at: string
-  supplier: { id: string; nama: string; kode: string }
-  items: RFQItem[]
+  customer: { id: string; nama: string; kode: string }
+  items: RFQCustomerItem[]
 }
 
-export default function RfqDetailPage() {
+export default function RfqCustomerDetailPage() {
   const router = useRouter()
   const pathname = usePathname()
   const id = pathname.split("/").pop()
-  const [data, setData] = useState<RFQ | null>(null)
+  const [data, setData] = useState<RFQCustomer | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
@@ -68,14 +69,14 @@ export default function RfqDetailPage() {
 
   useEffect(() => {
     if (!id) return
-    apiFetch<RFQ>(`/api/v1/rfq-supplier/${id}`)
+    apiFetch<RFQCustomer>(`/api/v1/rfq-customer/${id}`)
       .then((res) => { setData(res.data); setLoading(false) })
       .catch((err) => { setError(err.message); setLoading(false) })
   }, [id])
 
   useEffect(() => {
     if (!id) return
-    apiFetch<DocumentFile[]>(`/api/v1/rfq-supplier/${id}/documents`)
+    apiFetch<DocumentFile[]>(`/api/v1/rfq-customer/${id}/documents`)
       .then((res) => setDocuments(res.data ?? []))
       .catch(() => {})
   }, [id])
@@ -87,8 +88,8 @@ export default function RfqDetailPage() {
       const formData = new FormData()
       formData.append("file", file)
       const { apiFetchFormData } = await import("@/lib/api/client")
-      const r = await apiFetchFormData(`/api/v1/rfq-supplier/${id}/documents`, formData)
-      setDocuments((prev) => [r.data as { id: string; file_name: string; file_url: string; uploaded_at: string; rfq_supplier_id: string }, ...prev])
+      const r = await apiFetchFormData(`/api/v1/rfq-customer/${id}/documents`, formData)
+      setDocuments((prev) => [r.data as { id: string; file_name: string; file_url: string; uploaded_at: string; rfq_customer_id: string }, ...prev])
       toast.success("File berhasil diupload")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal upload file")
@@ -100,7 +101,7 @@ export default function RfqDetailPage() {
   const handleDeleteDocument = async (docId: string) => {
     if (!id) return
     try {
-      await apiFetch(`/api/v1/rfq-supplier/${id}/documents?docId=${docId}`, { method: "DELETE" })
+      await apiFetch(`/api/v1/rfq-customer/${id}/documents?docId=${docId}`, { method: "DELETE" })
       setDocuments((prev) => prev.filter((d) => d.id !== docId))
       toast.success("File berhasil dihapus")
     } catch (err) {
@@ -110,13 +111,8 @@ export default function RfqDetailPage() {
 
   const handleDelete = async () => {
     if (!id) return
-    await apiFetch(`/api/v1/rfq-supplier/${id}`, { method: "DELETE" })
-    router.push("/dashboard/rfq")
-  }
-
-  const formatCurrency = (v: number | null | undefined) => {
-    if (v == null) return "-"
-    return `Rp ${Number(v).toLocaleString("id-ID")}`
+    await apiFetch(`/api/v1/rfq-customer/${id}`, { method: "DELETE" })
+    router.push("/dashboard/rfq-customer")
   }
 
   if (loading) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div></div>
@@ -125,15 +121,14 @@ export default function RfqDetailPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 space-y-6">
       <PageHeader
-        title="Detail RFQ"
-        description={`${data.nomor} - ${data.supplier?.nama || ""}`}
+        title="Detail RFQ Customer"
+        description={`${data.nomor} - ${data.customer?.nama || ""}`}
         actions={
           <div className="flex gap-2">
-            <Button variant="back" onClick={() => router.push("/dashboard/rfq")}>Kembali</Button>
-            <Button variant="outline" onClick={() => router.push(`/dashboard/rfq/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
+            <Button variant="back" onClick={() => router.push("/dashboard/rfq-customer")}>Kembali</Button>
             <DeleteConfirmationDialog
               onConfirm={handleDelete}
-              itemName={`RFQ ${data.nomor}`}
+              itemName={`RFQ Customer ${data.nomor}`}
               trigger={<Button variant="outline" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Hapus</Button>}
             />
           </div>
@@ -159,13 +154,17 @@ export default function RfqDetailPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">Supplier</p>
-              <p className="font-medium">{data.supplier?.nama || "-"}</p>
-              <p className="text-xs text-muted-foreground">{data.supplier?.kode || ""}</p>
+              <p className="text-sm text-muted-foreground">Customer</p>
+              <p className="font-medium">{data.customer?.nama || "-"}</p>
+              <p className="text-xs text-muted-foreground">{data.customer?.kode || ""}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tanggal</p>
               <p className="font-medium">{new Date(data.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Perihal</p>
+              <p className="font-medium">{data.perihal || "-"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Dibuat Pada</p>
@@ -192,7 +191,6 @@ export default function RfqDetailPage() {
                   <TableHead>Nama Barang</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Satuan</TableHead>
-                  <TableHead className="text-right">Harga Target</TableHead>
                   <TableHead>Keterangan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -200,10 +198,9 @@ export default function RfqDetailPage() {
                 {data.items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-mono text-xs">{item.barang?.kode || "-"}</TableCell>
-                    <TableCell className="font-medium">{item.barang?.nama || "-"}</TableCell>
+                    <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>
                     <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.harga_target)}</TableCell>
                     <TableCell className="text-muted-foreground">{item.keterangan || "-"}</TableCell>
                   </TableRow>
                 ))}
@@ -231,7 +228,7 @@ export default function RfqDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Aktivitas</h3>
-          <ActivityTimeline tableName="rfq_supplier" recordId={id!} />
+          <ActivityTimeline tableName="rfq_customer" recordId={id!} />
         </CardContent>
       </Card>
     </div>

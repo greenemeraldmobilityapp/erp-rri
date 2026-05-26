@@ -8,7 +8,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (auth.error) return auth.error
   const { id } = await params
   const { data, error } = await supabaseAdmin.from('kontrak_item')
-    .select('*, barang!barang_id(kode, nama, satuan)')
+    .select('*')
     .eq('kontrak_id', id)
     .order('created_at', { ascending: true })
   if (error) return internalError(error)

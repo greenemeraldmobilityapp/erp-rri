@@ -55,7 +55,7 @@ const menuItems: MenuItem[] = [
   ]},
   { label: 'Pre-Sales', icon: Search, children: [
     { href: '/dashboard/master/kontrak', label: 'Kontrak', icon: FileText },
-    { href: '/dashboard/rfq', label: 'RFQ', icon: FileText },
+    { href: '/dashboard/rfq-customer', label: 'RFQ Customer', icon: FileText },
     { href: '/dashboard/quotation', label: 'Quotation', icon: FileText },
     { href: '/dashboard/negoiasi', label: 'Negosiasi', icon: FileText },
   ]},
@@ -67,6 +67,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/retur-penjualan', label: 'Retur Penjualan', icon: FileText },
   ]},
   { label: 'Procurement', icon: Package, children: [
+    { href: '/dashboard/rfq', label: 'RFQ Supplier', icon: FileText },
     { href: '/dashboard/purchase-request', label: 'Purchase Request', icon: FileText },
     { href: '/dashboard/purchase-order', label: 'Purchase Order', icon: FileText },
     { href: '/dashboard/purchase-receiving', label: 'Penerimaan', icon: FileText },

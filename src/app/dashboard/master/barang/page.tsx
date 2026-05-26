@@ -25,7 +25,8 @@ interface Barang {
   id: string
   nama: string
   kode: string
-  kategori_barang: { nama: string }[]
+  kategori_barang: { nama: string }
+  kontrak: { nomor_kontrak: string } | null
   satuan: string | null
   spesifikasi: string | null
   harga_beli_default: number | null
@@ -49,6 +50,7 @@ export default function BarangPage() {
         nama,
         kode,
         kategori_barang!inner(nama),
+        kontrak!left(nomor_kontrak),
         satuan,
         spesifikasi,
         harga_beli_default,
@@ -60,7 +62,7 @@ export default function BarangPage() {
       .order("created_at", { ascending: false })
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((result || []) as Barang[])
+        else setData((result || []) as unknown as Barang[])
         setLoading(false)
       })
   }, [])
@@ -151,7 +153,8 @@ export default function BarangPage() {
   const columns: Column<Barang>[] = [
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
-    { header: "Kategori", accessor: (item) => item.kategori_barang?.[0]?.nama || "-" },
+    { header: "Kategori", accessor: (item) => item.kategori_barang?.nama || "-" },
+    { header: "No. Kontrak", accessor: (item) => item.kontrak?.nomor_kontrak || "tidak ada" },
     { header: "Satuan", accessor: (item) => item.satuan || "-", sortKey: "satuan" },
     { header: "Harga Beli", accessor: (item) => formatCurrency(item.harga_beli_default), sortKey: "harga_beli_default" },
     { header: "Harga Jual", accessor: (item) => formatCurrency(item.harga_jual_default), sortKey: "harga_jual_default" },

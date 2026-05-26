@@ -13,13 +13,17 @@ import { coa } from "./coa";
 import { kontrak } from "./kontrak";
 import { kontrakItem } from "./kontrak-item";
 import { kontrakFile } from "./kontrak-file";
-import { rfq } from "./rfq";
-import { rfqItem } from "./rfq-item";
-import { rfqPic } from "./rfq-pic";
-import { rfqDocument } from "./rfq-document";
+import { rfqSupplier } from "./rfq-supplier";
+import { rfqSupplierItem } from "./rfq-supplier-item";
+import { rfqSupplierDocument } from "./rfq-supplier-document";
+import { rfqCustomer } from "./rfq-customer";
+import { rfqCustomerItem } from "./rfq-customer-item";
+import { rfqCustomerDocument } from "./rfq-customer-document";
+import { rfqCustomerPic } from "./rfq-customer-pic";
 import { quotation } from "./quotation";
 import { quotationItem } from "./quotation-item";
 import { quotationPic } from "./quotation-pic";
+import { quotationDocument } from "./quotation-document";
 import { negoiasi } from "./negoiasi";
 import { negoiasiItem } from "./negoiasi-item";
 import { customerPo } from "./customer-po";
@@ -95,13 +99,17 @@ export {
   kontrak,
   kontrakItem,
   kontrakFile,
-  rfq,
-  rfqItem,
-  rfqPic,
-  rfqDocument,
+  rfqSupplier,
+  rfqSupplierItem,
+  rfqSupplierDocument,
+  rfqCustomer,
+  rfqCustomerItem,
+  rfqCustomerDocument,
+  rfqCustomerPic,
   quotation,
   quotationItem,
   quotationPic,
+  quotationDocument,
   negoiasi,
   negoiasiItem,
   customerPo,

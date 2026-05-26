@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiFetch } from '@/lib/api/client';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
@@ -20,7 +20,7 @@ import { FormActions } from '@/components/form-actions';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileUp } from 'lucide-react';
+import { FileUp, Upload, FileText, X } from 'lucide-react';
 
 const kontrakSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
@@ -44,6 +44,9 @@ export default function TambahKontrakPage() {
   const [loading, setLoading] = useState(false);
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [activeTab, setActiveTab] = useState('manual');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),
@@ -69,7 +72,7 @@ export default function TambahKontrakPage() {
     setLoading(true);
     const toastId = toast.loading('Menyimpan kontrak...');
     try {
-      await apiFetch('/api/v1/master/kontrak', {
+      const res = await apiFetch<{ id: string }>('/api/v1/master/kontrak', {
         method: 'POST',
         body: JSON.stringify({
           customer_id: data.customerId,
@@ -86,13 +89,26 @@ export default function TambahKontrakPage() {
           is_active: data.isActive,
         }),
       });
+
+      if (uploadFile) {
+        setFileUploading(true);
+        toast.loading('Mengupload file...', { id: toastId });
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+        formData.append('jenis_dokumen', 'kontrak');
+        const { apiFetchFormData } = await import('@/lib/api/client');
+        await apiFetchFormData(`/api/v1/master/kontrak/${res.data.id}/documents`, formData);
+      }
+
       toast.success('Kontrak berhasil ditambahkan!', { id: toastId });
       form.reset();
+      setUploadFile(null);
       setTimeout(() => router.push('/dashboard/master/kontrak'), 1500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan', { id: toastId });
     } finally {
       setLoading(false);
+      setFileUploading(false);
     }
   };
 
@@ -312,6 +328,25 @@ export default function TambahKontrakPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="flex items-center gap-3 rounded-lg border p-3">
+                <span className="text-sm font-medium shrink-0">Dokumen Kontrak:</span>
+                {uploadFile ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs max-w-[200px]">
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{uploadFile.name}</span>
+                    <button type="button" onClick={() => setUploadFile(null)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Belum ada file</span>
+                )}
+                <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); if (e.target) e.target.value = ''; }} />
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="ml-auto shrink-0">
+                  <Upload className="h-3.5 w-3.5 mr-1" /> Pilih File
+                </Button>
+              </div>
 
               <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/kontrak'))} />
             </form>
