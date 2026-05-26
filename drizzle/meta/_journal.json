@@ -99,6 +99,13 @@
       "when": 1779734735278,
       "tag": "0013_add_3_document_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1779785023162,
+      "tag": "0014_kontrak_ocr_enhancement",
+      "breakpoints": true
     }
   ]
 }

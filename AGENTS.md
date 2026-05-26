@@ -45,6 +45,10 @@
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `DATABASE_URL` (optional, for direct database access)
 
+## System Dependencies
+- **poppler-utils** (required for AI OCR Kontrak PDF-to-JPEG conversion): `sudo apt-get install -y poppler-utils`
+  - Provides `pdftoppm` binary used by VisionAgent to convert PDF pages to JPEG images before sending to NVIDIA NIM Phi-4 multimodal model
+
 ## Development Notes
 - Standard Next.js file-based routing applies
 - Tailwind CSS utility-first approach

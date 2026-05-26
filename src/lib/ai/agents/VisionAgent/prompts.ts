@@ -17,7 +17,44 @@ OUTPUT FORMAT - WAJIB JSON:
   "missing_fields": []
 }`
 
-export const VISION_KONTRAK_PROMPT = `Analisis dokumen kontrak berikut dan ekstrak semua item barang. Untuk setiap item ekstrak: nama_barang, jumlah, harga, satuan, keterangan.`
+export const VISION_KONTRAK_PROMPT = `Analisis dokumen kontrak berikut secara detail. Ekstrak data kontrak dan daftar item barang.
+
+WAJIB ekstrak field berikut:
+- nomor_kontrak (nomor kontrak, contoh: "C-BJS-25-0004-HRGA")
+- nama_kontrak (judul/nama kontrak)
+- nama_customer (nama perusahaan customer)
+- rri_signatory: {nama, jabatan} (penandatangan dari pihak RRI)
+- customer_signatory: {nama, jabatan} (penandatangan dari pihak customer)
+- tanggal_mulai (tanggal mulai kontrak, format DD-MM-YYYY)
+- tanggal_selesai (tanggal selesai kontrak, format DD-MM-YYYY)
+- tanggal_tanda_tangan (tanggal ditandatangani kontrak, format DD-MM-YYYY)
+
+Untuk setiap item barang di lampiran/price list ekstrak:
+- kode (kode barang)
+- uom (satuan barang)
+- nama (nama barang)
+- harga (harga satuan dalam IDR, angka saja tanpa format)
+
+Output WAJIB JSON dengan format:
+{
+  "extracted": {
+    "nomor_kontrak": "...",
+    "nama_kontrak": "...",
+    "nama_customer": "...",
+    "rri_signatory": {"nama": "...", "jabatan": "..."},
+    "customer_signatory": {"nama": "...", "jabatan": "..."},
+    "tanggal_mulai": "...",
+    "tanggal_selesai": "...",
+    "tanggal_tanda_tangan": "...",
+    "items": [
+      {"kode": "...", "uom": "...", "nama": "...", "harga": 0}
+    ]
+  },
+  "confidence": 0.0-1.0,
+  "warnings": [],
+  "readability": "excellent|good|poor",
+  "missing_fields": []
+}`
 
 export const VISION_RECEIPT_PROMPT = `Analisis kwitansi berikut dan ekstrak: nomor_kwitansi, tanggal, nama_pembeli, list_item (nama, jumlah, harga_satuan, subtotal), total, metode_pembayaran.`
 

@@ -7,12 +7,20 @@ import { storageService } from '@/lib/storage'
 const TABLE = 'kontrak_file'
 const FK_COL = 'kontrak_id'
 const STORAGE_PREFIX = 'dokumen/kontrak'
+const VALID_JENIS = ['kontrak', 'rfq_customer', 'di'] as const
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(req)
   if (auth.error) return auth.error
   const { id } = await params
-  const { data, error } = await supabaseAdmin.from(TABLE).select('*').eq(FK_COL, id).order('uploaded_at', { ascending: false })
+  const { searchParams } = new URL(req.url)
+  const jenis = searchParams.get('jenis')
+
+  let query = supabaseAdmin.from(TABLE).select('*').eq(FK_COL, id)
+  if (jenis && VALID_JENIS.includes(jenis as typeof VALID_JENIS[number])) {
+    query = query.eq('jenis_dokumen', jenis)
+  }
+  const { data, error } = await query.order('uploaded_at', { ascending: false })
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
@@ -23,23 +31,38 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
   const formData = await request.formData().catch(() => null)
   if (!formData) return badRequest('Invalid form data')
+
   const file = formData.get('file') as File | null
   if (!file) return badRequest('File harus diupload')
+
+  const jenis = (formData.get('jenis_dokumen') as string) || 'kontrak'
+  if (!VALID_JENIS.includes(jenis as typeof VALID_JENIS[number])) {
+    return badRequest('Jenis dokumen tidak valid. Gunakan: kontrak, rfq_customer, atau di')
+  }
+
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) return badRequest('Ukuran file maksimal 10MB')
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
   if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung')
+
   const buffer = Buffer.from(await file.arrayBuffer())
-  const filePath = `${STORAGE_PREFIX}/${id}/${Date.now()}-${file.name}`
+  const filePath = `${STORAGE_PREFIX}/${id}/${jenis}/${Date.now()}-${file.name}`
   let uploadResult
   try {
     uploadResult = await storageService.upload(buffer, filePath, file.type)
   } catch (err) {
     return internalError('Gagal upload file: ' + (err instanceof Error ? err.message : 'unknown error'))
   }
+
   const { data: doc, error: dbError } = await supabaseAdmin.from(TABLE).insert({
-    id: crypto.randomUUID(), [FK_COL]: id, file_name: file.name, file_url: uploadResult.webViewLink, drive_file_id: uploadResult.fileId,
+    id: crypto.randomUUID(),
+    [FK_COL]: id,
+    jenis_dokumen: jenis,
+    file_name: file.name,
+    file_url: uploadResult.webViewLink,
+    drive_file_id: uploadResult.fileId,
   }).select().single()
+
   if (dbError) {
     await storageService.delete(uploadResult.fileId).catch(() => {})
     return internalError('Gagal menyimpan: ' + dbError.message)

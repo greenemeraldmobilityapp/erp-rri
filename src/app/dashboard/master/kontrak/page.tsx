@@ -23,6 +23,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 interface Kontrak {
   id: string
+  nomor_kontrak: string | null
   nama: string
   customer: { nama: string }[]
   tanggal_mulai: string | null
@@ -140,6 +141,7 @@ export default function KontrakPage() {
   )
 
   const columns: Column<Kontrak>[] = [
+    { header: "Nomor Kontrak", accessor: (item) => item.nomor_kontrak || "-", sortKey: "nomor_kontrak" },
     { header: "Nama Kontrak", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Customer", accessor: (item) => item.customer?.[0]?.nama || "-" },
     { header: "Tanggal Mulai", accessor: (item) => formatDate(item.tanggal_mulai), sortKey: "tanggal_mulai" },

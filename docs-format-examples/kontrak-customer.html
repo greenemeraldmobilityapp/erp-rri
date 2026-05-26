@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amendment No. 2 Office Supply (RRI)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Arial secara global */
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background-color: #d1d5db; /* gray-300 */
+            font-size: 11pt; /* Ukuran standar font kontrak */
+            color: black;
+        }
+        
+        /* Pengaturan ukuran kertas A4 untuk tampilan cetak/PDF */
+        @page { size: A4; margin: 0; }
+        
+        /* Kontainer untuk setiap halaman A4 */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20mm auto;
+            background-color: white;
+            padding: 25mm 20mm; /* Padding atas-bawah 25mm, kiri-kanan 20mm */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hilangkan bayangan dan margin saat dicetak */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .a4-page { 
+                margin: 0; 
+                box-shadow: none; 
+                border: none; 
+                page-break-after: always; 
+            }
+        }
+
+        /* Format Teks Khusus Kontrak */
+        .text-justify { text-align: justify; }
+        .col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* Styling khusus untuk tabel lampiran */
+        table.lampiran {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table.lampiran th, table.lampiran td {
+            border: 1px solid black;
+            padding: 4px 6px;
+            font-size: 10pt;
+            vertical-align: middle;
+        }
+        table.lampiran th {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Footer absolute positioning */
+        .page-footer {
+            margin-top: auto;
+            font-size: 9pt;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="py-8 leading-relaxed">
+
+    <!-- ==========================================
+         PAGE 1
+         ========================================== -->
+    <div class="a4-page">
+        <!-- Judul Kontrak -->
+        <div class="col-grid text-center font-bold mb-8">
+            <div>
+                <p>AMENDMENT NO.2 TO CONTRACT</p>
+                <p>FOR</p>
+                <p>OFFICE MATERIAL SUPPLY</p>
+                <p>NO. C-BJS-25-0004-HRGA</p>
+            </div>
+            <div>
+                <p>AMANDEMEN NO.2 TERHADAP</p>
+                <p>KONTRAK UNTUK</p>
+                <p>PASOKAN BAHAN KEBUTUHAN KANTOR</p>
+                <p>NO. C-BJS-25-0004-HRGA</p>
+            </div>
+        </div>
+
+        <!-- Paragraf Pembuka -->
+        <div class="col-grid text-justify mb-6">
+            <div>
+                This AMENDMENT TO CONTRACT FOR OFFICE MATERIAL SUPPLY ("Amendment No.2") is entered into and made effective on April 16th, 2026 ("Effective Date") by and between:
+            </div>
+            <div>
+                AMANDEMEN TERHADAP KONTRAK UNTUK PASOKAN BAHAN KEBUTUHAN KANTOR ("Amandemen No.2") dibuat dan ditandatangani pada 16 April 2026 ("Tanggal Efektif") oleh dan antara:
+            </div>
+        </div>
+
+        <!-- Pihak 1 -->
+        <div class="col-grid text-justify mb-6">
+            <div class="flex gap-2">
+                <span>(1)</span>
+                <div>
+                    PT BHUMI JEPARA SERVICE, a limited liability company duly established and existing under the laws of the Republic of Indonesia, with its principal place of business at Tanjung Jati B Unit 5&6 Coal Fired Steam Power Plant, Desa Tubanan, Kec. Kembang, Jepara 59453, Jawa Tengah, Indonesia ("BJS"); and
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <span>(1)</span>
+                <div>
+                    PT BHUMI JEPARA SERVICE, sebuah perseroan terbatas yang didirikan dan diselenggarakan berdasarkan hukum Republik Indonesia, dengan tempat usaha utama di Pembangkit Listrik Tenaga Uap Berbahan Bakar Batu Bara Tanjung Jati B Unit 5&6, Desa Tubanan, Kec. Kembang, Jepara 59453, Jawa Tengah, Indonesia ("BJS"); dan
+                </div>
+            </div>
+        </div>
+
+        <!-- Pihak 2 -->
+        <div class="col-grid text-justify mb-6">
+            <div class="flex gap-2">
+                <span>(2)</span>
+                <div>
+                    PT. RIZQI RIDHO ILAHI, a limited liability company duly established and existing under the laws of the Republic of Indonesia, having its address at Gang Jonggring Saloka No 1 Jerukwangi Bangsri, Jepara, Jawa Tengah, Indonesia (the "Contractor").
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <span>(2)</span>
+                <div>
+                    PT. RIZQI RIDHO ILAHI, suatu Perseroan terbatas yang didirikan dan diselenggarakan berdasarkan hukum Negara Republik Indonesia, beralamat di Gang Jonggring Saloka No 1 Jerukwangi Bangsri, Jepara, Jawa Tengah, Indonesia ("Kontraktor").
+                </div>
+            </div>
+        </div>
+
+        <!-- Penutup Pihak -->
+        <div class="col-grid text-justify mb-6">
+            <div>Each BJS and Contractor herein referred to as the "Party" and collectively as the "Parties".</div>
+            <div>BJS dan Kontraktor masing-masing di sini disebut sebagai "Pihak" dan secara bersama-sama disebut sebagai "Para Pihak".</div>
+        </div>
+
+        <!-- Recitals Header -->
+        <div class="col-grid text-center font-bold mb-4">
+            <div>
+                <p>WHEREAS</p>
+                <p>RECITALS</p>
+            </div>
+            <div>
+                <p>BAHWA</p>
+                <p>RESITAL</p>
+            </div>
+        </div>
+
+        <!-- Recitals A, B, C -->
+        <div class="col-grid text-justify space-y-4">
+            <!-- Left Col (English) -->
+            <div class="space-y-4">
+                <div class="flex gap-2">
+                    <span>(A)</span>
+                    <div>On April 28th, 2025, the Parties have signed a CONTRACT FOR OFFICE MATERIAL SUPPLY No. C-BJS-25-0004-HRGA ("Contract").</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>(B)</span>
+                    <div>The Parties entered into the Amendment No.1 to Contract for Office Material Supply on October 15, 2025 ("Amendment No.1").</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>(C)</span>
+                    <div>BJS intends to extend the Contract period and review the Goods prices in accordance with the provisions set forth in Article 8 and Appendix 3 of the Contract, and the Contractor accepts said intention.</div>
+                </div>
+            </div>
+            <!-- Right Col (Indonesian) -->
+            <div class="space-y-4">
+                <div class="flex gap-2">
+                    <span>(A)</span>
+                    <div>Pada 28 April 2025, Para Pihak telah menandatangani KONTRAK UNTUK PASOKAN BAHAN KEBUTUHAN KANTOR No. C-BJS-25-0004-HRGA ("Kontrak").</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>(B)</span>
+                    <div>Para Pihak telah menandatangani Amandemen No.1 atas Kontrak untuk Pasokan Bahan Kebutuhan pada tanggal 1 Oktober 2025 ("Amandemen No. 1").</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>(C)</span>
+                    <div>BJS bermaksud untuk memperpanjang periode Kontrak dan meninjau kembali harga Barang sesuai dengan ketentuan yang tercantum dalam Pasal 8 dan Lampiran 3 Kontrak, dan Kontraktor menerima maksud tersebut.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Page 1 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 1</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 2
+         ========================================== -->
+    <div class="a4-page">
+        
+        <!-- Recital D & NOW THEREFORE -->
+        <div class="col-grid text-justify mb-6">
+            <!-- Left -->
+            <div>
+                <div class="flex gap-2 mb-6">
+                    <span>(D)</span>
+                    <div>The Parties, therefore, now wish to amend the Contract in the manner as set out in this Amendment No. 2</div>
+                </div>
+                <p>NOW THEREFORE, in consideration of the mutual covenant, promises, and undertakings set forth herein, the Parties hereby agree to enter into this Amendment with the following terms and conditions:</p>
+            </div>
+            <!-- Right -->
+            <div>
+                <div class="flex gap-2 mb-6">
+                    <span>(D)</span>
+                    <div>Para Pihak, untuk itu, saat ini berkeinginan untuk mengubah Kontrak dengan cara sebagaimana ditetapkan dalam Amandemen No. 2</div>
+                </div>
+                <p>OLEH KARENA ITU, dengan mempertimbangkan perjanjian bersama, janji-janji, dan hal-hal diatur di sini, Para Pihak dengan ini setuju untuk menandatangani Amandemen dengan syarat dan ketentuan berikut:</p>
+            </div>
+        </div>
+
+        <!-- Article 1 & 2 Header -->
+        <div class="col-grid text-justify mb-4 font-bold">
+            <div>1. Interpretation</div>
+            <div>1. Penafsiran</div>
+        </div>
+        <div class="col-grid text-justify mb-6">
+            <div class="pl-4">The capitalized terms not otherwise defined herein shall have the meanings set forth in the Contract.</div>
+            <div class="pl-4">Istilah berhuruf besar yang tidak ditemukan di sini akan memiliki makna yang ditetapkan dalam Kontrak.</div>
+        </div>
+
+        <div class="col-grid text-justify mb-4 font-bold uppercase">
+            <div>2. AMENDMENTS</div>
+            <div>2. AMANDEMEN</div>
+        </div>
+        
+        <!-- Article 2.1 -->
+        <div class="col-grid text-justify mb-4">
+            <div class="flex gap-2 pl-4">
+                <span>2.1</span>
+                <div>With effect from the Effective Date, the Parties agree to amend and restate Article 8 of the Contract, therefore the foregoing provisions shall be entirely read as follows:</div>
+            </div>
+            <div class="flex gap-2 pl-4">
+                <span>2.1</span>
+                <div>Berlaku mulai Tanggal Efektif, Para Pihak setuju untuk mengamandemen dan menyatakan kembali Pasal 8, sehingga ketentuan tersebut akan seluruhnya berbunyi seperti ini:</div>
+            </div>
+        </div>
+
+        <!-- Article 8.1, 8.2, 8.3 -->
+        <div class="col-grid text-justify mb-4">
+            <!-- Left -->
+            <div class="space-y-4 pl-10">
+                <div class="flex gap-2">
+                    <span>8.1.</span>
+                    <div>Period of Contract shall commence start from 16<sup>th</sup> April 2026 and the Contractor shall continue to perform the Supply until 30<sup>th</sup> September 2026, unless it is terminated earlier pursuant to clauses 24 or 25 of the General Terms and Conditions or extended pursuant to Article 8.3 ("Period of Contract").</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>8.2.</span>
+                    <div>BJS shall have the right, exercisable in its sole discretion, to extend the Period of Contract for an additional period of 6 (six) months by notifying the Contractor of such decision in writing not later than 15 (fifteen) calendar days prior to the expiry of the Period of Contract. For avoidance of doubt, each component of the Price shall be subject to separately negotiated and agreed by Parties.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>8.3.</span>
+                    <div>In the event that BJS terminates this Contract, in whole or in part, the Contractor shall immediately cease all related activities and shall have no right to continue the performance of the Work or the supply of goods/services to the Company, whether directly or indirectly through any third party.</div>
+                </div>
+            </div>
+            <!-- Right -->
+            <div class="space-y-4 pl-10">
+                <div class="flex gap-2">
+                    <span>8.1.</span>
+                    <div>Periode Kontrak akan berlaku dari tanggal 16 April 2026 dan Kontraktor terus melakukan Pasokan hinggal30 September 2026, kecuali dibatalkan atau diakhiri lebih awal berdasarkan pasal 24 atau 25 dari Syarat dan Ketentuan Umum atau diperpanjang berdasarkan Pasal 8.3 ("Periode Kontrak")</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>8.2.</span>
+                    <div>BJS berhak, atas kebijakannya sendiri, untuk memperpanjang Periode Kontrak untuk jangka waktu tambahan 6 (enam) bulan dengan memberitahukan kepada Kontraktor mengenai keputusan tersebut secara tertulis selambat-lambatnya 15 (lima belas) hari Kalender sebelum berakhirnya Periode Kontrak. Untuk menghindari keraguan, setiap komponen dalam Harga akan dinegosiasikan dan disepakati secara terpisah oleh Para Pihak.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>8.3.</span>
+                    <div>Dalam hal BJS mengakhiri Kontrak ini, baik sebagian maupun seluruhnya, Kontraktor wajib segera menghentikan seluruh kegiatan terkait dan tidak berhak untuk melanjutkan pelaksanaan Pekerjaan atau penyediaan barang/jasa kepada Perusahaan, baik secara langsung maupun tidak langsung melalui pihak ketiga.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Page 2 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 2</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 3
+         ========================================== -->
+    <div class="a4-page">
+        
+        <!-- Article 2.2 -->
+        <div class="col-grid text-justify mb-8">
+            <div class="flex gap-2 pl-4">
+                <span>2.2</span>
+                <div>The Parties agree to amend and restate Appendix 3 of the Contract; therefore Appendix 3 shall be read entirely as provided in the Appendix 3 of this Amendment.</div>
+            </div>
+            <div class="flex gap-2 pl-4">
+                <span>2.2</span>
+                <div>Para Pihak setuju untuk mengamandemen dan menyatakan kembali Lampiran 3 Kontrak, sehingga Lampiran 3 tersebut akan seluruhnya berbunyi seperti yang diatur dalam Lampiran 3 Amandemen ini.</div>
+            </div>
+        </div>
+
+        <!-- Article 3 Header -->
+        <div class="col-grid text-justify mb-4 font-bold">
+            <div>3. Miscellaneous</div>
+            <div>3. Lain-Lain</div>
+        </div>
+
+        <!-- Article 3.1, 3.2, 3.3 -->
+        <div class="col-grid text-justify mb-4">
+            <!-- Left -->
+            <div class="space-y-4 pl-4">
+                <div class="flex gap-2">
+                    <span>3.1.</span>
+                    <div>This Amendment shall be governed and construed in accordance with the Laws applicable to the Contract.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>3.2.</span>
+                    <div>Unless stipulated otherwise in this Amendment, any other terms and conditions set out in Contract shall continue in full force and effect.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>3.3.</span>
+                    <div>This Amendment may be executed in one or more counterparts, each of which when so executed will be deemed an original, but such counterparts together shall constitute one and the same instrument.</div>
+                </div>
+            </div>
+            <!-- Right -->
+            <div class="space-y-4 pl-4">
+                <div class="flex gap-2">
+                    <span>3.1.</span>
+                    <div>Amandemen ini diatur dan ditafsirkan, sesuai dengan Hukum yang berlaku terhadap Kontrak.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>3.2.</span>
+                    <div>Kecuali ditentukan berbeda di dalam Amandemen ini, syarat dan ketentuan lain yang diatur dalam Kontrak akan tetap berlaku dan mempunyai kekuatan penuh.</div>
+                </div>
+                <div class="flex gap-2">
+                    <span>3.3.</span>
+                    <div>Amandemen ini dapat dibuat dalam satu atau lebih rangkap, yang masing-masing rangkap jika dibuat akan dianggap asli, tetapi rangkap tersebut bersama-sama harus merupakan satu dan instrumen yang sama.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Page 3 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 3</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 4 (SIGNATURE PAGE)
+         ========================================== -->
+    <div class="a4-page">
+        
+        <div class="col-grid text-justify mb-12">
+            <div>IN WITNESS WHEREOF, the Parties hereto have caused in this Amendment to be executed by their respective authorized signatories, in 2 (two) originals, as of the date and year first written above.</div>
+            <div>DENGAN DEMIKIAN, Para Pihak telah menyebabkan Amandemen ini ditandatangani oleh masing-masing penandatangan yang berwenang, dalam 2 (dua) dokumen asli, pada tanggal dan tahun seperti yang ditulis di atas</div>
+        </div>
+
+        <div class="col-grid text-left mt-8">
+            <!-- BJS Signature -->
+            <div>
+                <p class="font-bold mb-4">PT BHUMI JEPARA SERVICE</p>
+                <!-- Ruang Tanda Tangan & Meterai -->
+                <div class="relative h-32 w-full mt-4 mb-4">
+                    <div class="absolute left-0 bottom-2 border border-gray-400 p-1 bg-blue-50 text-[10px] w-20 text-center uppercase">
+                        Meterai<br>Tempel
+                    </div>
+                </div>
+                <p class="font-bold">Name: Ichiro Usui</p>
+                <p>Title: GM of Planning and Coordination</p>
+            </div>
+            
+            <!-- RRI Signature -->
+            <div>
+                <p class="font-bold mb-4">PT. RIZQI RIDHO ILAHI</p>
+                <!-- Ruang Tanda Tangan -->
+                <div class="h-32 mt-4 mb-4"></div>
+                <p class="font-bold">Name: Mohamad Marzuqi</p>
+                <p>Title: Director</p>
+            </div>
+        </div>
+
+        <!-- Footer Page 4 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 4</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 5 (APPENDIX 3 - P1)
+         ========================================== -->
+    <div class="a4-page">
+        
+        <div class="mb-4">
+            <p class="font-bold underline">APPENDIX 3/LAMPIRAN 3</p>
+            <p class="font-bold mt-2">FEE/BIAYA</p>
+        </div>
+
+        <table class="lampiran">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 15%;">Code</th>
+                    <th style="width: 10%;">UoM</th>
+                    <th style="width: 55%;">Item</th>
+                    <th style="width: 15%;">Price<br>(IDR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="text-center">1</td><td class="text-center">CLT005</td><td class="text-center">pcs</td><td>Lion Star Floor Brush with handle</td><td class="text-right">28.000</td></tr>
+                <tr><td class="text-center">2</td><td class="text-center">CLT006</td><td class="text-center">pcs</td><td>Paint Brush 2" Eterna</td><td class="text-right">8.000</td></tr>
+                <tr><td class="text-center">3</td><td class="text-center">CLT007</td><td class="text-center">pcs</td><td>Lion Star Toilet Brush BO-32</td><td class="text-right">27.000</td></tr>
+                <tr><td class="text-center">4</td><td class="text-center">CLT008</td><td class="text-center">pcs</td><td>Krisbow Chamois Pink 43X32X0.2 SKU 10222449</td><td class="text-right">70.000</td></tr>
+                <tr><td class="text-center">5</td><td class="text-center">CLT013</td><td class="text-center">pcs</td><td>3M Scotch Brite Dust Pan Plastic ID-44</td><td class="text-right">125.000</td></tr>
+                <tr><td class="text-center">6</td><td class="text-center">CLT017</td><td class="text-center">pcs</td><td>Rag Cloth Lap Meja</td><td class="text-right">14.500</td></tr>
+                <tr><td class="text-center">7</td><td class="text-center">CLT018</td><td class="text-center">pcs</td><td>Refill Krisbow Flat Mop 24" SKU 10072719</td><td class="text-right">130.000</td></tr>
+                <tr><td class="text-center">8</td><td class="text-center">CLT025</td><td class="text-center">pcs</td><td>Trash Bin 15L pedal, No Spesific brand, capacity 15L with pedal</td><td class="text-right">145.000</td></tr>
+                <tr><td class="text-center">9</td><td class="text-center">CLT029</td><td class="text-center">pcs</td><td>Lion Star Glass Wiper BR-10</td><td class="text-right">20.000</td></tr>
+                <tr><td class="text-center">10</td><td class="text-center">CTR001</td><td class="text-center">set</td><td>Bottle Brush Baby Safe BS369</td><td class="text-right">55.000</td></tr>
+                <tr><td class="text-center">11</td><td class="text-center">CTR003</td><td class="text-center">pack</td><td>Melamine Chopstick</td><td class="text-right">17.000</td></tr>
+                <tr><td class="text-center">12</td><td class="text-center">OTH001</td><td class="text-center">pcs</td><td>Krisbow Spons Microfiber - SKU10485228</td><td class="text-right">42.000</td></tr>
+                <tr><td class="text-center">13</td><td class="text-center">OTH003</td><td class="text-center">pcs</td><td>Microfiber Cloth Edgeless Detailing Nanotech 420gr for Car</td><td class="text-right">36.000</td></tr>
+                <tr><td class="text-center">14</td><td class="text-center">OTH005</td><td class="text-center">pack</td><td>Fischer S6</td><td class="text-right">10.000</td></tr>
+                <tr><td class="text-center">15</td><td class="text-center">OTH007</td><td class="text-center">pcs</td><td>Hand Soap Dispenser Wasser WSD-145</td><td class="text-right">120.000</td></tr>
+                <tr><td class="text-center">16</td><td class="text-center">OTH022</td><td class="text-center">unit</td><td>IN-8 Twin Inova Container SS5</td><td class="text-right">820.000</td></tr>
+                <tr><td class="text-center">17</td><td class="text-center">OTH023</td><td class="text-center">unit</td><td>VC-2 Vigo Container 32 Litres</td><td class="text-right">185.000</td></tr>
+                <tr><td class="text-center">18</td><td class="text-center">OTH026</td><td class="text-center">unit</td><td>VC-21 Wagon Container 125 Litres</td><td class="text-right">450.000</td></tr>
+                <tr><td class="text-center">19</td><td class="text-center">PTR003</td><td class="text-center">pcs</td><td>Nescaffe Jar 200 gram</td><td class="text-right">120.000</td></tr>
+                <tr><td class="text-center">20</td><td class="text-center">PTR005</td><td class="text-center">rtg</td><td>Energen (10pcs/rtg)</td><td class="text-right">22.200</td></tr>
+                <tr><td class="text-center">21</td><td class="text-center">PTR007</td><td class="text-center">pcs</td><td>Kecap Manis Bango 275 ml</td><td class="text-right">23.300</td></tr>
+                <tr><td class="text-center">22</td><td class="text-center">PTR013</td><td class="text-center">pcs</td><td>Nutrisari Box 500 gram</td><td class="text-right">47.500</td></tr>
+                <tr><td class="text-center">23</td><td class="text-center">PTR016</td><td class="text-center">pcs</td><td>Sugar 1 Kg (GULAKU/ROSE BRAND)</td><td class="text-right">21.000</td></tr>
+                <tr><td class="text-center">24</td><td class="text-center">PTR017</td><td class="text-center">bottle</td><td>Sirup ABC Squash Delight 460ml</td><td class="text-right">18.000</td></tr>
+                <tr><td class="text-center">25</td><td class="text-center">PTR018</td><td class="text-center">pack</td><td>Teh Sariwangi 50 sheet</td><td class="text-right">14.000</td></tr>
+                <tr><td class="text-center">26</td><td class="text-center">PTR020</td><td class="text-center">pcs</td><td>Nestle Milo</td><td class="text-right">99.000</td></tr>
+                <tr><td class="text-center">27</td><td class="text-center">SNT001</td><td class="text-center">pcs</td><td>Abrassive Sponge (KRISBOW)</td><td class="text-right">43.000</td></tr>
+                <tr><td class="text-center">28</td><td class="text-center">SNT003</td><td class="text-center">pcs</td><td>Bayclin Bleaching/pemutih 500 ml</td><td class="text-right">14.000</td></tr>
+                <tr><td class="text-center">29</td><td class="text-center">SNT004</td><td class="text-center">pcs</td><td>Bayfresh Hang n Go</td><td class="text-right">13.500</td></tr>
+                <tr><td class="text-center">30</td><td class="text-center">SNT011</td><td class="text-center">pcs</td><td>Pledge Furniture Polish Lemon Pouch 450ml</td><td class="text-right">23.500</td></tr>
+                <tr><td class="text-center">31</td><td class="text-center">SNT012</td><td class="text-center">bottle</td><td>Pledge Furniture Polish Spray 450ml</td><td class="text-right">28.000</td></tr>
+                <tr><td class="text-center">32</td><td class="text-center">SNT016</td><td class="text-center">pack</td><td>3M Hand Gloves Scotch Brite</td><td class="text-right">38.000</td></tr>
+                <tr><td class="text-center">33</td><td class="text-center">SNT021</td><td class="text-center">pcs</td><td>Microfiber Cloth</td><td class="text-right">11.000</td></tr>
+                <tr><td class="text-center">34</td><td class="text-center">SNT022</td><td class="text-center">pack</td><td>Kapur Barus Swallow/Dahlia 5 Balls</td><td class="text-right">23.000</td></tr>
+                <tr><td class="text-center">35</td><td class="text-center">SNT024</td><td class="text-center">Bottle</td><td>Dahlia Air Freshener Aerosol 200ml</td><td class="text-right">19.500</td></tr>
+                <tr><td class="text-center">36</td><td class="text-center">SNT025</td><td class="text-center">pcs</td><td>Dahlia Air Freshness 75gr Hanging for Room (Teh Keraton)</td><td class="text-right">13.000</td></tr>
+                <tr><td class="text-center">37</td><td class="text-center">SNT026</td><td class="text-center">pcs</td><td>Dahlia Refill Aerosol Spray 225 ml (All Varians)</td><td class="text-right">35.000</td></tr>
+                <tr><td class="text-center">38</td><td class="text-center">SNT027</td><td class="text-center">pcs</td><td>Pantene Shampo 400 ml</td><td class="text-right">69.000</td></tr>
+                <tr><td class="text-center">39</td><td class="text-center">SNT028</td><td class="text-center">pcs</td><td>Nuvo Active Cool Mint Refill 450 ml</td><td class="text-right">17.000</td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Page 5 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 5</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 6 (APPENDIX 3 - P2)
+         ========================================== -->
+    <div class="a4-page">
+        <table class="lampiran mt-0">
+            <tbody>
+                <tr><td style="width: 5%;" class="text-center">40</td><td style="width: 15%;" class="text-center">SNT029</td><td style="width: 10%;" class="text-center">pcs</td><td style="width: 55%;">Ekonomi Cream Soap 196 gram</td><td style="width: 15%;" class="text-right">3.700</td></tr>
+                <tr><td class="text-center">41</td><td class="text-center">SNT030</td><td class="text-center">pcs</td><td>Rinso Molto Detergen 770 gram</td><td class="text-right">26.000</td></tr>
+                <tr><td class="text-center">42</td><td class="text-center">SNT033</td><td class="text-center">pcs</td><td>Hand Soap Refill SOS 4L</td><td class="text-right">85.000</td></tr>
+                <tr><td class="text-center">43</td><td class="text-center">SNT034</td><td class="text-center">Pcs</td><td>Downy Softener pouch 600ml</td><td class="text-right">27.000</td></tr>
+                <tr><td class="text-center">44</td><td class="text-center">SNT036</td><td class="text-center">bottle</td><td>Stainless Clenaner (EZCLEAN)</td><td class="text-right">61.000</td></tr>
+                <tr><td class="text-center">45</td><td class="text-center">SNT037</td><td class="text-center">pcs</td><td>Steel Woll</td><td class="text-right">5.300</td></tr>
+                <tr><td class="text-center">46</td><td class="text-center">SNT038</td><td class="text-center">pack</td><td>Tissue Meja (Facial Tissue 250s Tessa)</td><td class="text-right">12.000</td></tr>
+                <tr><td class="text-center">47</td><td class="text-center">SNT039</td><td class="text-center">pack</td><td>Tissue Pengesat Tessa (Tessa Hand Towell 2ply 150's)</td><td class="text-right">22.000</td></tr>
+                <tr><td class="text-center">48</td><td class="text-center">SNT040</td><td class="text-center">pack</td><td>Kitchen Tissue Tessa Nature 2ply 150's</td><td class="text-right">22.500</td></tr>
+                <tr><td class="text-center">49</td><td class="text-center">SNT041</td><td class="text-center">roll</td><td>Tissue Toilet Paseo/Tessa 6 Roll</td><td class="text-right">39.000</td></tr>
+                <tr><td class="text-center">50</td><td class="text-center">SNT042</td><td class="text-center">Bottle</td><td>Bebek Toilet Cleaner 450ml (bottle)</td><td class="text-right">22.000</td></tr>
+                <tr><td class="text-center">51</td><td class="text-center">SNT043</td><td class="text-center">bottle</td><td>Porstex Porcelen 500 ml</td><td class="text-right">21.000</td></tr>
+                <tr><td class="text-center">52</td><td class="text-center">SNT044</td><td class="text-center">pcs</td><td>Vixal 780 ml</td><td class="text-right">21.000</td></tr>
+                <tr><td class="text-center">53</td><td class="text-center">SNT063</td><td class="text-center">pack</td><td>10 Sheet Nappy Bag Travel Pikalula</td><td class="text-right">17.500</td></tr>
+                <tr><td class="text-center">54</td><td class="text-center">SNT064</td><td class="text-center">set</td><td>Ameneties Tooth Brush</td><td class="text-right">18.500</td></tr>
+                <tr><td class="text-center">55</td><td class="text-center">STR001</td><td class="text-center">pcs</td><td>Adhesive Label M 121</td><td class="text-right">5.300</td></tr>
+                <tr><td class="text-center">56</td><td class="text-center">STR002</td><td class="text-center">pack</td><td>Adhesive Label S 107</td><td class="text-right">5.200</td></tr>
+                <tr><td class="text-center">57</td><td class="text-center">STR003</td><td class="text-center">pcs</td><td>Bolpoint Kenko K-1</td><td class="text-right">5.000</td></tr>
+                <tr><td class="text-center">58</td><td class="text-center">STR004</td><td class="text-center">pcs</td><td>Bolpoint Multi Color Zebra A4C</td><td class="text-right">13.200</td></tr>
+                <tr><td class="text-center">59</td><td class="text-center">STR005</td><td class="text-center">pcs</td><td>Bollpoint Pilot G2 0,5mm</td><td class="text-right">17.400</td></tr>
+                <tr><td class="text-center">60</td><td class="text-center">STR006</td><td class="text-center">pcs</td><td>Bolpoint Pilot BPT-P/Standart AE7 Black</td><td class="text-right">2.300</td></tr>
+                <tr><td class="text-center">61</td><td class="text-center">STR007</td><td class="text-center">pcs</td><td>Bolpoint Pilot BPT-P/Standart AE7 Blue</td><td class="text-right">2.500</td></tr>
+                <tr><td class="text-center">62</td><td class="text-center">STR008</td><td class="text-center">pcs</td><td>Bolpoint Pilot BPT-P Red</td><td class="text-right">2.800</td></tr>
+                <tr><td class="text-center">63</td><td class="text-center">STR013</td><td class="text-center">stripe</td><td>Battery Panasonic CR2450 (1 Pcs)</td><td class="text-right">23.000</td></tr>
+                <tr><td class="text-center">64</td><td class="text-center">STR014</td><td class="text-center">stripe</td><td>Battery Panasonic LR44 (10pcs/stripe)</td><td class="text-right">39.500</td></tr>
+                <tr><td class="text-center">65</td><td class="text-center">STR015</td><td class="text-center">pcs</td><td>Baterry LR-61 9V</td><td class="text-right">37.000</td></tr>
+                <tr><td class="text-center">66</td><td class="text-center">STR016</td><td class="text-center">pcs</td><td>Baterry ABC Type C</td><td class="text-right">6.500</td></tr>
+                <tr><td class="text-center">67</td><td class="text-center">STR021</td><td class="text-center">pack</td><td>Paper Binder Refill A5 (100 lembar)</td><td class="text-right">10.000</td></tr>
+                <tr><td class="text-center">68</td><td class="text-center">STR022</td><td class="text-center">pcs</td><td>SIDU Write Book 38 Sheet</td><td class="text-right">4.200</td></tr>
+                <tr><td class="text-center">69</td><td class="text-center">STR024</td><td class="text-center">pcs</td><td>Binder Book A5 Joyko Pastel</td><td class="text-right">20.800</td></tr>
+                <tr><td class="text-center">70</td><td class="text-center">STR025</td><td class="text-center">pcs</td><td>Agenda Book Gelatik Kembar Folio 200sheet</td><td class="text-right">39.000</td></tr>
+                <tr><td class="text-center">71</td><td class="text-center">STR026</td><td class="text-center">pcs</td><td>Notebook A5 Leather Cover 80's</td><td class="text-right">39.000</td></tr>
+                <tr><td class="text-center">72</td><td class="text-center">STR028</td><td class="text-center">pcs</td><td>Brother Tape Cassette TZE-231 12 mm (Sticky)</td><td class="text-right">270.000</td></tr>
+                <tr><td class="text-center">73</td><td class="text-center">STR032</td><td class="text-center">unit</td><td>Casio DJ-120D Plus Calculator</td><td class="text-right">190.000</td></tr>
+                <tr><td class="text-center">74</td><td class="text-center">STR035</td><td class="text-center">pcs</td><td>Correction Pen Joyko JK-101</td><td class="text-right">5.300</td></tr>
+                <tr><td class="text-center">75</td><td class="text-center">STR037</td><td class="text-center">pcs</td><td>Cutter Kenko L-500</td><td class="text-right">15.000</td></tr>
+                <tr><td class="text-center">76</td><td class="text-center">STR040</td><td class="text-center">pack</td><td>Display Clear Holder F4 (60 pocket)</td><td class="text-right">36.000</td></tr>
+                <tr><td class="text-center">77</td><td class="text-center">STR042</td><td class="text-center">pcs</td><td>Ecoflex Business File Folio</td><td class="text-right">3.000</td></tr>
+                <tr><td class="text-center">78</td><td class="text-center">STR043</td><td class="text-center">pack</td><td>Brown Envelope Samson Size D Salur</td><td class="text-right">42.000</td></tr>
+                <tr><td class="text-center">79</td><td class="text-center">STR045</td><td class="text-center">pack</td><td>White Envelopes 110x230 Paperline/Equivalent</td><td class="text-right">27.000</td></tr>
+                <tr><td class="text-center">80</td><td class="text-center">STR046</td><td class="text-center">pack</td><td>White Envelopes 95x152 Paperline/Equivalent</td><td class="text-right">20.000</td></tr>
+                <tr><td class="text-center">81</td><td class="text-center">STR048</td><td class="text-center">pcs</td><td>Kenko Glue Stick 15 gram</td><td class="text-right">7.000</td></tr>
+                <tr><td class="text-center">82</td><td class="text-center">STR051</td><td class="text-center">ream</td><td>HVS Paper SIDU A4 Light Blue/Blue 80gr</td><td class="text-right">112.000</td></tr>
+                <tr><td class="text-center">83</td><td class="text-center">STR052</td><td class="text-center">ream</td><td>HVS Paper SIDU A4 Light Green/Cyber Green 80gr</td><td class="text-right">112.000</td></tr>
+                <tr><td class="text-center">84</td><td class="text-center">STR053</td><td class="text-center">ream</td><td>HVS Paper SIDU A4 Light Red/Pink 80gr</td><td class="text-right">112.000</td></tr>
+            </tbody>
+        </table>
+        
+        <!-- Footer Page 6 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 6</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 7 (APPENDIX 3 - P3)
+         ========================================== -->
+    <div class="a4-page">
+        <table class="lampiran mt-0">
+            <tbody>
+                <tr><td style="width: 5%;" class="text-center">85</td><td style="width: 15%;" class="text-center">STR056</td><td style="width: 10%;" class="text-center">ream</td><td style="width: 55%;">HVS Paper SIDU A4 Yellow/Cyber Yellow 80gr</td><td style="width: 15%;" class="text-right">112.000</td></tr>
+                <tr><td class="text-center">86</td><td class="text-center">STR057</td><td class="text-center">ream</td><td>HVS F4 70 gram Blue</td><td class="text-right">82.000</td></tr>
+                <tr><td class="text-center">87</td><td class="text-center">STR058</td><td class="text-center">ream</td><td>HVS F4 70 gram Green</td><td class="text-right">82.000</td></tr>
+                <tr><td class="text-center">88</td><td class="text-center">STR059</td><td class="text-center">ream</td><td>HVS F4 70 gram Red</td><td class="text-right">82.000</td></tr>
+                <tr><td class="text-center">89</td><td class="text-center">STR062</td><td class="text-center">ream</td><td>HVS Legal 80 gram PeperOne/Equivalent</td><td class="text-right">60.000</td></tr>
+                <tr><td class="text-center">90</td><td class="text-center">STR067</td><td class="text-center">pcs</td><td>Index & Mark / Pembatas Joyko IM-33/ Kertas</td><td class="text-right">7.200</td></tr>
+                <tr><td class="text-center">91</td><td class="text-center">STR068</td><td class="text-center">pcs</td><td>Stamp Ink Trodat 7011 Black 25ml</td><td class="text-right">65.000</td></tr>
+                <tr><td class="text-center">92</td><td class="text-center">STR069</td><td class="text-center">pcs</td><td>Stamp Ink Trodat 7011 Blue 25ml</td><td class="text-right">65.000</td></tr>
+                <tr><td class="text-center">93</td><td class="text-center">STR070</td><td class="text-center">pcs</td><td>Stamp Ink Trodat 7011 Green 25ml</td><td class="text-right">65.000</td></tr>
+                <tr><td class="text-center">94</td><td class="text-center">STR071</td><td class="text-center">pcs</td><td>Stamp Ink Trodat 7011 Red 25ml</td><td class="text-right">65.000</td></tr>
+                <tr><td class="text-center">95</td><td class="text-center">STR075</td><td class="text-center">pcs</td><td>Kwitansi Gelatik Kembar Besar</td><td class="text-right">6.500</td></tr>
+                <tr><td class="text-center">96</td><td class="text-center">STR076</td><td class="text-center">pack</td><td>Laminating Plastic A3 Joyko/Equivalent</td><td class="text-right">220.000</td></tr>
+                <tr><td class="text-center">97</td><td class="text-center">STR077</td><td class="text-center">pack</td><td>Laminating Plastics F4 (Joyko/Amanda/Newtoho/Sakurai)</td><td class="text-right">120.000</td></tr>
+                <tr><td class="text-center">98</td><td class="text-center">STR078</td><td class="text-center">pcs</td><td>Snowman Board Marker Black</td><td class="text-right">9.500</td></tr>
+                <tr><td class="text-center">99</td><td class="text-center">STR079</td><td class="text-center">pcs</td><td>Snowman Board Marker Blue</td><td class="text-right">9.500</td></tr>
+                <tr><td class="text-center">100</td><td class="text-center">STR080</td><td class="text-center">pcs</td><td>Snowman Board Marker Red</td><td class="text-right">9.500</td></tr>
+                <tr><td class="text-center">101</td><td class="text-center">STR081</td><td class="text-center">pcs</td><td>Snowman Paintmarker BG Silver</td><td class="text-right">18.000</td></tr>
+                <tr><td class="text-center">102</td><td class="text-center">STR082</td><td class="text-center">pcs</td><td>Snowman Paintmarker BG White</td><td class="text-right">18.000</td></tr>
+                <tr><td class="text-center">103</td><td class="text-center">STR083</td><td class="text-center">pcs</td><td>Snowman Permanent marker G12 Black/Blue</td><td class="text-right">8.000</td></tr>
+                <tr><td class="text-center">104</td><td class="text-center">STR089</td><td class="text-center">pack</td><td>Paper Clip No. 3</td><td class="text-right">4.300</td></tr>
+                <tr><td class="text-center">105</td><td class="text-center">STR092</td><td class="text-center">pcs</td><td>Standart Pencill 2B</td><td class="text-right">5.400</td></tr>
+                <tr><td class="text-center">106</td><td class="text-center">STR094</td><td class="text-center">pcs</td><td>Kenko 0,5 Mechanic Pencill</td><td class="text-right">6.000</td></tr>
+                <tr><td class="text-center">107</td><td class="text-center">STR095</td><td class="text-center">pack</td><td>Kenko Refill Mechanic Pencill</td><td class="text-right">3.200</td></tr>
+                <tr><td class="text-center">108</td><td class="text-center">STR096</td><td class="text-center">pcs</td><td>Pencil Sharpener Joyko</td><td class="text-right">65.000</td></tr>
+                <tr><td class="text-center">109</td><td class="text-center">STR097</td><td class="text-center">unit</td><td>Preferator Kenko No. 30</td><td class="text-right">18.800</td></tr>
+                <tr><td class="text-center">110</td><td class="text-center">STR103</td><td class="text-center">pack</td><td>Original Post It Pronto Sign Here</td><td class="text-right">20.700</td></tr>
+                <tr><td class="text-center">111</td><td class="text-center">STR104</td><td class="text-center">pack</td><td>Push Pin Kenko PN-30 Color</td><td class="text-right">5.500</td></tr>
+                <tr><td class="text-center">112</td><td class="text-center">STR105</td><td class="text-center">pcs</td><td>Ruller Butterfly 30 cm</td><td class="text-right">4.000</td></tr>
+                <tr><td class="text-center">113</td><td class="text-center">STR106</td><td class="text-center">pcs</td><td>Scissor (Gunting Medium)</td><td class="text-right">9.800</td></tr>
+                <tr><td class="text-center">114</td><td class="text-center">STR108</td><td class="text-center">pack</td><td>Sheet Protector F4 11 Ring</td><td class="text-right">12.000</td></tr>
+                <tr><td class="text-center">115</td><td class="text-center">STR109</td><td class="text-center">pack</td><td>Sheet Protector A3 Landscape 25's (BANTEX 2037)</td><td class="text-right">187.000</td></tr>
+                <tr><td class="text-center">116</td><td class="text-center">STR111</td><td class="text-center">pcs</td><td>Refill Pentell MG-8</td><td class="text-right">23.000</td></tr>
+                <tr><td class="text-center">117</td><td class="text-center">STR113</td><td class="text-center">pcs</td><td>Stamp Duty/Materai 10.000</td><td class="text-right">11.000</td></tr>
+                <tr><td class="text-center">118</td><td class="text-center">STR115</td><td class="text-center">unit</td><td>Stapler HD-50</td><td class="text-right">22.800</td></tr>
+                <tr><td class="text-center">119</td><td class="text-center">STR119</td><td class="text-center">pack</td><td>Isi Staples 24/6 HD50 Kangaroo</td><td class="text-right">5.500</td></tr>
+                <tr><td class="text-center">120</td><td class="text-center">STR121</td><td class="text-center">unit</td><td>Kenko Tape Dispenser TD-321</td><td class="text-right">26.500</td></tr>
+                <tr><td class="text-center">121</td><td class="text-center">STR123</td><td class="text-center">pcs</td><td>Daimaru Isolasi Bening 24 mm</td><td class="text-right">6.000</td></tr>
+                <tr><td class="text-center">122</td><td class="text-center">STR125</td><td class="text-center">pcs</td><td>Daimaru Cloth Tape 48mm Blue</td><td class="text-right">20.500</td></tr>
+                <tr><td class="text-center">123</td><td class="text-center">STR127</td><td class="text-center">pcs</td><td>Daimaru Cloth Tape 48mm Red</td><td class="text-right">21.000</td></tr>
+                <tr><td class="text-center">124</td><td class="text-center">STR128</td><td class="text-center">pcs</td><td>Daimaru Cloth Tape 48mm Yellow</td><td class="text-right">21.000</td></tr>
+                <tr><td class="text-center">125</td><td class="text-center">STR129</td><td class="text-center">pcs</td><td>Daimaru Cloth Tape 24mmx7y</td><td class="text-right">13.000</td></tr>
+                <tr><td class="text-center">126</td><td class="text-center">STR133</td><td class="text-center">pcs</td><td>Daimaru/Nachi Double Tape S 12mmx7y</td><td class="text-right">4.200</td></tr>
+                <tr><td class="text-center">127</td><td class="text-center">STR134</td><td class="text-center">pcs</td><td>Daimaru Masking Tape 24 mm</td><td class="text-right">11.400</td></tr>
+                <tr><td class="text-center">128</td><td class="text-center">STR136</td><td class="text-center">unit</td><td>Tray 3 Level Joyko DT-25</td><td class="text-right">130.000</td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Page 7 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 7</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PAGE 8 (APPENDIX 3 - P4)
+         ========================================== -->
+    <div class="a4-page">
+        <table class="lampiran mt-0">
+            <tbody>
+                <tr><td style="width: 5%;" class="text-center">129</td><td style="width: 15%;" class="text-center">STR137</td><td style="width: 10%;" class="text-center">pcs</td><td style="width: 55%;">Whiteboard Eraser Gunindo/Joyko</td><td style="width: 15%;" class="text-right">9.500</td></tr>
+                <tr><td class="text-center">130</td><td class="text-center">STR138</td><td class="text-center">pack</td><td>Whiteboard Magnet Joyko 2cm (Isi 8 Magnet)</td><td class="text-right">12.500</td></tr>
+                <tr><td class="text-center">131</td><td class="text-center">STR139</td><td class="text-center">pack</td><td>Zipper Bag Plastic 17cm X 15cm (BAGUS 30's/pack)</td><td class="text-right">32.500</td></tr>
+                <tr><td class="text-center">132</td><td class="text-center">STR140</td><td class="text-center">pack</td><td>Zipper Bag Plastic 18cm X 20cm (BAGUS 25's/pack)</td><td class="text-right">35.000</td></tr>
+                <tr><td class="text-center">133</td><td class="text-center">STR141</td><td class="text-center">pack</td><td>Zipper Bag Plastic 18cm X 23cm (BAGUS 20's/pack)</td><td class="text-right">35.000</td></tr>
+                <tr><td class="text-center">134</td><td class="text-center">STR142</td><td class="text-center">pack</td><td>Zipper Bag Plastic 25cm X 35cm (BAGUS 15's/pack)</td><td class="text-right">43.000</td></tr>
+                <tr><td class="text-center">135</td><td class="text-center">STR143</td><td class="text-center">pack</td><td>Zipper Bag Plastic 27cm X 28cm (BAGUS 20's/pack)</td><td class="text-right">46.000</td></tr>
+                <tr><td class="text-center">136</td><td class="text-center">STR144</td><td class="text-center">pack</td><td>Zipper Bag Plastic 33cm X 40cm (BAGUS 12's/pack)</td><td class="text-right">50.000</td></tr>
+                <tr><td class="text-center">137</td><td class="text-center">STR145</td><td class="text-center">pack</td><td>Zipper Bag Plastic 6cm X 10cm</td><td class="text-right">7.000</td></tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Page 8 -->
+        <div class="page-footer mt-auto">
+            <span>Amendment No. 2 to Contract No. C-BJS-25-0005-HRGA</span>
+            <span>Page 8</span>
+        </div>
+    </div>
+
+</body>
+</html>

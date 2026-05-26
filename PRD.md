@@ -248,7 +248,7 @@ Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) denga
 | Modul | API Route | DB Table | Storage Path |
 |-------|-----------|----------|--------------|
 | RFQ | `/api/v1/rfq/{id}/documents` | `rfq_document` | `dokumen/rfq/{id}/` |
-| Kontrak | `/api/v1/master/kontrak/{id}/documents` | `kontrak_file` | `dokumen/kontrak/{id}/` |
+| Kontrak | `/api/v1/master/kontrak/{id}/documents` | `kontrak_file` (with `jenis_dokumen` column) | `dokumen/kontrak/{id}/` |
 | Customer PO | `/api/v1/customer-po/{id}/documents` | `customer_po_document` | `dokumen/customer-po/{id}/` |
 | DI | `/api/v1/di/{id}/documents` | `di_document` | `dokumen/di/{id}/` |
 | GRN | `/api/v1/grn/{id}/documents` | `grn_document` | `dokumen/grn/{id}/` |
@@ -256,7 +256,9 @@ Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) denga
 | Retur Penjualan | `/api/v1/retur-penjualan/{id}/documents` | `retur_penjualan_document` | `dokumen/retur-penjualan/{id}/` |
 | Retur Pembelian | `/api/v1/retur-pembelian/{id}/documents` | `retur_pembelian_document` | `dokumen/retur-pembelian/{id}/` |
 
-**Pattern API:** Setiap route memiliki 3 method: `GET` (list), `POST` (upload multipart form-data), `DELETE` (by query param `docId`). Semua menggunakan `storageService` dari `src/lib/storage/`.
+**Pattern API:** Setiap route memiliki 3 method: `GET` (list, filter by query params), `POST` (upload multipart form-data), `DELETE` (by query param `docId`). Semua menggunakan `storageService` dari `src/lib/storage/`.
+
+**Kontrak enhancement:** Mendukung 3 jenis dokumen (`jenis_dokumen`: `kontrak`, `rfq_customer`, `di`) — filter via query param `?jenis_dokumen=rfq_customer`. Upload menyertakan field `jenis_dokumen` di form-data.
 
 ## 6. Scalability & Arsitektur
 
@@ -329,7 +331,7 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 | **PIC Customer** | Multiple PIC per customer (nama, jabatan, no. HP, email). Tracking per RFQ/DI/Kontrak — setiap dokumen bisa diassign ke PIC berbeda |
 | **Karyawan** | Data karyawan RRI (data pribadi, jabatan, gaji pokok) |
 | **Chart of Accounts (COA)** | Daftar akun untuk pembukuan keuangan |
-| **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Upload file PDF kontrak → AI OCR extract harga → masuk database |
+| **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Upload file PDF kontrak → AI OCR (NVIDIA NIM Phi-4) extract data kontrak + item barang → preview → edit → confirm → auto-create barang master + kontrak + items. Field: nomor kontrak, nama kontrak, customer, tanggal mulai/selesai/tanda tangan, penandatangan RRI & Customer (nama + jabatan), catatan. Upload 3 jenis dokumen: Kontrak PDF, RFQ dari Customer, Delivery Instruction (DI). Free-text items dengan kode_barang, nama_barang, satuan (tidak wajib linked ke master barang). |
 | **Harga Barang** | Histori harga beli dari supplier dan harga jual ke customer |
 | **Bulk Import Excel** ✅ | Import master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import`, API `POST /api/v1/tools/bulk-import`, sidebar Master Data group |
 
@@ -350,7 +352,7 @@ Modul AI adalah otak cerdas ERP RRI. Menggunakan **NVIDIA NIM (free tier)** deng
 | Fitur AI | Agent | Status | Deskripsi |
 |---|---|---|---|
 | **AI Search Harga** | Playwright (standalone) | ✅ | Scraping Shopee & Tokopedia via Playwright + mock fallback. Hasil: nama, harga, toko, rating, link. Referensi harga beli untuk Procurement |
-| **AI OCR Kontrak** | VisionAgent + regex fallback | ✅ | Upload PDF/gambar kontrak → AI extract barang & harga → simpan DB. Dual implementation: legacy regex + Phi-4 multimodal |
+| **AI OCR Kontrak** | VisionAgent (NVIDIA Phi-4 multimodal) | ✅ | Upload PDF kontrak → AI extract: nomor_kontrak, nama kontrak, customer, tanggal mulai/selesai/tanda tangan, penandatangan RRI & Customer (nama+jabatan), items (kode, uom, nama, harga) → preview + edit → confirm → create kontrak + items + auto-barang master. Output: strict JSON metadata + items array |
 | **AI Rekomendasi Harga** | DataAgent (priceRecommender) | ✅ | Rule-based + AI: harga beli termurah, margin default 15%, atau harga kontrak |
 | **AI Negosiasi Assistant** | NegoAgent | ✅ | Analisis margin dengan approval level (sales/manager/owner), risk score, streaming reasoning chain |
 | **AI Chat (NL-to-SQL)** | DataAgent | ✅ | 196 query pattern across 15+ kategori: invoice, AR, sales, inventory, finance, HR, contract. Intent Classifier → Query Builder → Response Formatter |

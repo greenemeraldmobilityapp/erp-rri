@@ -279,3 +279,17 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 ### Next Steps
 - [ ] Test upload file via aplikasi — cek file muncul di Supabase Storage dashboard
 - [ ] Implement image pipeline (compress + WebP) — browser-image-compression sudah terinstall
+
+## Fase 17 — Kontrak OCR Enhancement & Redesign (May 2026)
+- [x] DB schema: `kontrak` (+7 columns: nomor_kontrak, tanggal_tanda_tangan, penandatangan_rri_nama, penandatangan_rri_jabatan, penandatangan_customer_nama, penandatangan_customer_jabatan, catatan; tanggal_mulai/tanggal_selesai changed to date). `kontrak_item` (barang_id nullable + free-text kode_barang/nama_barang/satuan). `kontrak_file` (+jenis_dokumen column: kontrak/rfq_customer/di)
+- [x] Migration `0014_kontrak_ocr_enhancement` — applied to Supabase
+- [x] AI OCR kontrak via NVIDIA NIM VisionAgent — expanded VISION_KONTRAK_PROMPT (extract nomor_kontrak, nama kontrak, customer, signatories, 3 dates, items[]). max_tokens 512→4096
+- [x] API `POST /api/v1/ai/ocr-kontrak` — rewritten to use VisionAgent PDF extraction instead of regex-only pdf-parse. Saves to ai_ocr_history
+- [x] API `POST /api/v1/master/kontrak/from-ocr` — new: create kontrak + items + files + optional auto-create master barang in one transaction
+- [x] Existing kontrak API routes fixed — Zod schemas aligned with new DB columns (+items endpoint, +jenis_dokumen on documents)
+- [x] Kontrak Tambah page — OCR-first workflow with 2 tabs: "OCR Upload" (drag-drop PDF → VisionAgent extraction → preview editable fields + items with "Buat Barang" checkboxes → confirm) and "Input Manual" (full form with signatories, dates, notes)
+- [x] Kontrak Detail page — displays all new fields (nomor_kontrak, signatories in bordered boxes, tanggal_tanda_tangan, catatan). File area: 3 tabs (Dokumen Kontrak, RFQ Customer, DI) with correct jenis_dokumen filter
+- [x] Kontrak Edit page — updated with all new fields
+- [x] Kontrak List page — added Nomor Kontrak column
+- [x] Build: `npm run build` — 0 errors, warnings only
+- [ ] User test full OCR flow end-to-end with a real contract PDF

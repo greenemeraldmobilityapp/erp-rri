@@ -1,7 +1,11 @@
 import { createNvidiaClient, AI_MODELS } from '@/lib/ai/client'
-import { buildVisionMessages, type VisionTaskType } from './prompts'
+import { buildVisionMessages, buildMultiImageMessages, getVisionPrompt, type VisionTaskType } from './prompts'
 export type { VisionTaskType }
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { execSync } from 'child_process'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
 
 export interface VisionExtractionResult {
   id: string
@@ -31,13 +35,121 @@ export async function extractFromDocument(
   const base64 = fileBuffer.toString('base64')
   const messages = buildVisionMessages(taskType, base64, mimeType)
 
+  const maxTokens = taskType === 'kontrak' ? 4096 : 512
+
   const response = await client.chat.completions.create({
     model: AI_MODELS.VISION_AGENT,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     messages: messages as any,
     temperature: 0.10,
     top_p: 0.70,
-    max_tokens: 512,
+    max_tokens: maxTokens,
+    stream: false,
+  })
+
+  const content = response.choices[0]?.message?.content ?? ''
+  const latencyMs = Date.now() - startTime
+
+  let parsedResult: {
+    extracted?: Record<string, unknown>
+    confidence?: number
+    warnings?: string[]
+    readability?: string
+  } = {}
+
+  try {
+    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      parsedResult = JSON.parse(jsonMatch[0])
+    }
+  } catch {
+    parsedResult = {
+      extracted: { raw_text: content },
+      confidence: 0.3,
+      warnings: ['Failed to parse AI response as JSON'],
+      readability: 'poor',
+    }
+  }
+
+  const result: VisionExtractionResult = {
+    id: crypto.randomUUID(),
+    source_type: taskType,
+    file_name: fileName,
+    extracted: parsedResult.extracted ?? {},
+    confidence: parsedResult.confidence ?? 0.7,
+    warnings: parsedResult.warnings ?? [],
+    readability: parsedResult.readability ?? 'good',
+    model_used: AI_MODELS.VISION_AGENT,
+    tokens_used: response.usage?.total_tokens,
+    latency_ms: latencyMs,
+    created_at: new Date().toISOString(),
+  }
+
+  try {
+    await supabaseAdmin.from('ai_vision_history').insert({
+      id: result.id,
+      user_id: userId,
+      file_name: result.file_name,
+      source_type: result.source_type,
+      extracted_data: result.extracted,
+      confidence_score: result.confidence,
+      model_used: result.model_used,
+      tokens_used: result.tokens_used,
+      latency_ms: result.latency_ms,
+    })
+  } catch (err) {
+    console.error('Failed to save vision history:', err)
+  }
+
+  return result
+}
+
+function convertPdfToJpeg(pdfBuffer: Buffer): Buffer[] {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-ocr-'))
+  const pdfPath = path.join(tmpDir, 'input.pdf')
+
+  fs.writeFileSync(pdfPath, pdfBuffer)
+
+  execSync(`pdftoppm -jpeg -r 200 "${pdfPath}" "${path.join(tmpDir, 'page')}"`, {
+    stdio: 'pipe',
+    timeout: 30000,
+  })
+
+  const files = fs.readdirSync(tmpDir)
+    .filter((f) => f.endsWith('.jpg'))
+    .sort()
+    .map((f) => fs.readFileSync(path.join(tmpDir, f)))
+
+  fs.rmSync(tmpDir, { recursive: true, force: true })
+
+  return files
+}
+
+async function extractFromImages(
+  taskType: VisionTaskType,
+  jpegBuffers: Buffer[],
+  fileName: string,
+  userId: string
+): Promise<VisionExtractionResult> {
+  const startTime = Date.now()
+  const client = createNvidiaClient()
+
+  const images = jpegBuffers.map((buf) => ({
+    base64: buf.toString('base64'),
+    mimeType: 'image/jpeg',
+  }))
+
+  const messages = buildMultiImageMessages(getVisionPrompt(taskType), images)
+
+  const maxTokens = taskType === 'kontrak' ? 4096 : 512
+
+  const response = await client.chat.completions.create({
+    model: AI_MODELS.VISION_AGENT,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    messages: messages as any,
+    temperature: 0.10,
+    top_p: 0.70,
+    max_tokens: maxTokens,
     stream: false,
   })
 
@@ -103,7 +215,11 @@ export async function extractKontrakFromPDF(
   fileName: string,
   userId: string
 ): Promise<VisionExtractionResult> {
-  return extractFromDocument('kontrak', pdfBuffer, fileName, 'application/pdf', userId)
+  const jpegs = convertPdfToJpeg(pdfBuffer)
+  if (jpegs.length === 0) {
+    throw new Error('Gagal mengkonversi PDF ke gambar')
+  }
+  return extractFromImages('kontrak', jpegs, fileName, userId)
 }
 
 export async function extractFromImageFile(
