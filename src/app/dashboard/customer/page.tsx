@@ -3,13 +3,18 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import Link from 'next/link';
 import { supabase } from '@/lib/db/client';
+import { apiFetch } from '@/lib/api/client';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function CustomerPage() {
+  const router = useRouter();
   const [customerData, setCustomerData] = useState<Array<{
     id: string;
     nama: string;
@@ -50,6 +55,11 @@ export default function CustomerPage() {
     fetchCustomers();
   }, []);
 
+  const handleDelete = (id: string) => async () => {
+    await apiFetch(`/api/v1/master/customer/${id}`, { method: 'DELETE' });
+    setCustomerData((prev) => prev.filter((item) => item.id !== id));
+  };
+
   if (error) {
     return <div>Error: {error?.toString()}</div>;
   }
@@ -81,7 +91,7 @@ export default function CustomerPage() {
                   <TableHead>Kontak</TableHead>
                   <TableHead>TOP</TableHead>
                   <TableHead>Aktif</TableHead>
-                  <TableHead>Aksi</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -100,12 +110,32 @@ export default function CustomerPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Link href={`/dashboard/customer/${customer.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
+                      <div className="flex items-center justify-end gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/master/customer/${customer.id}`)} className="hover:bg-accent">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Lihat Detail</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/master/customer/${customer.id}/edit`)} className="hover:bg-accent">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit</TooltipContent>
+                        </Tooltip>
+                        <DeleteConfirmationDialog
+                          onConfirm={handleDelete(customer.id)}
+                          itemName={customer.nama}
+                          trigger={
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

@@ -66,7 +66,7 @@ const updateSchema = z.object({
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { data, error } = await supabaseAdmin.from('customer_top').select('*, customer!customer_id(nama, kode)').eq('id', id).single()
+  const { data, error } = await supabaseAdmin.from('customer_top').select('*').eq('id', id).single()
   if (error) return internalError(error)
   if (!data) return notFound('Customer TOP tidak ditemukan')
   return NextResponse.json({ data })
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!body) return badRequest('Invalid JSON body')
   const parsed = updateSchema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
-  const { data, error } = await supabaseAdmin.from('customer_top').update({ top: parsed.data.top, updated_at: new Date().toISOString() }).eq('id', id).select('*, customer!customer_id(nama, kode)').single()
+  const { data, error } = await supabaseAdmin.from('customer_top').update({ top: parsed.data.top, updated_at: new Date().toISOString() }).eq('id', id).select('*').single()
   if (error) return internalError(error)
   if (!data) return notFound('Customer TOP tidak ditemukan')
   return NextResponse.json({ data })

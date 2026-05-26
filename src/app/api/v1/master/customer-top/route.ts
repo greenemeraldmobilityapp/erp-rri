@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const customerId = searchParams.get('customer_id')
 
-  let query = supabaseAdmin.from('customer_top').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  let query = supabaseAdmin.from('customer_top').select('*').order('created_at', { ascending: false })
   if (customerId) query = query.eq('customer_id', customerId)
   const { data, error } = await query
   if (error) return internalError(error)
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const id = crypto.randomUUID()
-  const { data, error } = await supabaseAdmin.from('customer_top').insert({ id, customer_id: parsed.data.customer_id, top: parsed.data.top }).select('*, customer!customer_id(nama, kode)').single()
+  const { data, error } = await supabaseAdmin.from('customer_top').insert({ id, customer_id: parsed.data.customer_id, top: parsed.data.top }).select('*').single()
   if (error) return internalError(error)
   return NextResponse.json({ data }, { status: 201 })
 }

@@ -195,43 +195,7 @@ export default function DetailCustomerPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Daftar Terms of Payment</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {topRecords.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">Belum ada Terms of Payment. Tambahkan di bawah.</p>
-          ) : (
-            <div className="space-y-2 mb-4">
-              {topRecords.map((rec) => (
-                <div key={rec.id} className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50">
-                  <span className="text-sm font-medium">{rec.top}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDeleteTop(rec.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center gap-2 pt-2 border-t">
-            <select
-              value={newTop}
-              onChange={(e) => setNewTop(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus-visible:ring-3 focus-visible:ring-ring"
-            >
-              <option value="">Pilih TOP</option>
-              {TOP_OPTIONS.map((opt) => (
-                <option key={opt} value={opt} disabled={topRecords.some((r) => r.top === opt)}>{opt}</option>
-              ))}
-            </select>
-            <Button size="sm" onClick={handleAddTop} disabled={!newTop || addingTop}>
-              {addingTop ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Tambah
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }
