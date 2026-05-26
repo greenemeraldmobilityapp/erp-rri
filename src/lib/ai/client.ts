@@ -15,6 +15,7 @@ export function createNvidiaClient(apiKey?: string) {
   return new OpenAI({
     baseURL: NVIDIA_BASE_URL,
     apiKey: apiKey ?? NVIDIA_API_KEY,
+    timeout: 300000,
   })
 }
 
@@ -43,7 +44,7 @@ export const MODEL_CONFIGS: Record<AgentType, ModelParams> = {
   VISION_AGENT: {
     temperature: 0.10,
     top_p: 0.70,
-    max_tokens: 512,
+    max_tokens: 4096,
     stream: false,
   },
 }

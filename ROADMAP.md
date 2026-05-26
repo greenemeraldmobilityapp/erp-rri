@@ -292,4 +292,8 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 - [x] Kontrak Edit page — updated with all new fields
 - [x] Kontrak List page — added Nomor Kontrak column
 - [x] Build: `npm run build` — 0 errors, warnings only
-- [ ] User test full OCR flow end-to-end with a real contract PDF
+- [x] VisionAgent JSON truncation fix — `tryAutoCompleteJson()` auto-balances missing closing braces/brackets when AI response is truncated (>4096 tokens). Also reads metadata (confidence, warnings, readability) from inside `extracted` object. max_tokens 4096→8192 for kontrak.
+- [x] VisionAgent accuracy batch fix:
+  - Page batching (`PAGE_BATCH_SIZE=3`): PDF >3 pages diproses per-batch, hasil item digabung (dedup by kode), metadata diambil dari batch pertama yang punya nilai.
+  - Prompt fix: signatory keys `nama`/`jabatan` (bukan `name`/`title`), harga IDR angka bulat tanpa pemisah ribuan (contoh: 3700 untuk "3.700"), tanggal dicari dari teks kontrak.
+  - Post-processing OCR route handler: fallback `name`→`nama`, `title`→`jabatan` untuk signatory; auto-correct Indonesian thousand-separator format pada harga (deteksi jika <1000, kalikan 1000).
