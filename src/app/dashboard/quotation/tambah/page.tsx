@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
@@ -15,12 +15,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Trash2, ArrowLeft, Loader2, Upload, FileText, X } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { FormSkeleton } from '@/components/ui/skeleton'
 
 const itemSchema = z.object({
-  barang_id: z.string().min(1, 'Barang harus dipilih'),
+  barang_id: z.string().optional(),
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
@@ -73,9 +73,9 @@ export default function TambahQuotationPage() {
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [uploadFile, setUploadFile] = useState<File | null>(null)
-  const [fileUploading, setFileUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [rfqPicLabel, setRfqPicLabel] = useState('')
+  const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
+  const [isRfqLoaded, setIsRfqLoaded] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -97,10 +97,11 @@ export default function TambahQuotationPage() {
   const selectedRfqId = watch('rfq_id')
 
   useEffect(() => {
+    const rfqIdFromUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('rfq_id') : null
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>>('/api/v1/master/barang'),
-      apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/rfq-customer'),
+      apiFetch<Array<{ id: string; nomor: string; nomor_rfq_customer?: string }>>('/api/v1/rfq-customer'),
     ]).then(([customers, barang, rfqs]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}`, alamat: c.alamat ?? '' })))
       const bOptions = (barang.data ?? []).map(b => ({
@@ -112,13 +113,16 @@ export default function TambahQuotationPage() {
         image_url: b.image_url ?? '',
       }))
       setBarangData(bOptions)
-      setRfqOptions((rfqs.data ?? []).map(r => ({ value: r.id, label: r.nomor })))
+      setRfqOptions((rfqs.data ?? []).map(r => ({ value: r.id, label: r.nomor_rfq_customer || r.nomor })))
+      if (rfqIdFromUrl) {
+        setValue('rfq_id', rfqIdFromUrl)
+      }
     }).catch(() => toast.error('Gagal memuat data referensi')).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
     if (!selectedCustomerId) { setPicOptions([]); return }
-    apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/customer-pic?customer_id=${selectedCustomerId}`)
+    apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/pic-customer?customer_id=${selectedCustomerId}`)
       .then((res) => setPicOptions((res.data ?? []).map(p => ({ value: p.id, label: `${p.nama}${p.jabatan ? ` (${p.jabatan})` : ''}` }))))
       .catch(() => {})
     const cust = customerOptions.find(c => c.value === selectedCustomerId)
@@ -126,7 +130,12 @@ export default function TambahQuotationPage() {
   }, [selectedCustomerId, customerOptions, setValue])
 
   useEffect(() => {
-    if (!selectedRfqId) return
+    if (!selectedRfqId) {
+      setRfqPicLabel('')
+      setRfqItemLabels([])
+      setIsRfqLoaded(false)
+      return
+    }
 
     let cancelled = false
 
@@ -134,6 +143,8 @@ export default function TambahQuotationPage() {
       customer_id: string
       pic_customer_id: string | null
       nomor: string
+      nomor_rfq_customer: string | null
+      pic_customer: { id: string; nama: string; jabatan: string } | null
       items: Array<{
         barang_id: string | null
         nama_barang: string | null
@@ -141,26 +152,28 @@ export default function TambahQuotationPage() {
         satuan: string | null
         image_url: string | null
         keterangan: string | null
+        barang: { id: string; nama: string; kode: string; satuan: string } | null
       }>
     }
 
     apiFetch<RfqData>(`/api/v1/rfq-customer/${selectedRfqId}`)
-      .then(async (res) => {
+      .then((res) => {
         if (cancelled) return
         const rfq = res.data as RfqData
 
-        setValue('referensi', rfq.nomor)
+        setValue('referensi', rfq.nomor_rfq_customer || rfq.nomor)
         setValue('customer_id', rfq.customer_id)
 
         const cust = customerOptions.find(c => c.value === rfq.customer_id)
         if (cust?.alamat) setValue('alamat', cust.alamat)
 
         if (rfq.pic_customer_id) {
-          const picRes = await apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/customer-pic?customer_id=${rfq.customer_id}`)
-          if (cancelled) return
-          const pics = (picRes.data ?? []) as Array<{ id: string; nama: string; jabatan?: string }>
-          setPicOptions(pics.map(p => ({ value: p.id, label: `${p.nama}${p.jabatan ? ` (${p.jabatan})` : ''}` })))
           setValue('pic_customer_id', rfq.pic_customer_id)
+        }
+        if (rfq.pic_customer) {
+          const label = `${rfq.pic_customer.nama}${rfq.pic_customer.jabatan ? ` (${rfq.pic_customer.jabatan})` : ''}`
+          setPicOptions([{ value: rfq.pic_customer.id, label }])
+          setRfqPicLabel(label)
         }
 
         const newItems = (rfq.items ?? []).map(item => ({
@@ -176,6 +189,12 @@ export default function TambahQuotationPage() {
         }))
         if (cancelled) return
         replace(newItems)
+
+        setRfqItemLabels(rfq.items.map(item =>
+          item.barang?.nama || item.nama_barang || ''
+        ))
+
+        setIsRfqLoaded(true)
 
         newItems.forEach((item, i) => {
           if (item.barang_id) {
@@ -210,23 +229,12 @@ export default function TambahQuotationPage() {
         body: JSON.stringify(data),
       })
 
-      if (uploadFile) {
-        setFileUploading(true)
-        const toastId = toast.loading('Mengupload file RFQ...')
-        const formData = new FormData()
-        formData.append('file', uploadFile)
-        const { apiFetchFormData } = await import('@/lib/api/client')
-        await apiFetchFormData(`/api/v1/quotation/${res.data.id}/documents`, formData)
-        toast.success('File RFQ berhasil diupload!', { id: toastId })
-      }
-
       toast.success('Quotation berhasil dibuat!')
       router.push('/dashboard/quotation')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
-      setFileUploading(false)
     }
   }
 
@@ -252,7 +260,7 @@ export default function TambahQuotationPage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="rfq_id" render={({ field }) => (
                   <FormItem><FormLabel>No. Referensi (RFQ)</FormLabel>
-                    <Select onValueChange={(v) => field.onChange(v)} value={field.value}>
+                    <Select onValueChange={(v) => field.onChange(v)} value={field.value} disabled={isRfqLoaded}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Pilih RFQ" /></SelectTrigger></FormControl>
                       <SelectContent>{rfqOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>
@@ -263,24 +271,7 @@ export default function TambahQuotationPage() {
                   <FormItem><FormLabel>Lampiran</FormLabel><FormControl><Input {...field} placeholder="Softcopy Penawaran Harga" /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <div className="flex items-center gap-3 rounded-lg border p-3">
-                <span className="text-sm font-medium shrink-0">File RFQ Customer:</span>
-                {uploadFile ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs max-w-[200px]">
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{uploadFile.name}</span>
-                    <button type="button" onClick={() => setUploadFile(null)} className="shrink-0 text-muted-foreground hover:text-destructive">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted-foreground">Belum ada file</span>
-                )}
-                <input ref={fileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setUploadFile(f); if (e.target) e.target.value = ''; }} />
-                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="ml-auto shrink-0">
-                  <Upload className="h-3.5 w-3.5 mr-1" /> Pilih File
-                </Button>
-              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="perihal" render={({ field }) => (
                   <FormItem><FormLabel>Perihal</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -298,7 +289,7 @@ export default function TambahQuotationPage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="customer_id" render={({ field }) => (
                   <FormItem><FormLabel>Customer *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isRfqLoaded}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Pilih Customer" /></SelectTrigger></FormControl>
                       <SelectContent>{customerOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>
@@ -307,7 +298,7 @@ export default function TambahQuotationPage() {
                 )} />
                 <FormField control={control} name="pic_customer_id" render={({ field }) => (
                   <FormItem><FormLabel>PIC Customer</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isRfqLoaded}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Pilih PIC" /></SelectTrigger></FormControl>
                       <SelectContent>{picOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>
@@ -342,10 +333,16 @@ export default function TambahQuotationPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <FormField control={control} name={`items.${index}.barang_id`} render={({ field }) => (
                       <FormItem><FormLabel>Barang *</FormLabel>
-                        <Select onValueChange={(v) => { field.onChange(v); handleBarangChange(index, v) }} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Pilih Barang" /></SelectTrigger></FormControl>
-                          <SelectContent>{barangData.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
-                        </Select>
+                        {rfqItemLabels[index] ? (
+                          <FormControl>
+                            <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/30 px-3 text-sm">{rfqItemLabels[index]}</div>
+                          </FormControl>
+                        ) : (
+                          <Select onValueChange={(v) => { field.onChange(v); handleBarangChange(index, v) }} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Pilih Barang" /></SelectTrigger></FormControl>
+                            <SelectContent>{barangData.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
+                          </Select>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )} />

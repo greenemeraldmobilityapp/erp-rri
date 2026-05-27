@@ -4,7 +4,7 @@ import { pgTable, text, timestamp, integer, real } from "drizzle-orm/pg-core";
 export const quotationItem = pgTable("quotation_item", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
   quotationId: text("quotation_id").notNull(),
-  barangId: text("barang_id").notNull(),
+  barangId: text("barang_id"),
   specification: text("specification"),
   justification: text("justification"),
   imageUrl: text("image_url"),

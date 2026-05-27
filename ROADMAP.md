@@ -333,3 +333,11 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 - [x] **Edit page PO — dialog kategori** — redesigned `/dashboard/customer-po/[id]/edit`: saat user pilih status "Dikonfirmasi", cek unmapped items via API; jika ada, tampilkan dialog dengan dropdown kategori per item + input "Buat Kategori Baru" inline (POST ke `/api/v1/master/kategori-barang`). Setelah konfirmasi, kirim `barang_auto_create` ke PUT API.
 - [x] **Toast notification** — setelah auto-create, toast sukses menampilkan nama barang yang dibuat.
 - [x] **Build:** `npm run build` — 0 errors, warnings only
+
+## Fase 22 — Convert RFQ Customer → Quotation (May 2026)
+- [x] **Quotation Tambah — referensi pakai `nomor_rfq_customer`** — auto-populate referensi menggunakan `rfq.nomor_rfq_customer` (nomor dari customer) bukan `rfq.nomor` (nomor internal RRI).
+- [x] **Quotation Tambah — auto-load via URL param** — membaca `?rfq_id=xxx` via `useSearchParams()`, otomatis set RFQ setelah data referensi selesai di-load.
+- [x] **Quotation Tambah — hapus upload file RFQ** — menghapus state `uploadFile`, `fileUploading`, `fileInputRef`, tombol upload, dan logic upload di `onSubmit` karena redundant (file RFQ sudah diupload di halaman RFQ Customer).
+- [x] **RFQ Customer List — button Convert to Quotation** — icon `FileText` di kolom aksi, navigasi ke `/dashboard/quotation/tambah?rfq_id={id}`.
+- [x] **RFQ Customer Detail — button Convert to Quotation** — button "Convert to Quotation" di `PageHeader actions`, navigasi ke `/dashboard/quotation/tambah?rfq_id={id}`.
+- [x] **Build:** `npm run build` — 0 errors, warnings only

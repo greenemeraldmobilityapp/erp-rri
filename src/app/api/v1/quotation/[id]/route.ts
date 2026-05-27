@@ -5,7 +5,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
 const itemSchema = z.object({
-  barang_id: z.string().min(1),
+  barang_id: z.string().optional().nullable(),
   specification: z.string().optional().nullable(),
   justification: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
@@ -50,20 +50,66 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: qtn, error: qtnError } = await supabaseAdmin
     .from('quotation')
-    .select('*, customer!customer_id(id, nama, kode), rfq_customer!rfq_id(nomor)')
+    .select('*')
     .eq('id', id)
     .single()
 
   if (qtnError) return internalError(qtnError)
-
   if (!qtn) return notFound('Quotation tidak ditemukan')
+
+  let customer = null
+  if (qtn.customer_id) {
+    const { data: c } = await supabaseAdmin
+      .from('customer')
+      .select('id, nama, kode')
+      .eq('id', qtn.customer_id)
+      .single()
+    customer = c
+  }
+
+  let rfqCustomer = null
+  if (qtn.rfq_id) {
+    const { data: r } = await supabaseAdmin
+      .from('rfq_customer')
+      .select('nomor')
+      .eq('id', qtn.rfq_id)
+      .single()
+    if (r) rfqCustomer = r
+  }
+
   const { data: items } = await supabaseAdmin
     .from('quotation_item')
-    .select('*, barang!barang_id(id, nama, kode, satuan, spesifikasi, justification, image_url)')
+    .select('*')
     .eq('quotation_id', id)
     .order('created_at', { ascending: true })
 
-  return NextResponse.json({ data: { ...qtn, items: items ?? [] } })
+  const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]
+  let barangMap = new Map<string, { id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }>()
+  if (barangIds.length > 0) {
+    const { data: barangList } = await supabaseAdmin
+      .from('barang')
+      .select('id, nama, kode, satuan, spesifikasi, justification, image_url')
+      .in('id', barangIds)
+    barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
+  }
+
+  let rfqItemNames: string[] = []
+  if (qtn.rfq_id) {
+    const { data: rfqItems } = await supabaseAdmin
+      .from('rfq_customer_item')
+      .select('nama_barang')
+      .eq('rfq_customer_id', qtn.rfq_id)
+      .order('created_at', { ascending: true })
+    rfqItemNames = rfqItems?.map(i => i.nama_barang) ?? []
+  }
+
+  const itemsWithBarang = (items ?? []).map((item, idx) => ({
+    ...item,
+    barang: item.barang_id ? (barangMap.get(item.barang_id) ?? null) : null,
+    nama_barang: idx < rfqItemNames.length ? rfqItemNames[idx] : null,
+  }))
+
+  return NextResponse.json({ data: { ...qtn, customer, rfq_customer: rfqCustomer, items: itemsWithBarang } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

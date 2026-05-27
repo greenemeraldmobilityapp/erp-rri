@@ -8,7 +8,7 @@ import { sendWhatsapp } from '@/lib/utils/whatsapp'
 import { getConfigNumber } from '@/lib/utils/config'
 
 const itemSchema = z.object({
-  barang_id: z.string().min(1),
+  barang_id: z.string().optional().nullable(),
   specification: z.string().optional().nullable(),
   justification: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),

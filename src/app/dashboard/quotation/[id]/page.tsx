@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { apiFetch } from "@/lib/api/client"
+import { apiFetch, getAuthToken } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Eye, Download, Pencil, Trash2, FileText } from "lucide-react"
+import { toast } from "sonner"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
 import { PageHeader } from "@/components/page-header"
@@ -33,7 +34,7 @@ const workflowSteps = [
 
 interface QuotationItem {
   id: string
-  barang_id: string
+  barang_id: string | null
   specification: string | null
   justification: string | null
   image_url: string | null
@@ -44,7 +45,8 @@ interface QuotationItem {
   jumlah: number
   total_harga: number | null
   keterangan: string | null
-  barang: { id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string }
+  nama_barang: string | null
+  barang: { id: string; nama: string; kode: string; satuan: string; spesifikasi?: string; justification?: string; image_url?: string } | null
 }
 
 interface Quotation {
@@ -79,6 +81,8 @@ export default function QuotationDetailPage() {
   const [data, setData] = useState<Quotation | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [downloadLoading, setDownloadLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -98,6 +102,47 @@ export default function QuotationDetailPage() {
     return `Rp ${Number(v).toLocaleString("id-ID")}`
   }
 
+  const handlePreviewPDF = async () => {
+    if (!id) return
+    setPreviewLoading(true)
+    try {
+      const token = await getAuthToken()
+      const res = await fetch(`/api/v1/quotation/${id}/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error('Gagal memuat PDF')
+      const blob = await res.blob()
+      window.open(URL.createObjectURL(blob), '_blank')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal memuat PDF')
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    if (!id) return
+    setDownloadLoading(true)
+    try {
+      const token = await getAuthToken()
+      const res = await fetch(`/api/v1/quotation/${id}/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error('Gagal download PDF')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `SPH-${data?.nomor ?? id}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal download PDF')
+    } finally {
+      setDownloadLoading(false)
+    }
+  }
+
   if (loading) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div></div>
   if (error || !data) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><EmptyState title="Gagal memuat data" description={error || "Data tidak ditemukan"} /></div>
 
@@ -114,15 +159,13 @@ export default function QuotationDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="back" onClick={() => router.push("/dashboard/quotation")}>Kembali</Button>
-            <Button variant="outline" asChild>
-              <a href={`/api/v1/quotation/${id}/pdf`} target="_blank" rel="noopener noreferrer">
-                <Eye className="h-4 w-4 mr-2" />Preview PDF
-              </a>
+            <Button variant="outline" onClick={handlePreviewPDF} disabled={previewLoading}>
+              {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
+              Preview PDF
             </Button>
-            <Button variant="outline" asChild>
-              <a href={`/api/v1/quotation/${id}/pdf`} download>
-                <Download className="h-4 w-4 mr-2" />Download PDF
-              </a>
+            <Button variant="outline" onClick={handleDownloadPDF} disabled={downloadLoading}>
+              {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              Download PDF
             </Button>
             <Button variant="outline" onClick={() => router.push(`/dashboard/quotation/${id}/edit`)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
             <DeleteConfirmationDialog
@@ -222,7 +265,7 @@ export default function QuotationDetailPage() {
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="font-medium">{item.barang?.nama || "-"}</TableCell>
+                      <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.specification || item.barang?.spesifikasi || "-"}</TableCell>
                       <TableCell className="text-center">{item.jumlah}</TableCell>
                       <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
@@ -260,10 +303,9 @@ export default function QuotationDetailPage() {
       </Card>
 
       <div className="flex justify-end gap-2 print:hidden">
-        <Button variant="outline" asChild>
-          <a href={`/api/v1/quotation/${id}/pdf`} target="_blank" rel="noopener noreferrer">
-            <FileText className="h-4 w-4 mr-2" />Cetak PDF
-          </a>
+        <Button variant="outline" onClick={handlePreviewPDF} disabled={previewLoading}>
+          {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
+          Cetak PDF
         </Button>
         <Button asChild>
           <a href={`/dashboard/quotation/${id}/edit`}>

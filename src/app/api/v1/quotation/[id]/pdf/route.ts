@@ -19,17 +19,47 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: qtn, error } = await supabaseAdmin
     .from('quotation')
-    .select('*, customer!customer_id(nama, kode), rfq_customer!rfq_id(nomor)')
+    .select('*')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
   if (!qtn) return notFound('Quotation tidak ditemukan')
 
+  let customer = null
+  if (qtn.customer_id) {
+    const { data: c } = await supabaseAdmin
+      .from('customer')
+      .select('nama, kode')
+      .eq('id', qtn.customer_id)
+      .single()
+    customer = c
+  }
+
+  let rfqCustomer = null
+  if (qtn.rfq_id) {
+    const { data: r } = await supabaseAdmin
+      .from('rfq_customer')
+      .select('nomor')
+      .eq('id', qtn.rfq_id)
+      .single()
+    if (r) rfqCustomer = r
+  }
+
   const { data: items } = await supabaseAdmin
     .from('quotation_item')
-    .select('*, barang!barang_id(nama, kode, satuan)')
+    .select('*')
     .eq('quotation_id', id)
   if (!items) return internalError('Gagal memuat item')
+
+  const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]
+  let barangMap = new Map<string, { nama: string; kode: string; satuan: string }>()
+  if (barangIds.length > 0) {
+    const { data: barangList } = await supabaseAdmin
+      .from('barang')
+      .select('id, nama, kode, satuan')
+      .in('id', barangIds)
+    barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
+  }
 
   let picCustomerNama: string | null = null
   let picCustomerNoHp: string | null = null
@@ -73,7 +103,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     perihal: qtn.perihal ?? null,
     pic_customer_nama: picCustomerNama,
     pic_customer_no_hp: picCustomerNoHp,
-    customer: (qtn.customer as { nama: string; kode: string }) ?? { nama: '-', kode: '-' },
+    customer: customer ?? { nama: '-', kode: '-' },
     alamat: qtn.alamat ?? null,
     tanggal: new Date(qtn.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
     masa_berlaku: qtn.masa_berlaku ?? null,
@@ -84,17 +114,20 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     ppn_enabled: qtn.ppn_enabled,
     total_harga: qtn.total_harga,
     keterangan: qtn.keterangan ?? null,
-    items: items.map(i => ({
-      nama: (i.barang as { nama: string })?.nama ?? '-',
-      kode: (i.barang as { kode: string })?.kode ?? '-',
-      specification: (i as { specification?: string | null }).specification ?? null,
-      justification: (i as { justification?: string | null }).justification ?? null,
-      image_url: (i as { image_url?: string | null }).image_url ?? null,
-      satuan: (i as { satuan?: string | null }).satuan ?? null,
+    items: items.map(i => {
+      const barang = i.barang_id ? barangMap.get(i.barang_id) : null
+      return {
+      nama: barang?.nama ?? '-',
+      kode: barang?.kode ?? '-',
+      specification: i.specification ?? null,
+      justification: i.justification ?? null,
+      image_url: i.image_url ?? null,
+      satuan: i.satuan ?? null,
       jumlah: i.jumlah,
       hargaSatuan: i.harga_satuan,
       diskon: i.diskon ?? 0,
-    })),
+      }
+    }),
     company,
   }
 
@@ -106,7 +139,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         'Content-Disposition': `inline; filename="SPH-${qtn.nomor}.pdf"`,
       },
     })
-  } catch {
-    return internalError('Gagal generate PDF')
+  } catch (e) {
+    console.error('PDF generation error:', e)
+    const msg = e instanceof Error ? e.message : 'Gagal generate PDF'
+    return NextResponse.json({ error: msg, code: 'PDF_GENERATION_ERROR' }, { status: 500 })
   }
 }

@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Pencil, Trash2, ImageIcon } from "lucide-react"
+import { Loader2, Pencil, Trash2, ImageIcon, FileText } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
@@ -119,6 +119,9 @@ export default function RfqCustomerDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="back" onClick={() => router.push("/dashboard/rfq-customer")}>Kembali</Button>
+            <Button variant="default" onClick={() => router.push(`/dashboard/quotation/tambah?rfq_id=${id}`)}>
+              <FileText className="h-4 w-4 mr-2" />Convert to Quotation
+            </Button>
             <Button variant="outline" onClick={() => router.push(`/dashboard/rfq-customer/${id}/edit`)}>
               <Pencil className="h-4 w-4 mr-2" />Edit
             </Button>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { Plus, Pencil, Trash2, Eye, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, Loader2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Customer {
@@ -114,6 +114,12 @@ export default function RfqCustomerPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/dashboard/quotation/tambah?rfq_id=${item.id}`}>
+                          <FileText className="h-4 w-4" />
+                          <span className="sr-only">Convert to Quotation</span>
+                        </Link>
+                      </Button>
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/dashboard/rfq-customer/${item.id}`}>
                           <Eye className="h-4 w-4" />

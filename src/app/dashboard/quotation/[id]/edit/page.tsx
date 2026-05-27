@@ -18,7 +18,7 @@ import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
-  barang_id: z.string().min(1),
+  barang_id: z.string().optional(),
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
@@ -88,6 +88,8 @@ export default function EditQuotationPage() {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const selectedCustomerId = watch('customer_id')
+  const [isRfqLoaded, setIsRfqLoaded] = useState(false)
+  const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
 
   useEffect(() => {
     const id = params.id as string
@@ -125,7 +127,8 @@ export default function EditQuotationPage() {
       ppn_enabled: boolean
       keterangan: string | null
       items: Array<{
-        barang_id: string
+        barang_id: string | null
+        barang?: { id: string; kode: string; nama: string } | null
         specification: string | null
         justification: string | null
         image_url: string | null
@@ -138,6 +141,12 @@ export default function EditQuotationPage() {
     }>(`/api/v1/quotation/${id}`)
       .then((res) => {
         const qtn = res.data
+        setIsRfqLoaded(!!qtn.rfq_id)
+        setRfqItemLabels(
+          qtn.items.map(i =>
+            i.barang ? `[${i.barang.kode}] ${i.barang.nama}` : ''
+          )
+        )
         reset({
           customer_id: qtn.customer_id,
           rfq_id: qtn.rfq_id ?? '',
@@ -153,7 +162,7 @@ export default function EditQuotationPage() {
           ppn_enabled: qtn.ppn_enabled,
           keterangan: qtn.keterangan ?? '',
           items: qtn.items.length > 0 ? qtn.items.map(i => ({
-            barang_id: i.barang_id,
+            barang_id: i.barang_id ?? '',
             specification: i.specification ?? '',
             justification: i.justification ?? '',
             image_url: i.image_url ?? '',
@@ -174,7 +183,7 @@ export default function EditQuotationPage() {
 
   useEffect(() => {
     if (!selectedCustomerId) { setPicOptions([]); return }
-    apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/customer-pic?customer_id=${selectedCustomerId}`)
+    apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/pic-customer?customer_id=${selectedCustomerId}`)
       .then((res) => setPicOptions((res.data ?? []).map(p => ({ value: p.id, label: `${p.nama}${p.jabatan ? ` (${p.jabatan})` : ''}` }))))
       .catch(() => {})
   }, [selectedCustomerId])
@@ -232,7 +241,7 @@ export default function EditQuotationPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">No. Referensi (RFQ)</label>
-                <select {...register('rfq_id')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
+                <select {...register('rfq_id')} disabled={isRfqLoaded} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:opacity-50">
                   <option value="">Pilih RFQ</option>
                   {rfqOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
@@ -262,7 +271,8 @@ export default function EditQuotationPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Customer <span className="text-destructive">*</span></label>
                 <select {...register('customer_id')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  disabled={isRfqLoaded}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50">
                   <option value="">Pilih Customer</option>
                   {customerOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
@@ -270,7 +280,8 @@ export default function EditQuotationPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">PIC Customer</label>
                 <select {...register('pic_customer_id')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  disabled={isRfqLoaded}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50">
                   <option value="">Pilih PIC</option>
                   {picOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
@@ -304,12 +315,18 @@ export default function EditQuotationPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Barang <span className="text-destructive">*</span></label>
+                    {rfqItemLabels[index] ? (
+                      <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        {rfqItemLabels[index]}
+                      </div>
+                    ) : (
                     <select {...register(`items.${index}.barang_id`)}
                       onChange={(e) => { const v = e.target.value; setValue(`items.${index}.barang_id`, v); handleBarangChange(index, v) }}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
                       <option value="">Pilih Barang</option>
                       {barangData.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
