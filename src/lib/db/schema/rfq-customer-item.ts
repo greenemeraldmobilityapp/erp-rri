@@ -8,6 +8,7 @@ export const rfqCustomerItem = pgTable("rfq_customer_item", {
   namaBarang: text("nama_barang"),
   jumlah: integer("jumlah").notNull(),
   satuan: text("satuan"),
+  imageUrl: text("image_url"),
   keterangan: text("keterangan"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

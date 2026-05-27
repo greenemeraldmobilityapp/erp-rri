@@ -6,13 +6,10 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Trash2 } from "lucide-react"
-import { CopyButton } from "@/components/copy-button"
-import { StatusWorkflow } from "@/components/status-workflow"
+import { Loader2, Pencil, Trash2, ImageIcon } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
-import { ActivityTimeline } from "@/components/activity-timeline"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -26,19 +23,13 @@ const statusLabel: Record<string, { label: string; variant: "secondary" | "warni
   closed: { label: "Ditutup", variant: "outline" },
 }
 
-const workflowSteps = [
-  { key: "draft", label: "Draft" },
-  { key: "sent", label: "Terkirim" },
-  { key: "responded", label: "Direspon" },
-  { key: "closed", label: "Ditutup" },
-]
-
 interface RFQCustomerItem {
   id: string
   barang_id: string | null
   nama_barang: string | null
   jumlah: number
   satuan: string | null
+  image_url: string | null
   keterangan: string | null
   barang: { id: string; nama: string; kode: string; satuan: string } | null
 }
@@ -47,6 +38,7 @@ interface RFQCustomer {
   id: string
   nomor: string
   customer_id: string
+  nomor_rfq_customer: string | null
   tanggal: string
   perihal: string | null
   status: string
@@ -54,6 +46,7 @@ interface RFQCustomer {
   is_active: boolean
   created_at: string
   customer: { id: string; nama: string; kode: string }
+  pic_customer: { id: string; nama: string; jabatan: string } | null
   items: RFQCustomerItem[]
 }
 
@@ -126,6 +119,9 @@ export default function RfqCustomerDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="back" onClick={() => router.push("/dashboard/rfq-customer")}>Kembali</Button>
+            <Button variant="outline" onClick={() => router.push(`/dashboard/rfq-customer/${id}/edit`)}>
+              <Pencil className="h-4 w-4 mr-2" />Edit
+            </Button>
             <DeleteConfirmationDialog
               onConfirm={handleDelete}
               itemName={`RFQ Customer ${data.nomor}`}
@@ -140,13 +136,11 @@ export default function RfqCustomerDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-bold font-mono">{data.nomor}</h2>
-              <CopyButton text={data.nomor} />
             </div>
             <Badge variant={statusLabel[data.status]?.variant ?? "outline"}>
               {statusLabel[data.status]?.label ?? data.status}
             </Badge>
           </div>
-          <StatusWorkflow steps={workflowSteps} current={data.status} />
         </CardContent>
       </Card>
 
@@ -161,6 +155,17 @@ export default function RfqCustomerDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Tanggal</p>
               <p className="font-medium">{new Date(data.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Nomor RFQ Customer</p>
+              <p className="font-medium">{data.nomor_rfq_customer || "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">PIC Customer</p>
+              <p className="font-medium">{data.pic_customer?.nama || "-"}</p>
+              {data.pic_customer?.jabatan && (
+                <p className="text-xs text-muted-foreground">{data.pic_customer.jabatan}</p>
+              )}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Perihal</p>
@@ -191,6 +196,7 @@ export default function RfqCustomerDetailPage() {
                   <TableHead>Nama Barang</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Satuan</TableHead>
+                  <TableHead>Gambar</TableHead>
                   <TableHead>Keterangan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -201,6 +207,15 @@ export default function RfqCustomerDetailPage() {
                     <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>
                     <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
+                    <TableCell>
+                      {item.image_url ? (
+                        <a href={item.image_url} target="_blank" rel="noopener noreferrer">
+                          <img src={item.image_url} alt="Gambar barang" className="h-10 w-10 rounded object-cover border hover:opacity-80 transition-opacity" />
+                        </a>
+                      ) : (
+                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{item.keterangan || "-"}</TableCell>
                   </TableRow>
                 ))}
@@ -223,12 +238,6 @@ export default function RfqCustomerDetailPage() {
             onDelete={handleDeleteDocument}
             uploading={uploading}
           />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">Aktivitas</h3>
-          <ActivityTimeline tableName="rfq_customer" recordId={id!} />
         </CardContent>
       </Card>
     </div>

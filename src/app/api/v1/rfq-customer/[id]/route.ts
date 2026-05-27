@@ -16,13 +16,39 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (rfqError) return internalError(rfqError)
   if (!rfq) return notFound('RFQ Customer tidak ditemukan')
 
-  const { data: items } = await supabaseAdmin
+  const { data: items, error: itemsError } = await supabaseAdmin
     .from('rfq_customer_item')
-    .select('*, barang!barang_id(id, nama, kode, satuan)')
+    .select('*')
     .eq('rfq_customer_id', id)
     .order('created_at', { ascending: true })
 
-  return NextResponse.json({ data: { ...rfq, items: items ?? [] } })
+  if (itemsError) return internalError(itemsError)
+
+  const barangIds = [...new Set(items?.map(i => i.barang_id).filter(Boolean) ?? [])]
+  let barangMap = new Map<string, { id: string; nama: string; kode: string; satuan: string }>()
+  if (barangIds.length > 0) {
+    const { data: barangList } = await supabaseAdmin
+      .from('barang')
+      .select('id, nama, kode, satuan')
+      .in('id', barangIds)
+    barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
+  }
+  const itemsWithBarang = (items ?? []).map(item => ({
+    ...item,
+    barang: item.barang_id ? (barangMap.get(item.barang_id) ?? null) : null,
+  }))
+
+  let picCustomer = null
+  if (rfq.pic_customer_id) {
+    const { data: pic } = await supabaseAdmin
+      .from('customer_pic')
+      .select('id, nama, jabatan')
+      .eq('id', rfq.pic_customer_id)
+      .single()
+    picCustomer = pic
+  }
+
+  return NextResponse.json({ data: { ...rfq, items: itemsWithBarang, pic_customer: picCustomer } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const updateData: Record<string, unknown> = {}
   if (body.customer_id !== undefined) updateData.customer_id = body.customer_id
   if (body.tanggal !== undefined) updateData.tanggal = body.tanggal
+  if (body.nomor_rfq_customer !== undefined) updateData.nomor_rfq_customer = body.nomor_rfq_customer ?? null
   if (body.pic_customer_id !== undefined) updateData.pic_customer_id = body.pic_customer_id ?? null
   if (body.perihal !== undefined) updateData.perihal = body.perihal
   if (body.status !== undefined) updateData.status = body.status
@@ -56,12 +83,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await supabaseAdmin.from('rfq_customer_item').delete().eq('rfq_customer_id', id)
 
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id?: string; nama_barang?: string; jumlah: number; satuan?: string; keterangan?: string }) => ({
+    const items = body.items.map((item: { barang_id?: string; nama_barang?: string; jumlah: number; satuan?: string; image_url?: string; keterangan?: string }) => ({
       rfq_customer_id: id,
       barang_id: item.barang_id ?? null,
       nama_barang: item.nama_barang ?? null,
       jumlah: item.jumlah,
       satuan: item.satuan ?? null,
+      image_url: item.image_url ?? null,
       keterangan: item.keterangan ?? null,
       created_at: now,
       updated_at: now,

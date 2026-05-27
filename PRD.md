@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 5.0
+**Versi:** 5.2
 **Status:** Draft
 **Tanggal:** 21 Mei 2026
 
@@ -324,7 +324,7 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Barang** | Data barang (nama, kode, kategori, satuan, spesifikasi, justification, image_url, harga beli default, harga jual default, stok minimum, is_active). Kolom `kontrak_id` (FK ke kontrak, ON DELETE CASCADE) untuk barang yang dibuat dari import kontrak — jika kontrak dihapus, barang ikut terhapus otomatis. Justification & image_url untuk lampiran Quotation SPH. |
+| **Barang** | Data barang (nama, kode, kategori, satuan, spesifikasi, justification, image_url, harga beli default, harga jual default, stok minimum, is_active). Kolom `kontrak_id` (FK ke kontrak, ON DELETE CASCADE) untuk barang yang dibuat dari import kontrak — jika kontrak dihapus, barang ikut terhapus otomatis. Justification & image_url untuk lampiran Quotation SPH. **Auto-create:** Saat PO Customer di-confirm, barang dari RFQ Customer yang belum terdaftar (free-text `nama_barang`) otomatis dibuat ke master barang dengan kode `BRG-RRI-{auto-increment}`. User memilih kategori per barang via dialog sebelum konfirmasi. |
 | **Kategori Barang** | Pengelompokan barang (Cleaning Service, ATK, Peralatan, dll) |
 | **Supplier** | Data supplier — termasuk supplier marketplace (Shopee, Tokopedia) dengan field: nama toko, link toko, no. rekening, kontak. Untuk marketplace: field tambahan seperti link produk, marketplace, nama toko. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
 | **Customer** | Data customer, alamat, kontak. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
@@ -407,8 +407,8 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar) via Lampiran. API: `/api/v1/rfq-customer`. Nomor otomatis: `RFQC/RRI/YY/MM/0001` |
-| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (format dash). |
+| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. Nomor otomatis: `RFQC/RRI/YY/MM/0001` |
+| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (format dash). |
 | **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal |
 | **Quotation → PO** | Konversi quotation yang deal menjadi PO customer — auto-generate Sales Order |
 

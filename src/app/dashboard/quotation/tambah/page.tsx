@@ -91,9 +91,10 @@ export default function TambahQuotationPage() {
   })
 
   const { register, handleSubmit, control, watch, setValue } = form
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+  const { fields, append, remove, replace } = useFieldArray({ control, name: 'items' })
 
   const selectedCustomerId = watch('customer_id')
+  const selectedRfqId = watch('rfq_id')
 
   useEffect(() => {
     Promise.all([
@@ -125,12 +126,71 @@ export default function TambahQuotationPage() {
   }, [selectedCustomerId, customerOptions, setValue])
 
   useEffect(() => {
-    const rfqId = watch('rfq_id')
-    if (rfqId) {
-      const rfq = rfqOptions.find(r => r.value === rfqId)
-      if (rfq) setValue('referensi', rfq.label)
+    if (!selectedRfqId) return
+
+    let cancelled = false
+
+    interface RfqData {
+      customer_id: string
+      pic_customer_id: string | null
+      nomor: string
+      items: Array<{
+        barang_id: string | null
+        nama_barang: string | null
+        jumlah: number
+        satuan: string | null
+        image_url: string | null
+        keterangan: string | null
+      }>
     }
-  }, [watch('rfq_id')])
+
+    apiFetch<RfqData>(`/api/v1/rfq-customer/${selectedRfqId}`)
+      .then(async (res) => {
+        if (cancelled) return
+        const rfq = res.data as RfqData
+
+        setValue('referensi', rfq.nomor)
+        setValue('customer_id', rfq.customer_id)
+
+        const cust = customerOptions.find(c => c.value === rfq.customer_id)
+        if (cust?.alamat) setValue('alamat', cust.alamat)
+
+        if (rfq.pic_customer_id) {
+          const picRes = await apiFetch<Array<{ id: string; nama: string; jabatan?: string }>>(`/api/v1/master/customer-pic?customer_id=${rfq.customer_id}`)
+          if (cancelled) return
+          const pics = (picRes.data ?? []) as Array<{ id: string; nama: string; jabatan?: string }>
+          setPicOptions(pics.map(p => ({ value: p.id, label: `${p.nama}${p.jabatan ? ` (${p.jabatan})` : ''}` })))
+          setValue('pic_customer_id', rfq.pic_customer_id)
+        }
+
+        const newItems = (rfq.items ?? []).map(item => ({
+          barang_id: item.barang_id || '',
+          specification: '',
+          justification: '',
+          image_url: item.image_url || '',
+          satuan: item.satuan || '',
+          jumlah: item.jumlah,
+          harga_satuan: 0,
+          diskon: 0,
+          keterangan: item.keterangan || '',
+        }))
+        if (cancelled) return
+        replace(newItems)
+
+        newItems.forEach((item, i) => {
+          if (item.barang_id) {
+            const barang = barangData.find(b => b.value === item.barang_id)
+            if (barang) {
+              setValue(`items.${i}.specification`, barang.spesifikasi)
+              setValue(`items.${i}.justification`, barang.justification)
+            }
+          }
+        })
+      })
+      .catch(() => toast.error('Gagal memuat data RFQ Customer'))
+
+    return () => { cancelled = true }
+  }, [selectedRfqId, customerOptions, barangData, replace, setValue])
 
   const handleBarangChange = (index: number, barangId: string) => {
     const barang = barangData.find(b => b.value === barangId)
@@ -192,7 +252,7 @@ export default function TambahQuotationPage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="rfq_id" render={({ field }) => (
                   <FormItem><FormLabel>No. Referensi (RFQ)</FormLabel>
-                    <Select onValueChange={(v) => { field.onChange(v); const rfq = rfqOptions.find(r => r.value === v); if (rfq) setValue('referensi', rfq.label) }} value={field.value}>
+                    <Select onValueChange={(v) => field.onChange(v)} value={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Pilih RFQ" /></SelectTrigger></FormControl>
                       <SelectContent>{rfqOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>

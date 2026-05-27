@@ -10,17 +10,26 @@ const itemSchema = z.object({
   nama_barang: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive('Jumlah harus > 0'),
   satuan: z.string().optional().nullable(),
+  image_url: z.string().optional().nullable(),
   keterangan: z.string().optional().nullable(),
+})
+
+const fileSchema = z.object({
+  fileId: z.string(),
+  fileName: z.string(),
+  fileUrl: z.string(),
 })
 
 const schema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
+  nomor_rfq_customer: z.string().optional().nullable(),
   pic_customer_id: z.string().optional().nullable(),
   perihal: z.string().optional().default('Permintaan Penawaran'),
   status: z.string().optional().default('draft'),
   keterangan: z.string().optional().nullable(),
   items: z.array(itemSchema).optional().default([]),
+  files: z.array(fileSchema).optional().default([]),
 })
 
 export async function GET(request: NextRequest) {
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
     .insert({
       nomor,
       customer_id: parsed.data.customer_id,
+      nomor_rfq_customer: parsed.data.nomor_rfq_customer ?? null,
       tanggal: parsed.data.tanggal,
       pic_customer_id: parsed.data.pic_customer_id ?? null,
       perihal: parsed.data.perihal ?? 'Permintaan Penawaran',
@@ -73,6 +83,7 @@ export async function POST(request: NextRequest) {
     nama_barang: item.nama_barang ?? null,
     jumlah: item.jumlah,
     satuan: item.satuan ?? null,
+    image_url: item.image_url ?? null,
     keterangan: item.keterangan ?? null,
     created_at: now,
     updated_at: now,
@@ -86,5 +97,21 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ data: { ...rfq, items } }, { status: 201 })
+  const fileRecords = (parsed.data.files ?? []).map(f => ({
+    id: crypto.randomUUID(),
+    rfq_customer_id: rfq.id,
+    file_name: f.fileName,
+    file_url: f.fileUrl,
+    drive_file_id: f.fileId,
+  }))
+
+  if (fileRecords.length > 0) {
+    const { error: filesError } = await supabaseAdmin.from('rfq_customer_document').insert(fileRecords)
+    if (filesError) {
+      await supabaseAdmin.from('rfq_customer').delete().eq('id', rfq.id)
+      return internalError(filesError)
+    }
+  }
+
+  return NextResponse.json({ data: { ...rfq, items, fileRecords } }, { status: 201 })
 }

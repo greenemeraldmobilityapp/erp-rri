@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { generateSOFromPO } from '@/lib/auto-sales'
+import { createBarangFromRfqItem, getUnmappedRfqItems } from '@/lib/utils/barang-auto-create'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -59,6 +60,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (pic?.no_hp) {
         const msg = `Kepada Yth. ${pic.nama},\n\nPO/DI No. *${poWithCustomer.nomor}* dari ${poWithCustomer.customer.nama} telah DEAL dan dikonfirmasi.\n\nTerima kasih atas kerjasamanya.\n\n- ERP RRI`
         await sendWhatsapp(pic.no_hp, msg, auth.user?.id)
+      }
+    }
+
+    // Auto-create master barang from unmapped RFQ items
+    if (body.barang_auto_create && Array.isArray(body.barang_auto_create) && body.barang_auto_create.length > 0) {
+      const unmappedItems = await getUnmappedRfqItems(id)
+      const created: Array<{ nama: string; kode: string }> = []
+      for (const cfg of body.barang_auto_create) {
+        const item = unmappedItems.find((u: { id: string }) => u.id === cfg.item_id)
+        if (!item) continue
+        const newBarang = await createBarangFromRfqItem(
+          cfg.nama_barang || item.nama_barang || '',
+          cfg.satuan || item.satuan,
+          cfg.kategori_id,
+          item.image_url,
+        )
+        created.push({ nama: newBarang.nama, kode: newBarang.kode })
+        await supabaseAdmin.from('rfq_customer_item').update({ barang_id: newBarang.id }).eq('id', item.id)
+      }
+      if (created.length > 0) {
+        const names = created.map((c: { nama: string; kode: string }) => c.nama).join(', ')
+        console.log('Barang auto-created from RFQ:', names)
       }
     }
   }

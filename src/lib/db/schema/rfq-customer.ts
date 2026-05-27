@@ -6,6 +6,7 @@ export const rfqCustomer = pgTable("rfq_customer", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
   nomor: text("nomor").notNull().unique(),
   customerId: text("customer_id").notNull().references(() => customer.id, { onDelete: "restrict" }),
+  nomorRfqCustomer: text("nomor_rfq_customer"),
   tanggal: timestamp("tanggal").notNull(),
   picCustomerId: text("pic_customer_id"),
   perihal: text("perihal"),

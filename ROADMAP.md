@@ -314,3 +314,22 @@ All items above (Bulk Import, OpenAPI Docs, Global Search, PDF Generations, Deta
 - [x] Halaman Tambah Barang — 2 tab: "Input Manual" (existing) + "Import dari Kontrak" (baru: pilih kontrak → pilih kategori → paste JSON dari Gemini AI → preview → import)
 - [x] Gemini prompt — ditampilkan di UI (bisa copy) untuk ekstrak data barang dari PDF kontrak via chat Gemini AI
 - [x] Build: `npm run build` — 0 errors, warnings only
+
+## Fase 20 — RFQ Customer CRUD Perbaikan + Quotation RFQ → SPH Auto-Populate (May 2026)
+- [x] **Halaman Tambah RFQ Customer (redesign)** — input `nomor_rfq_customer`, PIC Customer select, RFQ doc upload via `/api/v1/rfq-customer/upload-temp`, item image upload (1 per item). Migration `0023_rfq_customer_tambah_enhance.sql`.
+- [x] **Bug Fix: page reload saat upload item image** — removed `useCallback` (stale closure root cause), fixed double `onChange` override on `<select>` (RHF register override), removed unused imports.
+- [x] **Edit Page RFQ Customer** — full form with customer, tanggal, nomor_rfq_customer, PIC select, perihal, keterangan, items field array with image upload. Submit via `PUT /api/v1/rfq-customer/{id}`.
+- [x] **List Page CRUD Actions** — converted to Client Component, added Nomor RFQ Customer column, Detail (Eye), Edit (Pencil → `/dashboard/rfq-customer/{id}/edit`), Delete (Trash2 + `DeleteConfirmationDialog`).
+- [x] **Detail Page RFQ Customer** — cleaned up: removed `StatusWorkflow`, `CopyButton`, `ActivityTimeline`. Added PIC Customer display, Edit button.
+- [x] **Fix: items not appearing in detail page** — `rfq_customer_item.barang_id` has no FK to `barang.id`, so PostgREST join silently failed. Fixed: fetch items with `select('*')`, resolve barang names manually via separate query.
+- [x] **Google Docs Viewer for office files** — `FileUpload` component: office files (xlsx/xls/doc/docx) open via `https://docs.google.com/viewer?url=...`, PDF/images open directly.
+- [x] **Quotation → RFQ Customer auto-populate** — When user selects RFQ in Quotation tambah, auto-fill customer, PIC, alamat, referensi, and items from RFQ Customer data (with spec/justification from master barang).
+- [x] **Build:** `npm run build` — 0 errors, warnings only
+
+## Fase 21 — Auto-Create Master Barang dari RFQ Customer (May 2026)
+- [x] **Utility `barang-auto-create.ts`** — `generateAutoKode()` (format `BRG-RRI-00001`), `createBarangFromRfqItem()` (insert master barang + fallback kategori "Lainnya"), `getUnmappedRfqItems()` (traverse PO → Quotation → RFQ → items tanpa barang_id).
+- [x] **API `GET /api/v1/customer-po/{id}/check-unmapped-barang`** — returns daftar item RFQ yang belum punya `barang_id` + opsi kategori untuk dropdown.
+- [x] **API PUT logic** — `PUT /api/v1/customer-po/{id}` now accepts `barang_auto_create: [{ item_id, nama_barang, satuan, kategori_id }]`. Saat PO di-confirm, auto-create master barang di `barang` table + update `rfq_customer_item.barang_id` ke ID barang baru.
+- [x] **Edit page PO — dialog kategori** — redesigned `/dashboard/customer-po/[id]/edit`: saat user pilih status "Dikonfirmasi", cek unmapped items via API; jika ada, tampilkan dialog dengan dropdown kategori per item + input "Buat Kategori Baru" inline (POST ke `/api/v1/master/kategori-barang`). Setelah konfirmasi, kirim `barang_auto_create` ke PUT API.
+- [x] **Toast notification** — setelah auto-create, toast sukses menampilkan nama barang yang dibuat.
+- [x] **Build:** `npm run build` — 0 errors, warnings only

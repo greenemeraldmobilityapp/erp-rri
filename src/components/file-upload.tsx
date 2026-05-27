@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Loader2, Upload, FileText, Trash2, ExternalLink } from "lucide-react"
+import { Loader2, Upload, FileText, Trash2, ExternalLink, Eye } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export interface DocumentFile {
@@ -20,6 +20,20 @@ interface FileUploadProps {
   uploading?: boolean
   accept?: string
   maxSizeMB?: number
+}
+
+const OFFICE_EXTS = ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx']
+
+function isOfficeFile(name: string) {
+  const ext = '.' + name.split('.').pop()?.toLowerCase()
+  return OFFICE_EXTS.includes(ext)
+}
+
+function getViewerUrl(fileUrl: string, fileName: string) {
+  if (isOfficeFile(fileName)) {
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`
+  }
+  return fileUrl
 }
 
 export function FileUpload({ documents, onUpload, onDelete, uploading = false, accept = ".pdf,.jpg,.jpeg,.png,.webp,.xlsx,.xls", maxSizeMB = 10 }: FileUploadProps) {
@@ -99,18 +113,47 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" asChild>
-                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Buka file</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {isOfficeFile(doc.file_name) ? (
+                  <>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" asChild>
+                            <a href={getViewerUrl(doc.file_url, doc.file_name)} target="_blank" rel="noopener noreferrer">
+                              <Eye className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Preview</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" asChild>
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Download</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Buka file</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
                 <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>

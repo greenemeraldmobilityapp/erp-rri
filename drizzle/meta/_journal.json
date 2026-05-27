@@ -156,6 +156,13 @@
       "when": 1779912000000,
       "tag": "0022_rfq_customer_fk_customer_id",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1779915000000,
+      "tag": "0023_rfq_customer_tambah_enhance",
+      "breakpoints": true
     }
   ]
 }

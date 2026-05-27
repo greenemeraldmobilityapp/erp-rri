@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,21 +10,21 @@ import { apiFetch, apiFetchFormData } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { DatePicker } from '@/components/ui/date-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { Plus, Trash2, ArrowLeft, Loader2, Upload, FileText, X, Image as ImageIcon } from 'lucide-react'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Plus, Trash2, ArrowLeft, Loader2, ImageIcon, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 const itemSchema = z.object({
+  id: z.string().optional(),
   barang_id: z.string().optional(),
   nama_barang: z.string().optional(),
   jumlah: z.coerce.number().int().positive('Jumlah harus > 0'),
   satuan: z.string().optional(),
   image_url: z.string().optional(),
   keterangan: z.string().optional(),
-  _tempImage: z.any().optional(),
 })
 
 const rfqSchema = z.object({
@@ -39,47 +39,92 @@ const rfqSchema = z.object({
 
 type RfqFormValues = z.input<typeof rfqSchema>
 
-interface PendingFile {
-  fileId: string
-  fileName: string
-  fileUrl: string
-}
-
-export default function TambahRfqCustomerPage() {
+export default function EditRfqCustomerPage() {
   const router = useRouter()
+  const params = useParams()
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [customerOptions, setCustomerOptions] = useState<Array<{ value: string; label: string }>>([])
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
-  const [uploadingFile, setUploadingFile] = useState(false)
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
-
-  const today = new Date().toISOString().split('T')[0]
 
   const form = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
     defaultValues: {
-      tanggal: today,
-      perihal: 'Permintaan Penawaran',
+      customer_id: '',
       nomor_rfq_customer: '',
+      pic_customer_id: '',
+      tanggal: new Date().toISOString().split('T')[0],
+      perihal: 'Permintaan Penawaran',
+      keterangan: '',
       items: [],
     },
   })
 
-  const { handleSubmit, control, register, setValue, watch } = form
+  const { handleSubmit, control, register, setValue, watch, reset } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const customerId = watch('customer_id')
 
   useEffect(() => {
+    if (!params?.id) return
+    const id = Array.isArray(params.id) ? params.id[0] : params.id
+
     Promise.all([
+      apiFetch<{
+        id: string
+        customer_id: string
+        nomor_rfq_customer: string | null
+        pic_customer_id: string | null
+        tanggal: string
+        perihal: string | null
+        keterangan: string | null
+        items: Array<{
+          id: string
+          barang_id: string | null
+          nama_barang: string | null
+          jumlah: number
+          satuan: string | null
+          image_url: string | null
+          keterangan: string | null
+        }>
+        customer: { id: string; nama: string; kode: string }
+        pic_customer: { id: string; nama: string } | null
+      }>(`/api/v1/rfq-customer/${id}`),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang'),
-    ]).then(([customers, barang]) => {
-      setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
-      setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
-    }).catch(() => toast.error('Gagal memuat data referensi'))
-  }, [])
+    ]).then(([rfqRes, customersRes, barangRes]) => {
+      const rfq = rfqRes.data
+      const customers = customersRes.data ?? []
+      const barang = barangRes.data ?? []
+
+      setCustomerOptions(customers.map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
+      setBarangOptions(barang.map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
+
+      reset({
+        customer_id: rfq.customer_id,
+        nomor_rfq_customer: rfq.nomor_rfq_customer || '',
+        pic_customer_id: rfq.pic_customer_id || '',
+        tanggal: rfq.tanggal?.split('T')[0] || '',
+        perihal: rfq.perihal || 'Permintaan Penawaran',
+        keterangan: rfq.keterangan || '',
+        items: (rfq.items ?? []).map(item => ({
+          id: item.id,
+          barang_id: item.barang_id || '',
+          nama_barang: item.nama_barang || '',
+          jumlah: item.jumlah,
+          satuan: item.satuan || '',
+          image_url: item.image_url || '',
+          keterangan: item.keterangan || '',
+        })),
+      })
+
+      setLoading(false)
+    }).catch(() => {
+      toast.error('Gagal memuat data RFQ Customer')
+      setLoading(false)
+    })
+  }, [params?.id, reset])
 
   useEffect(() => {
     if (!customerId) {
@@ -93,41 +138,6 @@ export default function TambahRfqCustomerPage() {
       })
       .catch(() => toast.error('Gagal memuat data PIC Customer'))
   }, [customerId, setValue])
-
-  async function handleUploadRfqDoc(file: File) {
-    const selectedCustomerId = form.getValues('customer_id')
-    const nomorRef = form.getValues('nomor_rfq_customer')
-    if (!selectedCustomerId) {
-      toast.error('Pilih customer terlebih dahulu')
-      return
-    }
-    if (!nomorRef) {
-      toast.error('Isi Nomor RFQ Customer terlebih dahulu')
-      return
-    }
-    const customer = customerOptions.find(c => c.value === selectedCustomerId)
-    const customerName = customer ? customer.label.replace(/^\[\w+\]\s*/, '') : ''
-
-    setUploadingFile(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('customerName', customerName)
-      formData.append('nomorRfqCustomer', nomorRef)
-      formData.append('type', 'rfq')
-      const res = await apiFetchFormData<{ fileId: string; fileName: string; fileUrl: string }>('/api/v1/rfq-customer/upload-temp', formData)
-      setPendingFiles(prev => [...prev, res.data])
-      toast.success('File berhasil diupload')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal upload file')
-    } finally {
-      setUploadingFile(false)
-    }
-  }
-
-  function handleDeletePendingFile(fileId: string) {
-    setPendingFiles(prev => prev.filter(f => f.fileId !== fileId))
-  }
 
   async function handleUploadItemImage(index: number, file: File) {
     const selectedCustomerId = form.getValues('customer_id')
@@ -159,11 +169,11 @@ export default function TambahRfqCustomerPage() {
   const onSubmit = async (data: RfqFormValues) => {
     setSubmitting(true)
     try {
+      const id = Array.isArray(params.id) ? params.id[0] : params.id
       const payload = {
         ...data,
         nomor_rfq_customer: data.nomor_rfq_customer || null,
         pic_customer_id: data.pic_customer_id || null,
-        files: pendingFiles,
         items: (data.items ?? []).map(item => ({
           barang_id: item.barang_id || null,
           nama_barang: item.nama_barang || null,
@@ -173,17 +183,28 @@ export default function TambahRfqCustomerPage() {
           keterangan: item.keterangan || null,
         })),
       }
-      await apiFetch('/api/v1/rfq-customer', {
-        method: 'POST',
+      await apiFetch(`/api/v1/rfq-customer/${id}`, {
+        method: 'PUT',
         body: JSON.stringify(payload),
       })
-      toast.success('RFQ Customer berhasil dibuat!')
-      router.push('/dashboard/rfq-customer')
+      toast.success('RFQ Customer berhasil diperbarui!')
+      router.push(`/dashboard/rfq-customer/${id}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto py-12">
+        <div className="flex items-center justify-center gap-3 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          Memuat data...
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -193,8 +214,8 @@ export default function TambahRfqCustomerPage() {
           <Link href="/dashboard/rfq-customer"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-heading font-bold">Buat RFQ Customer Baru</h1>
-          <p className="text-muted-foreground mt-1">Request for Quotation dari Customer</p>
+          <h1 className="text-3xl font-heading font-bold">Edit RFQ Customer</h1>
+          <p className="text-muted-foreground mt-1">Ubah data Request for Quotation dari Customer</p>
         </div>
       </div>
 
@@ -245,54 +266,6 @@ export default function TambahRfqCustomerPage() {
               <FormField control={control} name="keterangan" render={({ field }) => (
                 <FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} placeholder="Catatan untuk RFQ Customer ini" rows={2} /></FormControl><FormMessage /></FormItem>
               )} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Dokumen RFQ dari Customer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div
-                  className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
-                  onClick={() => {
-                    const input = document.createElement('input')
-                    input.type = 'file'
-                    input.accept = '.pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png,.webp'
-                    input.onchange = (e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0]
-                      if (file) handleUploadRfqDoc(file)
-                    }
-                    input.click()
-                  }}
-                >
-                  <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
-                  <p className="text-sm font-medium">Klik untuk upload dokumen RFQ</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, Excel, Word, Gambar (maks. 10MB)</p>
-                </div>
-                {uploadingFile && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Mengupload...
-                  </div>
-                )}
-                {pendingFiles.length > 0 && (
-                  <div className="space-y-2">
-                    {pendingFiles.map((f) => (
-                      <div key={f.fileId} className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-                          <p className="text-sm font-medium truncate">{f.fileName}</p>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeletePendingFile(f.fileId)} type="button">
-                          <X className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -406,7 +379,7 @@ export default function TambahRfqCustomerPage() {
             </Button>
             <Button type="submit" disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {submitting ? 'Menyimpan...' : 'Simpan RFQ Customer'}
+              {submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </div>
         </form>
