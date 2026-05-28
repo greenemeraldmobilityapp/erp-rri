@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { pdf } from '@react-pdf/renderer'
+import { pdf, DocumentProps } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
@@ -145,7 +145,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 
   try {
-    const blob = await pdf(QuotationPDF({ data: pdfData }) as any).toBlob()
+    const blob = await pdf(QuotationPDF({ data: pdfData }) as React.ReactElement<DocumentProps>).toBlob()
     return new NextResponse(blob, {
       headers: {
         'Content-Type': 'application/pdf',

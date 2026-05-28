@@ -5,8 +5,10 @@ import { Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/
 Font.register({
   family: 'Arial',
   fonts: [
-    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial@1.0.4/Arial.ttf', fontWeight: 'normal' },
-    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-bold@1.0.4/Arial%20Bold.ttf', fontWeight: 'bold' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial@1.0.4/Arial.ttf', fontWeight: 'normal', fontStyle: 'normal' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-bold@1.0.4/Arial%20Bold.ttf', fontWeight: 'bold', fontStyle: 'normal' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-italic@1.0.4/Arial%20Italic.ttf', fontWeight: 'normal', fontStyle: 'italic' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-bold-italic@1.0.4/Arial%20Bold%20Italic.ttf', fontWeight: 'bold', fontStyle: 'italic' },
   ],
 })
 
@@ -58,7 +60,7 @@ const styles = StyleSheet.create({
   tableTotalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#000' },
   tableTotalLabel: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'right' },
   tableTotalValue: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'right' },
-  keteranganFootnote: { fontSize: 9, fontStyle: 'italic', marginTop: 12, color: '#555' },
+  keteranganFootnote: { fontSize: 10, fontStyle: 'italic', color: '#555' },
 })
 
 interface QuotItem {
@@ -159,6 +161,9 @@ export function QuotationPDF({ data }: { data: QuotData }) {
     : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
 
   const hasSpec = data.items.some(i => i.specification)
+  const ROWS_PER_PAGE = 10
+  const totalLampiranPages = Math.ceil(data.items.length / ROWS_PER_PAGE)
+  const totalPages = 1 + totalLampiranPages
 
   const H = createEl
 
@@ -264,75 +269,85 @@ export function QuotationPDF({ data }: { data: QuotData }) {
           (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
         )
       ),
-      H(Text, { style: styles.pageNum }, 'Page 1 of 2')
+      H(Text, { style: styles.pageNum }, `Page 1 of ${totalPages}`)
     ),
 
-    H(Page, { size: 'A4', style: styles.page, wrap: true },
-      H(Text, { style: styles.lampiranTitle }, 'LAMPIRAN RINCIAN PENAWARAN HARGA'),
-      H(Text, { style: styles.lampiranSub }, 'No. Surat : ' + data.nomor),
+    ...Array.from({ length: totalLampiranPages }, (_, pageIdx) => {
+      const pageItems = data.items.slice(pageIdx * ROWS_PER_PAGE, (pageIdx + 1) * ROWS_PER_PAGE)
+      const pageNumber = 2 + pageIdx
+      const isLast = pageIdx === totalLampiranPages - 1
 
-      H(View, { style: styles.table },
-        (() => {
-          const headerCells = [
-            H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
-            H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item'),
-          ]
-          if (hasSpec) {
-            headerCells.push(H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Specification'))
-          }
-          headerCells.push(
-            H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Picture'),
-            H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Qty'),
-            H(Text, { style: [styles.tableHeaderCell, { width: 45 }] }, 'UoM'),
-            H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Price'),
-            H(Text, { style: [styles.tableHeaderCell, { width: 65, borderRightWidth: 0 }] }, 'Total Price')
-          )
-          return H(View, { style: styles.tableHeader }, ...headerCells)
-        })(),
-        ...data.items.map((item, i) => {
-          const totalPrice = item.jumlah * item.hargaSatuan
-          const hasImage = !!item.image_url
-          const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
-          const cells = [
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-          ]
-          if (hasSpec) {
-            cells.push(v(H(Text, { style: { fontSize: 9 } }, item.specification || '-'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }))
-          }
-          cells.push(
-            H(View, { style: { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000', alignItems: 'center', justifyContent: 'center' } },
-              hasImage
-                ? H(Image, { src: item.image_url, style: { width: 50, height: 50, objectFit: 'contain' } })
-                : H(Text, { style: { fontSize: 9, textAlign: 'center' } }, '-')
-            ),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan || '-'), { width: 45, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(item.hargaSatuan)), { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(totalPrice)), { width: 65, padding: 4, textAlign: 'right' })
-          )
-          return H(View, { key: i, style: styles.tableRow }, ...cells)
-        }),
-        (() => {
-          return H(View, { style: styles.tableTotalRow },
-            H(View, { style: { flex: 1, padding: 4, justifyContent: 'center' } },
-              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'TOTAL')
-            ),
-            H(View, { style: { width: 45, padding: 4, justifyContent: 'center' } },
-              H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, formatCurrency(grandTotal))
+      return H(Page, { key: pageIdx, size: 'A4', style: styles.page, wrap: true },
+        H(Text, { style: styles.lampiranTitle }, 'LAMPIRAN RINCIAN PENAWARAN HARGA'),
+        H(Text, { style: styles.lampiranSub }, 'No. Surat : ' + data.nomor),
+
+        H(View, { style: styles.table },
+          (() => {
+            const headerCells = [
+              H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
+              H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item'),
+            ]
+            if (hasSpec) {
+              headerCells.push(H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Specification'))
+            }
+            headerCells.push(
+              H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Picture'),
+              H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Qty'),
+              H(Text, { style: [styles.tableHeaderCell, { width: 45 }] }, 'UoM'),
+              H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Price'),
+              H(Text, { style: [styles.tableHeaderCell, { width: 65, borderRightWidth: 0 }] }, 'Total Price')
             )
-          )
-        })()
-      ),
+            return H(View, { style: styles.tableHeader }, ...headerCells)
+          })(),
+          ...pageItems.map((item, i) => {
+            const totalPrice = item.jumlah * item.hargaSatuan
+            const hasImage = !!item.image_url
+            const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
+            const cells = [
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(pageIdx * ROWS_PER_PAGE + i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            ]
+            if (hasSpec) {
+              cells.push(v(H(Text, { style: { fontSize: 9 } }, item.specification || '-'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }))
+            }
+            cells.push(
+              H(View, { style: { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000', alignItems: 'center', justifyContent: 'center' } },
+                hasImage
+                  ? H(Image, { src: item.image_url, style: { width: 50, height: 50, objectFit: 'contain' } })
+                  : H(Text, { style: { fontSize: 9, textAlign: 'center' } }, '-')
+              ),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan || '-'), { width: 45, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(item.hargaSatuan)), { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, formatCurrency(totalPrice)), { width: 65, padding: 4, textAlign: 'right' })
+            )
+            return H(View, { key: i, style: styles.tableRow }, ...cells)
+          }),
+          isLast ? (() => {
+            return H(View, { style: styles.tableTotalRow },
+              H(View, { style: { flex: 1, padding: 4, justifyContent: 'center' } },
+                H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, 'TOTAL')
+              ),
+              H(View, { style: { width: 65, padding: 4, justifyContent: 'center' } },
+                H(Text, { style: { fontSize: 9, fontWeight: 'bold', textAlign: 'right' } }, formatCurrency(grandTotal))
+              )
+            )
+          })() : null,
+        ),
 
-      data.keterangan && H(Text, { style: styles.keteranganFootnote }, '* Keterangan: ' + data.keterangan),
-      H(View, { style: styles.footer },
-        H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
-        H(Text, { style: styles.footerText },
-          (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
-        )
-      ),
-      H(Text, { style: styles.pageNum }, 'Page 2 of 2')
-    )
+        isLast && (data.keterangan || (data.masa_berlaku && data.tanggal_berlaku_sampai)) ? H(View, { style: { marginTop: 12 } },
+          H(Text, { style: styles.keteranganFootnote }, '* Keterangan:'),
+          data.keterangan ? H(Text, { style: styles.keteranganFootnote }, data.keterangan) : null,
+          data.masa_berlaku && data.tanggal_berlaku_sampai ? H(Text, { style: styles.keteranganFootnote }, '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai) : null,
+        ) : null,
+        H(View, { style: styles.footer },
+          H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),
+          H(Text, { style: styles.footerText },
+            (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
+          )
+        ),
+        H(Text, { style: styles.pageNum }, `Page ${pageNumber} of ${totalPages}`)
+      )
+    })
   )
 }
