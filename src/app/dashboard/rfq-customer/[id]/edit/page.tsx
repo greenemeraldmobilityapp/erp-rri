@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
@@ -49,6 +49,9 @@ export default function EditRfqCustomerPage() {
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
   const [nomor, setNomor] = useState('')
+  const [nomorChecking, setNomorChecking] = useState(false)
+  const [editId, setEditId] = useState<string>('')
+  const checkNomorRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const form = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
@@ -104,6 +107,7 @@ export default function EditRfqCustomerPage() {
       setCustomerOptions(customers.map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions(barang.map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
 
+      setEditId(id)
       setNomor(rfq.nomor || '')
       reset({
         customer_id: rfq.customer_id,
@@ -142,6 +146,45 @@ export default function EditRfqCustomerPage() {
       })
       .catch(() => toast.error('Gagal memuat data PIC Customer'))
   }, [customerId, setValue])
+
+  const nomorRfqCustomer = watch('nomor_rfq_customer')
+
+  useEffect(() => {
+    if (checkNomorRef.current) clearTimeout(checkNomorRef.current)
+
+    const value = nomorRfqCustomer
+    if (!value || value.trim() === '') {
+      setNomorChecking(false)
+      form.clearErrors('nomor_rfq_customer')
+      return
+    }
+
+    setNomorChecking(true)
+    checkNomorRef.current = setTimeout(async () => {
+      try {
+        const excludeParam = editId ? `&excludeId=${encodeURIComponent(editId)}` : ''
+        const res = await apiFetch<{ available: boolean; usedBy: string | null }>(
+          `/api/v1/rfq-customer/check-nomor?value=${encodeURIComponent(value.trim())}${excludeParam}`
+        )
+        if (!res.data.available) {
+          form.setError('nomor_rfq_customer', {
+            type: 'manual',
+            message: `Nomor RFQ Customer "${value.trim()}" sudah digunakan di ${res.data.usedBy}, silakan masukkan nomor yang berbeda`,
+          })
+        } else {
+          form.clearErrors('nomor_rfq_customer')
+        }
+      } catch {
+        // network error — ignore
+      } finally {
+        setNomorChecking(false)
+      }
+    }, 500)
+
+    return () => {
+      if (checkNomorRef.current) clearTimeout(checkNomorRef.current)
+    }
+  }, [nomorRfqCustomer, form, editId])
 
   async function handleUploadItemImage(index: number, file: File) {
     const selectedCustomerId = form.getValues('customer_id')
@@ -264,7 +307,16 @@ export default function EditRfqCustomerPage() {
               </div>
               <FormField control={control} name="nomor_rfq_customer" render={({ field }) => (
                 <FormItem><FormLabel>Nomor RFQ Customer *</FormLabel>
-                  <FormControl><Input {...field} placeholder="Nomor referensi dari customer" /></FormControl>
+                  <FormControl>
+                    <div className="relative">
+                      <Input {...field} placeholder="Nomor referensi dari customer" />
+                      {nomorChecking && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
@@ -55,6 +55,8 @@ export default function TambahRfqCustomerPage() {
   const [uploadingFile, setUploadingFile] = useState(false)
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
   const [nomorAuto, setNomorAuto] = useState('')
+  const [nomorChecking, setNomorChecking] = useState(false)
+  const checkNomorRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -102,6 +104,44 @@ export default function TambahRfqCustomerPage() {
       })
       .catch(() => toast.error('Gagal memuat data PIC Customer'))
   }, [customerId, setValue])
+
+  const nomorRfqCustomer = watch('nomor_rfq_customer')
+
+  useEffect(() => {
+    if (checkNomorRef.current) clearTimeout(checkNomorRef.current)
+
+    const value = nomorRfqCustomer
+    if (!value || value.trim() === '') {
+      setNomorChecking(false)
+      form.clearErrors('nomor_rfq_customer')
+      return
+    }
+
+    setNomorChecking(true)
+    checkNomorRef.current = setTimeout(async () => {
+      try {
+        const res = await apiFetch<{ available: boolean; usedBy: string | null }>(
+          `/api/v1/rfq-customer/check-nomor?value=${encodeURIComponent(value.trim())}`
+        )
+        if (!res.data.available) {
+          form.setError('nomor_rfq_customer', {
+            type: 'manual',
+            message: `Nomor RFQ Customer "${value.trim()}" sudah digunakan di ${res.data.usedBy}, silakan masukkan nomor yang berbeda`,
+          })
+        } else {
+          form.clearErrors('nomor_rfq_customer')
+        }
+      } catch {
+        // network error — ignore
+      } finally {
+        setNomorChecking(false)
+      }
+    }, 500)
+
+    return () => {
+      if (checkNomorRef.current) clearTimeout(checkNomorRef.current)
+    }
+  }, [nomorRfqCustomer, form])
 
   async function handleUploadRfqDoc(file: File) {
     const selectedCustomerId = form.getValues('customer_id')
@@ -248,7 +288,16 @@ export default function TambahRfqCustomerPage() {
               </div>
               <FormField control={control} name="nomor_rfq_customer" render={({ field }) => (
                 <FormItem><FormLabel>Nomor RFQ Customer *</FormLabel>
-                  <FormControl><Input {...field} placeholder="Nomor referensi dari customer" /></FormControl>
+                  <FormControl>
+                    <div className="relative">
+                      <Input {...field} placeholder="Nomor referensi dari customer" />
+                      {nomorChecking && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

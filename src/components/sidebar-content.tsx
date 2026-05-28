@@ -94,6 +94,7 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/laporan/neraca', label: 'Neraca', icon: PieChart },
     { href: '/dashboard/laporan/arus-kas', label: 'Arus Kas', icon: TrendingUp },
   ]},
+  { href: '/dashboard/dokumen', label: 'Manajemen Dokumen', icon: Archive },
   { label: 'AI Agent', icon: Bot, children: [
     { href: '/dashboard/ai/search-harga', label: 'Search Harga', icon: Search },
     { href: '/dashboard/ai/ocr-kontrak', label: 'OCR Kontrak', icon: ScanLine },

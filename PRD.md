@@ -165,15 +165,19 @@ File storage menggunakan **Supabase Storage** — bucket `dokumen` yang sudah ad
 
 ```
 Bucket: dokumen
-├── dokumen/rfq/{rfqId}/{timestamp}-{file}.pdf
-├── dokumen/kontrak/{kontrakId}/{timestamp}-{file}.pdf
-├── dokumen/invoice/{invoiceId}/{timestamp}-{file}.pdf
-├── dokumen/customer-po/{id}/{timestamp}-{file}.pdf
-├── dokumen/di/{id}/{timestamp}-{file}.pdf
-├── dokumen/grn/{id}/{timestamp}-{file}.pdf
-├── dokumen/retur-penjualan/{id}/{timestamp}-{file}.pdf
-├── dokumen/retur-pembelian/{id}/{timestamp}-{file}.pdf
-├── dokumen/kontrak-ocr/{timestamp}-{file}.pdf
+├── dokumen/rfq-customer/{id}/{file}.pdf              # RFQ Customer documents
+├── dokumen/rfq-supplier/{id}/{file}.pdf               # RFQ Supplier documents
+├── dokumen/quotation/{id}/{file}.pdf                  # Quotation documents
+├── dokumen/customer-po/{id}/{file}.pdf                # Customer PO documents
+├── dokumen/kontrak/{id}/{file}.pdf                    # Kontrak documents (all jenis)
+├── dokumen/di/{id}/{file}.pdf                         # Delivery Instruction documents
+├── dokumen/invoice/{id}/{file}.pdf                    # Invoice documents
+├── dokumen/grn/{id}/{file}.pdf                        # GRN documents
+├── dokumen/retur-penjualan/{id}/{file}.pdf            # Retur Penjualan documents
+├── dokumen/retur-pembelian/{id}/{file}.pdf            # Retur Pembelian documents
+├── dokumen/ocr-kontrak/{timestamp}-{file}.pdf         # AI OCR temporary uploads
+├── dokumen/temp/rfq-customer/rfq/{timestamp}-{file}.  # Temp upload pre-creation RFQ
+├── dokumen/temp/rfq-customer/gambar/{timestamp}-{file} # Temp upload item images
 ├── avatars/{userId}/{timestamp}-avatar.jpg
 ├── barang/{barangId}/{timestamp}-foto-1.webp
 └── temporary/{sessionId}/{file}.xlsx
@@ -236,29 +240,37 @@ Abstraction layer di `src/lib/storage/`:
 ### 5.7 File Naming Convention
 
 ```
-{modul}/{id}/{timestamp}-{originalName}
+dokumen/{modul}/{id}/{originalName}
 ```
 
-Contoh: `dokumen/rfq/abc123/1712345678-PO-001.pdf`
+Tidak ada timestamp prefix — langsung nama file asli (`file.name`). Untuk modul tanpa recordId (temporary/OCR), gunakan `{timestamp}-{file.name}` untuk menghindari bentrok.
 
-### 5.8 Document Upload Modules (7 Modul)
+Contoh: `dokumen/rfq-customer/abc123/PO-001.pdf`
+
+### 5.8 Document Upload Modules (10 Modul)
 
 Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) dengan pola yang identik:
 
 | Modul | API Route | DB Table | Storage Path |
 |-------|-----------|----------|--------------|
-| RFQ | `/api/v1/rfq/{id}/documents` | `rfq_document` | `dokumen/rfq/{id}/` |
-| Kontrak | `/api/v1/master/kontrak/{id}/documents` | `kontrak_file` (with `jenis_dokumen` column) | `dokumen/kontrak/{id}/` |
+| RFQ Customer | `/api/v1/rfq-customer/{id}/documents` | `rfq_customer_document` | `dokumen/rfq-customer/{id}/` |
+| RFQ Supplier | `/api/v1/rfq-supplier/{id}/documents` | `rfq_supplier_document` | `dokumen/rfq-supplier/{id}/` |
+| Quotation | `/api/v1/quotation/{id}/documents` | `quotation_document` | `dokumen/quotation/{id}/` |
 | Customer PO | `/api/v1/customer-po/{id}/documents` | `customer_po_document` | `dokumen/customer-po/{id}/` |
 | DI | `/api/v1/di/{id}/documents` | `di_document` | `dokumen/di/{id}/` |
-| GRN | `/api/v1/grn/{id}/documents` | `grn_document` | `dokumen/grn/{id}/` |
 | Invoice | `/api/v1/invoice/{id}/documents` | `invoice_document` | `dokumen/invoice/{id}/` |
 | Retur Penjualan | `/api/v1/retur-penjualan/{id}/documents` | `retur_penjualan_document` | `dokumen/retur-penjualan/{id}/` |
 | Retur Pembelian | `/api/v1/retur-pembelian/{id}/documents` | `retur_pembelian_document` | `dokumen/retur-pembelian/{id}/` |
+| GRN | `/api/v1/grn/{id}/documents` | `grn_document` | `dokumen/grn/{id}/` |
+| Kontrak | `/api/v1/master/kontrak/{id}/documents` | `kontrak_file` (with `jenis_dokumen` column) | `dokumen/kontrak/{id}/` |
+
+**Standard path pattern:** `dokumen/{modul}/{recordId}/{file.name}` — tanpa timestamp prefix, tanpa sub-folder jenis.
 
 **Pattern API:** Setiap route memiliki 3 method: `GET` (list, filter by query params), `POST` (upload multipart form-data), `DELETE` (by query param `docId`). Semua menggunakan `storageService` dari `src/lib/storage/`.
 
-**Kontrak enhancement:** Mendukung 3 jenis dokumen (`jenis_dokumen`: `kontrak`, `rfq_customer`, `di`) — filter via query param `?jenis_dokumen=rfq_customer`. Upload menyertakan field `jenis_dokumen` di form-data.
+**Kontrak enhancement:** Mendukung 3 jenis dokumen (`jenis_dokumen`: `kontrak`, `rfq_customer`, `di`) — filter via query param `?jenis_dokumen=rfq_customer`. Upload menyertakan field `jenis_dokumen` di form-data. Semua jenis disimpan di folder yang sama (`dokumen/kontrak/{id}/`).
+
+**Temporary upload:** Sebelum record dibuat (`/api/v1/rfq-customer/upload-temp`), file disimpan sementara di `dokumen/temp/rfq-customer/{type}/{timestamp}-{file.name}`. Setelah record dibuat, file permanen diupload via endpoint dokumen reguler.
 
 ## 6. Scalability & Arsitektur
 

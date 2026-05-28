@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung')
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const filePath = `${STORAGE_PREFIX}/${id}/${Date.now()}-${file.name}`
+  const filePath = `${STORAGE_PREFIX}/${id}/${file.name}`
   let uploadResult
   try {
     uploadResult = await storageService.upload(buffer, filePath, file.type)

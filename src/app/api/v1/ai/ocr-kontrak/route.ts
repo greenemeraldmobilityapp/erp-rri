@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer())
 
-  const filePath = `dokumen/kontrak-ocr/${Date.now()}-${file.name}`
+  const filePath = `dokumen/ocr-kontrak/${Date.now()}-${file.name}`
   let uploadResult
   try {
     uploadResult = await storageService.upload(buffer, filePath, file.type || 'application/pdf')

@@ -67,9 +67,26 @@
 - Atomically upserts & increments counter; returns formatted number string
 
 ### Storage Structure
+- Bucket: `dokumen` (Supabase Storage)
+- Standard path pattern: `dokumen/{modul}/{recordId}/{file.name}` (no timestamp prefix, no sub-folders)
+
+```
+dokumen/rfq-customer/{id}/{file}
+dokumen/rfq-supplier/{id}/{file}
+dokumen/quotation/{id}/{file}
+dokumen/customer-po/{id}/{file}
+dokumen/kontrak/{id}/{file}
+dokumen/di/{id}/{file}
+dokumen/invoice/{id}/{file}
+dokumen/grn/{id}/{file}
+dokumen/retur-penjualan/{id}/{file}
+dokumen/retur-pembelian/{id}/{file}
+dokumen/ocr-kontrak/{ts}-{file}"         # temp — uses timestamp
+dokumen/temp/rfq-customer/{type}/{ts}-{file}"  # temp — uses timestamp
+```
+
 - `avatars/` → User profile images
 - `barang/` → Product images
-- `dokumen/` → PDF documents (contracts, RFQ, etc.)
 - `temporary/` → Auto-deleted after 24 hours
 
 ### Image Processing Pipeline

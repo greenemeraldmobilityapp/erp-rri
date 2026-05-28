@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung. Gunakan PDF, JPG, PNG, atau WebP')
 
   const buffer = Buffer.from(await file.arrayBuffer())
-  const filePath = `dokumen/rfq-customer/${id}/${Date.now()}-${file.name}`
+  const filePath = `dokumen/rfq-customer/${id}/${file.name}`
 
   let uploadResult
   try {

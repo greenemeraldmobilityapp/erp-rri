@@ -30,11 +30,8 @@ export async function POST(request: NextRequest) {
     if (!allowedTypes.includes(file.type)) return badRequest('Tipe file tidak didukung')
   }
 
-  const sanitizedCustomer = customerName.replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '_')
-  const sanitizedRef = nomorRfqCustomer.replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '_')
-
-  const folder = type === 'gambar' ? 'Gambar-Barang' : 'RFQ'
-  const filePath = `dokumen/${sanitizedCustomer}/RFQ/${sanitizedRef}/${folder}/${file.name}`
+  const folder = type === 'gambar' ? 'gambar' : 'rfq'
+  const filePath = `dokumen/temp/rfq-customer/${folder}/${Date.now()}-${file.name}`
 
   const buffer = Buffer.from(await file.arrayBuffer())
 
