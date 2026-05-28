@@ -407,8 +407,8 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. Nomor otomatis: `RFQC/RRI/YY/MM/0001` |
-| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (format dash). |
+| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. Nomor otomatis: `RRI-RFQC-YY-MM-0001` |
+| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001`. |
 | **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal |
 | **Quotation → PO** | Konversi quotation yang deal menjadi PO customer — auto-generate Sales Order |
 
@@ -424,7 +424,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Sales Order (SO)** | Order penjualan internal (berdasarkan PO Customer atau DI). Auto-generate saat PO/DI deal |
-| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `SJ/RRI/YY/MM/0001`. Auto-generate draft saat SO siap kirim |
+| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
 | **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
@@ -435,7 +435,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ Supplier** | Request for Quotation ke Supplier — RRI meminta harga dari supplier. Tabel: `rfq_supplier`, `rfq_supplier_item`, `rfq_supplier_document`. API: `/api/v1/rfq-supplier`. UI: `/dashboard/rfq`. Nomor otomatis: `RFQ/RRI/YY/MM/0001` |
+| **RFQ Supplier** | Request for Quotation ke Supplier — RRI meminta harga dari supplier. Tabel: `rfq_supplier`, `rfq_supplier_item`, `rfq_supplier_document`. API: `/api/v1/rfq-supplier`. UI: `/dashboard/rfq`. Nomor otomatis: `RRI-RFQ-YY-MM-0001` |
 | **Purchase Request (PR)** | Permintaan pembelian ketika stok tidak mencukupi. Auto-generate jika SO butuh barang yang stoknya kurang |
 | **Supplier Search** | Cari supplier — bisa dari database seller existing, atau via AI Search (Shopee/Tokopedia) |
 | **Purchase Order (PO)** | Order pembelian ke supplier. Untuk marketplace: field tambahan (link produk, nama toko, marketplace, no. resi) |
@@ -491,21 +491,20 @@ Semua dokumen berikut digenerate dalam format PDF yang bisa diprint dan disave:
 
 | Dokumen | Nomor Format | Teks |
 |---|---|---|
-| **Quotation** | `RRI-SPH-YY-MM-0001` (format dash) | Pre-Sales — 2 halaman PDF: surat utama + lampiran tabel rincian. Font Arial. Include spec/justification/image per item. PPN 11% toggle. Masa berlaku 1 Minggu–1 Bulan. Company info dari site_settings. |
-| **Purchase Order (Internal)** | `PO/RRI/YY/MM/0001` | Procurement |
-| **Delivery Order / Surat Jalan** | `SJ/RRI/YY/MM/0001` | Sales |
-| **Invoice (Jalur PO)** | `INV/RRI/YY/MM/0001` | Finance — Dok: PO, DO, GRN, Invoice, Kwitansi. Termasuk PPN & PPh |
-| **Invoice (Jalur DI)** | `INV/RRI/YY/MM/0001` | Finance — Dok: DI, DO, GRN, Invoice, Kwitansi. Termasuk PPN & PPh |
-| **Goods Received Note (GRN)** | `GRN/RRI/YY/MM/0001` | Procurement / Inventory |
-| **Kwitansi / Receipt** | `KWT/RRI/YY/MM/0001` | Finance |
+| **Quotation (SPH)** | `RRI-SPH-YY-MM-0001` | Pre-Sales — 2 halaman PDF: surat utama + lampiran tabel rincian. Font Arial. Include spec/justification/image per item. PPN 11% toggle. Masa berlaku 1 Minggu–1 Bulan. Company info dari site_settings. |
+| **Purchase Order (Internal)** | `RRI-PO-YY-MM-0001` | Procurement |
+| **Delivery Order / Surat Jalan** | `RRI-SJ-YY-MM-0001` | Sales |
+| **Invoice** | `RRI-INV-YY-MM-0001` | Finance — Dok: PO/DI, DO, GRN, Invoice, Kwitansi. Termasuk PPN & PPh |
+| **Goods Received Note (GRN)** | `RRI-GRN-YY-MM-0001` | Procurement / Inventory |
+| **Kwitansi / Receipt** | `RRI-KWT-YY-MM-0001` | Finance |
 | **Faktur Pajak** | Sesuai aturan Dirjen Pajak | Finance |
-| **Nota Retur** | `RTJ/RRI/YY/MM/0001` (jual) / `RTB/RRI/YY/MM/0001` (beli) | Sales / Procurement |
+| **Nota Retur** | `RRI-RTJ-YY-MM-0001` (jual) / `RRI-RP-YY-MM-0001` (beli) | Sales / Procurement |
 
 **Ketentuan Nomor Dokumen:**
-- Format: `{KODE}/{RRI}/{YY}/{MM}/{0001}`
-- Setiap tahun berganti, nomor urut di-reset ke `/0001`
+- Format: `{RRI}-{KODE}-{YY}-{MM}-{0001}`
+- Setiap tahun berganti, nomor urut di-reset ke `0001`
 - Diimplementasikan dengan sequence/counter table PostgreSQL — di-reset otomatis setiap tahun via trigger atau cron job
-- Contoh reset: Desember 2026 nomor `INV/RRI/26/12/0015`, Januari 2027 menjadi `INV/RRI/27/01/0001`
+- Contoh reset: Desember 2026 nomor `RRI-INV-26-12-0015`, Januari 2027 menjadi `RRI-INV-27-01-0001`
 
 Format dokumen akan mengikuti template yang akan disediakan customer di direktori `/docs/templates/`.
 
@@ -620,10 +619,13 @@ Invoice jatuh tempo
 ### 8.3 Smart Document Numbering
 Nomor dokumen digenerate otomatis — tidak perlu input manual:
 ```
-Quotation:  RRI-SPH-26-05-0001 (format dash dengan separator dash)
-DO:         SJ/RRI/26/05/0001
-Invoice:    INV/RRI/26/05/0001
-Kwitansi:   KWT/RRI/26/05/0001
+Quotation:  RRI-SPH-26-05-0001
+DO:         RRI-SJ-26-05-0001
+Invoice:    RRI-INV-26-05-0001
+Kwitansi:   RRI-KWT-26-05-0001
+RFQ Customer: RRI-RFQC-26-05-0001
+RFQ Supplier: RRI-RFQ-26-05-0001
+Customer PO:  RRI-CPO-26-05-0001
 ```
 
 ### 8.4 WhatsApp Notification Integration
@@ -709,12 +711,12 @@ Cek: Apakah stok tersedia?
   └── NO  → Auto-generate PURCHASE REQUEST
         ├── AI Search harga Shopee/Tokopedia
         ├── Manager approve PR (escalation 24 jam jika pending)
-        ├── Purchase Order (PO) ke supplier (nomor: PO/RRI/YY/MM/0001)
+        ├── Purchase Order (PO) ke supplier (nomor: RRI-PO-YY-MM-0001)
         ├── Checkout & bayar di Shopee/Tokopedia (manual)
         ├── Barang datang → Receiving → GRN → Stok masuk
         └── Lanjut auto-generate DO
   ↓
-DELIVERY ORDER (DO) — Surat Jalan (nomor: SJ/RRI/YY/MM/0001)
+DELIVERY ORDER (DO) — Surat Jalan (nomor: RRI-SJ-YY-MM-0001)
   ↓
 Barang dikirim ke Customer
   ↓
@@ -722,7 +724,7 @@ Customer beri GRN (tanda terima)
   ↓
 DO status "Dikirim" → Auto-generate INVOICE
   ↓
-INVOICE + KWITANSI (nomor: INV/RRI/YY/MM/0001, KWT/RRI/YY/MM/0001)
+INVOICE + KWITANSI (nomor: RRI-INV-YY-MM-0001, RRI-KWT-YY-MM-0001)
 Dokumen: DI, DO, GRN customer, Invoice, Kwitansi
 Termasuk PPN 11% dan PPh (jika berlaku)
   ↓
@@ -742,7 +744,7 @@ Customer kirim RFQ — assign PIC Customer
   ↓
 RRI cari harga supplier (AI Search Shopee/Tokopedia / manual)
   ↓
-RRI buat QUOTATION (nomor: SPH/RRI/YY/MM/0001)
+RRI buat QUOTATION (nomor: RRI-SPH-YY-MM-0001)
   → Harga: Default (cost + 15%) atau Manual
   → Kirim Quotation ke Customer
   ↓
@@ -1010,14 +1012,14 @@ export const GET = ApiReference(config)
 ```typescript
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 
-// Menghasilkan: SPH/RRI/26/05/0001
+// Menghasilkan: RRI-SPH-26-05-0001
 const nomor = await generateDocumentNumber('SPH')
 ```
 
 **Cara Kerja:**
 1. Panggil PostgreSQL function `increment_document_counter(p_kode_dokumen, p_tahun, p_bulan)`
 2. Function melakukan atomic upsert + increment counter
-3. Return formatted string: `{KODE}/RRI/{YY}/{MM}/{0000}`
+3. Return formatted string: `RRI-{KODE}-{YY}-{MM}-{0000}`
 4. Counter di-reset otomatis setiap tahun/bulan berganti
 
 #### 12.2.6 Authentication Architecture
@@ -1190,10 +1192,9 @@ CREATE OR REPLACE FUNCTION increment_document_counter(
   p_kode_dokumen TEXT,
   p_tahun INTEGER,
   p_bulan INTEGER
-) RETURNS TEXT AS $$
+) RETURNS INTEGER AS $$
 DECLARE
   v_counter INTEGER;
-  v_nomor TEXT;
 BEGIN
   INSERT INTO document_counter (kode_dokumen, tahun, bulan, counter)
   VALUES (p_kode_dokumen, p_tahun, p_bulan, 1)
@@ -1201,11 +1202,7 @@ BEGIN
   DO UPDATE SET counter = document_counter.counter + 1
   RETURNING counter INTO v_counter;
 
-  v_nomor := UPPER(p_kode_dokumen) || '/RRI/' ||
-             TO_CHAR(p_tahun, 'FM00') || '/' ||
-             TO_CHAR(p_bulan, 'FM00') || '/' ||
-             LPAD(v_counter::TEXT, 4, '0');
-  RETURN v_nomor;
+  RETURN v_counter;
 END;
 $$ LANGUAGE plpgsql;
 ```
@@ -1214,7 +1211,7 @@ $$ LANGUAGE plpgsql;
 ```typescript
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 
-// Output: "SPH/RRI/26/05/0001"
+// Output: "RRI-SPH-26-05-0001"
 const nomor = await generateDocumentNumber('SPH')
 ```
 

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/db/client';
 
-export async function generateDocumentNumber(kodeDokumen: string, format: 'slash' | 'dash' = 'slash'): Promise<string> {
+export async function generateDocumentNumber(kodeDokumen: string): Promise<string> {
   const now = new Date();
   const tahun = now.getFullYear();
   const bulan = now.getMonth() + 1;
@@ -16,8 +16,5 @@ export async function generateDocumentNumber(kodeDokumen: string, format: 'slash
   if (error) throw new Error(`Failed to generate document number: ${error.message}`);
 
   const counter = String(data ?? 1).padStart(4, '0');
-  if (format === 'dash') {
-    return `RRI-${kodeDokumen}-${yy}-${mm}-${counter}`;
-  }
-  return `${kodeDokumen}/RRI/${yy}/${mm}/${counter}`;
+  return `RRI-${kodeDokumen}-${yy}-${mm}-${counter}`;
 }

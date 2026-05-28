@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   const parsed = createSchema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = parsed.data.nomor ?? await generateDocumentNumber('SO')
+  const nomor = parsed.data.nomor ?? await generateDocumentNumber('OPN')
   const { data, error } = await supabaseAdmin.from('stock_opname').insert({
     nomor,
     gudang_id: parsed.data.gudangId ?? null,

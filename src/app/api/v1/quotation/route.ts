@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   const ppnRate = parsed.data.ppn_rate ?? await getConfigNumber('ppn_rate', 0.11)
-  const nomor = await generateDocumentNumber('SPH', 'dash')
+  const nomor = await generateDocumentNumber('SPH')
   const now = new Date().toISOString()
 
   const items = parsed.data.items.map(item => {

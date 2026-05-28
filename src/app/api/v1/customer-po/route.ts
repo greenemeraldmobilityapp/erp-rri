@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('PO')
+  const nomor = await generateDocumentNumber('CPO')
   const now = new Date().toISOString()
 
   const { data: po, error: poError } = await supabaseAdmin.from('customer_po').insert({

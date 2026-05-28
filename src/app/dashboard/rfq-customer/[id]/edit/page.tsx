@@ -29,12 +29,12 @@ const itemSchema = z.object({
 
 const rfqSchema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
-  nomor_rfq_customer: z.string().optional(),
-  pic_customer_id: z.string().optional(),
+  nomor_rfq_customer: z.string().min(1, 'Nomor RFQ Customer harus diisi'),
+  pic_customer_id: z.string().min(1, 'PIC Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
-  perihal: z.string().optional(),
+  perihal: z.string().min(1, 'Perihal harus diisi'),
   keterangan: z.string().optional(),
-  items: z.array(itemSchema).optional(),
+  items: z.array(itemSchema).min(1, 'Minimal 1 item barang'),
 })
 
 type RfqFormValues = z.input<typeof rfqSchema>
@@ -48,9 +48,11 @@ export default function EditRfqCustomerPage() {
   const [picOptions, setPicOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
+  const [nomor, setNomor] = useState('')
 
   const form = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
+    mode: 'onChange',
     defaultValues: {
       customer_id: '',
       nomor_rfq_customer: '',
@@ -62,7 +64,7 @@ export default function EditRfqCustomerPage() {
     },
   })
 
-  const { handleSubmit, control, register, setValue, watch, reset } = form
+  const { handleSubmit, control, register, setValue, watch, reset, formState } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const customerId = watch('customer_id')
 
@@ -73,6 +75,7 @@ export default function EditRfqCustomerPage() {
     Promise.all([
       apiFetch<{
         id: string
+        nomor: string
         customer_id: string
         nomor_rfq_customer: string | null
         pic_customer_id: string | null
@@ -101,6 +104,7 @@ export default function EditRfqCustomerPage() {
       setCustomerOptions(customers.map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions(barang.map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
 
+      setNomor(rfq.nomor || '')
       reset({
         customer_id: rfq.customer_id,
         nomor_rfq_customer: rfq.nomor_rfq_customer || '',
@@ -241,14 +245,12 @@ export default function EditRfqCustomerPage() {
                 )} />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={control} name="nomor_rfq_customer" render={({ field }) => (
-                  <FormItem><FormLabel>Nomor RFQ Customer</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nomor referensi dari customer" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                <FormItem>
+                  <FormLabel>Nomor RFQ</FormLabel>
+                  <Input value={nomor} disabled className="bg-muted" />
+                </FormItem>
                 <FormField control={control} name="pic_customer_id" render={({ field }) => (
-                  <FormItem><FormLabel>PIC Customer</FormLabel>
+                  <FormItem><FormLabel>PIC Customer *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ''} disabled={!customerId}>
                       <FormControl><SelectTrigger><SelectValue placeholder={customerId ? 'Pilih PIC' : 'Pilih customer dulu'} /></SelectTrigger></FormControl>
                       <SelectContent>
@@ -260,8 +262,14 @@ export default function EditRfqCustomerPage() {
                   </FormItem>
                 )} />
               </div>
+              <FormField control={control} name="nomor_rfq_customer" render={({ field }) => (
+                <FormItem><FormLabel>Nomor RFQ Customer *</FormLabel>
+                  <FormControl><Input {...field} placeholder="Nomor referensi dari customer" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={control} name="perihal" render={({ field }) => (
-                <FormItem><FormLabel>Perihal</FormLabel><FormControl><Input {...field} placeholder="Permintaan Penawaran" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Perihal *</FormLabel><FormControl><Input {...field} placeholder="Permintaan Penawaran" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={control} name="keterangan" render={({ field }) => (
                 <FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} placeholder="Catatan untuk RFQ Customer ini" rows={2} /></FormControl><FormMessage /></FormItem>
@@ -377,7 +385,7 @@ export default function EditRfqCustomerPage() {
             <Button type="button" variant="cancel">
               <Link href="/dashboard/rfq-customer">Batal</Link>
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting || !formState.isValid}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>

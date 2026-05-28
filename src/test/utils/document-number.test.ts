@@ -25,7 +25,7 @@ describe('generateDocumentNumber', () => {
     mockRpc.mockResolvedValue({ data: 1, error: null })
 
     const result = await generateDocumentNumber('SPH')
-    expect(result).toBe('SPH/RRI/26/05/0001')
+    expect(result).toBe('RRI-SPH-26-05-0001')
   })
 
   it('increments counter for subsequent calls', async () => {
@@ -33,7 +33,7 @@ describe('generateDocumentNumber', () => {
     mockRpc.mockResolvedValue({ data: 5, error: null })
 
     const result = await generateDocumentNumber('INV')
-    expect(result).toBe('INV/RRI/26/05/0005')
+    expect(result).toBe('RRI-INV-26-05-0005')
   })
 
   it('handles December date correctly', async () => {
@@ -41,7 +41,7 @@ describe('generateDocumentNumber', () => {
     mockRpc.mockResolvedValue({ data: 15, error: null })
 
     const result = await generateDocumentNumber('SJ')
-    expect(result).toBe('SJ/RRI/26/12/0015')
+    expect(result).toBe('RRI-SJ-26-12-0015')
   })
 
   it('handles January date correctly', async () => {
@@ -49,7 +49,7 @@ describe('generateDocumentNumber', () => {
     mockRpc.mockResolvedValue({ data: 1, error: null })
 
     const result = await generateDocumentNumber('KWT')
-    expect(result).toBe('KWT/RRI/27/01/0001')
+    expect(result).toBe('RRI-KWT-27-01-0001')
   })
 
   it('throws on RPC error', async () => {
@@ -64,6 +64,6 @@ describe('generateDocumentNumber', () => {
     mockRpc.mockResolvedValue({ data: 100, error: null })
 
     const result = await generateDocumentNumber('PO')
-    expect(result).toBe('PO/RRI/26/05/0100')
+    expect(result).toBe('RRI-PO-26-05-0100')
   })
 })
