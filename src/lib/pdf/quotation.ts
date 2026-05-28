@@ -15,7 +15,7 @@ Font.registerHyphenationCallback((word) => [word])
 const styles = StyleSheet.create({
   page: { padding: '40 50', fontFamily: 'Arial', fontSize: 11, lineHeight: 1.4 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingBottom: 1 },
-  logoBox: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#1E3A5F', justifyContent: 'center', alignItems: 'center' },
+  logoBox: { width: 90, height: 90, backgroundColor: '#1E3A5F', justifyContent: 'center', alignItems: 'center' },
   logoText: { color: '#fff', fontSize: 28, fontWeight: 'bold' },
   headerRight: { alignItems: 'flex-end' },
   companyName: { fontSize: 16, fontWeight: 'bold', marginBottom: 6, color: '#0000FF', textDecoration: 'underline' },
@@ -27,17 +27,17 @@ const styles = StyleSheet.create({
   alamatSection: { marginBottom: 20 },
   alamatTitle: { fontSize: 11, marginBottom: 4 },
   alamatName: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
-  alamatAddress: { fontSize: 11, maxWidth: 300, lineHeight: 1.3 },
+  alamatAddress: { fontSize: 11, maxWidth: 350, lineHeight: 1.3 },
   bodyText: { fontSize: 11, marginBottom: 8, textAlign: 'justify' },
   bodyBold: { fontSize: 11, fontWeight: 'bold' },
   keteranganText: { fontSize: 11, marginTop: 8 },
-  penutupText: { fontSize: 11, marginTop: 16 },
-  signatureSection: { marginTop: 24 },
+  penutupText: { fontSize: 11, marginTop: 14 },
+  signatureSection: { marginTop: 16 },
   signatureTitle: { fontSize: 11, marginBottom: 2 },
   signatureCompany: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
   signatureImage: { width: 100, height: 50, marginBottom: 2, objectFit: 'contain' },
   stampImage: { width: 80, height: 80, objectFit: 'contain', position: 'absolute', left: 60, top: -10 },
-  signatureWrap: { position: 'relative', marginTop: 4 },
+  signatureWrap: { position: 'relative', marginTop: 4, minHeight: 105 },
   signatureName: { fontSize: 11, fontWeight: 'bold', textDecoration: 'underline' },
   signatureJabatan: { fontSize: 11 },
   signaturePhone: { fontSize: 11, marginTop: 2 },
@@ -48,16 +48,16 @@ const styles = StyleSheet.create({
   table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderBottomColor: '#000' },
-  tableCell: { fontSize: 11, padding: 4, borderRightWidth: 1, borderRightColor: '#000' },
-  tableHeaderCell: { fontSize: 11, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellRight: { fontSize: 11, padding: 4, textAlign: 'right', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellCenter: { fontSize: 11, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
-  tableCellLast: { fontSize: 11, padding: 4, textAlign: 'right' },
-  tableCellCenterLast: { fontSize: 11, padding: 4, textAlign: 'center' },
+  tableCell: { fontSize: 10, padding: 4, borderRightWidth: 1, borderRightColor: '#000' },
+  tableHeaderCell: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellRight: { fontSize: 10, padding: 4, textAlign: 'right', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellCenter: { fontSize: 10, padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
+  tableCellLast: { fontSize: 10, padding: 4, textAlign: 'right' },
+  tableCellCenterLast: { fontSize: 10, padding: 4, textAlign: 'center' },
   tableTotalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#000' },
-  tableTotalLabel: { fontSize: 11, fontWeight: 'bold', padding: 4, textAlign: 'right' },
-  tableTotalValue: { fontSize: 11, fontWeight: 'bold', padding: 4, textAlign: 'right' },
-  keteranganFootnote: { fontSize: 11, fontStyle: 'italic', marginTop: 12, color: '#555' },
+  tableTotalLabel: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'right' },
+  tableTotalValue: { fontSize: 10, fontWeight: 'bold', padding: 4, textAlign: 'right' },
+  keteranganFootnote: { fontSize: 10, fontStyle: 'italic', marginTop: 12, color: '#555' },
 })
 
 interface QuotItem {
@@ -164,7 +164,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
       H(View, { style: { marginBottom: 18 } },
         H(View, { style: styles.header },
           c.company_logo_url
-            ? H(Image, { src: c.company_logo_url, style: { width: 72, height: 72, borderRadius: 36, marginTop: -5 } })
+            ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
             : H(View, { style: styles.logoBox },
                 H(Text, { style: styles.logoText }, 'R')
               ),
@@ -244,7 +244,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
         H(View, { style: styles.signatureWrap },
           c.tanda_tangan_stempel_url
-            ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, marginBottom: 2, objectFit: 'contain' } })
+            ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, marginBottom: 2, objectFit: 'contain', position: 'absolute', left: -10 } })
             : [c.tanda_tangan_url && H(Image, { src: c.tanda_tangan_url, style: styles.signatureImage }),
                c.stempel_url && H(Image, { src: c.stempel_url, style: styles.stampImage })]
         ),
