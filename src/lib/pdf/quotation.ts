@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
   signaturePhone: { fontSize: 11, marginTop: 2 },
   footer: { position: 'absolute', bottom: 24, left: 50, right: 50, borderTopWidth: 1.5, borderTopColor: '#000', paddingTop: 6, alignItems: 'center' },
   footerText: { fontSize: 10 },
+  pageNum: { position: 'absolute', bottom: 28, right: 50, fontSize: 10, color: '#666' },
   lampiranTitle: { fontSize: 11, fontWeight: 'bold', textDecoration: 'underline', marginBottom: 4 },
   lampiranSub: { fontSize: 11, marginBottom: 12 },
   table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000' },
@@ -157,6 +158,8 @@ export function QuotationPDF({ data }: { data: QuotData }) {
     ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
     : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
 
+  const hasSpec = data.items.some(i => i.specification)
+
   const H = createEl
 
   return H(Document, null,
@@ -260,7 +263,8 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         H(Text, { style: styles.footerText },
           (c.company_no_hp || '+6281 2607 5500') + ', ' + (c.company_email || 'mazzjoeq@gmail.com')
         )
-      )
+      ),
+      H(Text, { style: styles.pageNum }, 'Page 1 of 2')
     ),
 
     H(Page, { size: 'A4', style: styles.page, wrap: true },
@@ -268,39 +272,57 @@ export function QuotationPDF({ data }: { data: QuotData }) {
       H(Text, { style: styles.lampiranSub }, 'No. Surat : ' + data.nomor),
 
       H(View, { style: styles.table },
-        H(View, { style: styles.tableHeader },
-          H(Text, { style: [styles.tableHeaderCell, { flex: 0.6 }] }, 'No'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 1.8 }] }, 'Item'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 2.4 }] }, 'Spesification'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 2.4 }] }, 'Justification'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 0.8 }] }, 'Pict'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 0.6 }] }, 'Qty'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 0.7 }] }, 'UoM'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 1.2 }] }, 'Price'),
-          H(Text, { style: [styles.tableHeaderCell, { flex: 1.5, borderRightWidth: 0 }] }, 'TotalPrice')
-        ),
+        (() => {
+          const headerCells = [
+            H(Text, { style: [styles.tableHeaderCell, { flex: 0.5 }] }, 'No'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 2.2 }] }, 'Item'),
+          ]
+          if (hasSpec) {
+            headerCells.push(H(Text, { style: [styles.tableHeaderCell, { flex: 3.2 }] }, 'Specification'))
+          }
+          headerCells.push(
+            H(Text, { style: [styles.tableHeaderCell, { flex: 0.8 }] }, 'Pict'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 0.6 }] }, 'Qty'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 0.7 }] }, 'UoM'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 1.2 }] }, 'Price'),
+            H(Text, { style: [styles.tableHeaderCell, { flex: 1.8, borderRightWidth: 0 }] }, 'TotalPrice')
+          )
+          return H(View, { style: styles.tableHeader }, ...headerCells)
+        })(),
         ...data.items.map((item, i) => {
           const totalPrice = item.jumlah * item.hargaSatuan
           const hasImage = !!item.image_url
-          return H(View, { key: i, style: styles.tableRow },
-            H(Text, { style: [styles.tableCellCenter, { flex: 0.6 }] }, String(i + 1)),
-            H(Text, { style: [styles.tableCell, { flex: 1.8 }] }, item.nama),
-            H(Text, { style: [styles.tableCell, { flex: 2.4 }] }, item.specification || '-'),
-            H(Text, { style: [styles.tableCell, { flex: 2.4 }] }, item.justification || '-'),
-            H(Text, { style: [styles.tableCellCenter, { flex: 0.8 }] }, hasImage ? '[Gambar]' : '-'),
+          const cells = [
+            H(Text, { style: [styles.tableCellCenter, { flex: 0.5 }] }, String(i + 1)),
+            H(Text, { style: [styles.tableCell, { flex: 2.2 }] }, item.nama),
+          ]
+          if (hasSpec) {
+            cells.push(H(Text, { style: [styles.tableCell, { flex: 3.2 }] }, item.specification || '-'))
+          }
+          cells.push(
+            H(View, { style: [styles.tableCellCenter, { flex: 0.8, alignItems: 'center', justifyContent: 'center' }] },
+              hasImage
+                ? H(Image, { src: item.image_url, style: { width: 50, height: 50, objectFit: 'contain' } })
+                : H(Text, null, '-')
+            ),
             H(Text, { style: [styles.tableCellCenter, { flex: 0.6 }] }, String(item.jumlah)),
             H(Text, { style: [styles.tableCellCenter, { flex: 0.7 }] }, item.satuan || '-'),
             H(Text, { style: [styles.tableCellRight, { flex: 1.2 }] }, formatCurrency(item.hargaSatuan)),
-            H(Text, { style: [styles.tableCellLast, { flex: 1.5, textAlign: 'right' }] }, formatCurrency(totalPrice))
+            H(Text, { style: [styles.tableCellLast, { flex: 1.8, textAlign: 'right' }] }, formatCurrency(totalPrice))
           )
+          return H(View, { key: i, style: styles.tableRow }, ...cells)
         }),
-        H(View, { style: styles.tableTotalRow },
-          H(Text, { style: [styles.tableTotalLabel, { flex: 8.5 }] }, 'TOTAL'),
-          H(Text, { style: [styles.tableTotalValue, { flex: 1.5 }] }, formatCurrency(grandTotal))
-        )
+        (() => {
+          const totalLabelFlex = hasSpec ? 9.2 : 6.0
+          return H(View, { style: styles.tableTotalRow },
+            H(Text, { style: [styles.tableTotalLabel, { flex: totalLabelFlex }] }, 'TOTAL'),
+            H(Text, { style: [styles.tableTotalValue, { flex: 1.8 }] }, formatCurrency(grandTotal))
+          )
+        })()
       ),
 
-      data.keterangan && H(Text, { style: styles.keteranganFootnote }, '* Keterangan: ' + data.keterangan)
+      data.keterangan && H(Text, { style: styles.keteranganFootnote }, '* Keterangan: ' + data.keterangan),
+      H(Text, { style: styles.pageNum }, 'Page 2 of 2')
     )
   )
 }

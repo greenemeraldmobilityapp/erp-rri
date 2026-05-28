@@ -61,6 +61,17 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
   }
 
+  let rfqItemNames: string[] = []
+  if (qtn.rfq_id) {
+    const { data: rfqItems } = await supabaseAdmin
+      .from('rfq_customer_item')
+      .select('nama_barang')
+      .eq('rfq_customer_id', qtn.rfq_id)
+    if (rfqItems) {
+      rfqItemNames = rfqItems.map(r => r.nama_barang).filter(Boolean) as string[]
+    }
+  }
+
   let picCustomerNama: string | null = null
   let picCustomerNoHp: string | null = null
   if (qtn.pic_customer_id) {
@@ -115,10 +126,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     ppn_enabled: qtn.ppn_enabled,
     total_harga: qtn.total_harga,
     keterangan: qtn.keterangan ?? null,
-    items: items.map(i => {
+    items: items.map((i, idx) => {
       const barang = i.barang_id ? barangMap.get(i.barang_id) : null
+      const rfqName = idx < rfqItemNames.length ? rfqItemNames[idx] : null
       return {
-      nama: barang?.nama ?? '-',
+      nama: barang?.nama ?? rfqName ?? '-',
       kode: barang?.kode ?? '-',
       specification: i.specification ?? null,
       justification: i.justification ?? null,
