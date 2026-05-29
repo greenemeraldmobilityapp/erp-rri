@@ -13,6 +13,7 @@ import { StatusWorkflow } from '@/components/status-workflow'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Loader2, ArrowLeft, CheckCircle, XCircle, Pencil, ExternalLink, ShoppingCart, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDateTime } from '@/lib/utils/date'
 
 const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warning' | 'success' | 'destructive' | 'outline' }> = {
   draft: { label: 'Draft', variant: 'secondary' },
@@ -300,7 +301,7 @@ export default function NegoiasiDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Dibuat</p>
-              <p className="font-medium">{new Date(data.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="font-medium">{formatDateTime(data.created_at, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
             </div>
             <div className="sm:col-span-2 lg:col-span-3">
               <p className="text-sm text-muted-foreground">Keterangan</p>

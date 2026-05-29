@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api/client'
+import { formatDateTime } from '@/lib/utils/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -45,7 +46,7 @@ export default function SystemHealthPage() {
   }, [])
 
   const formattedTime = data?.timestamp
-    ? new Date(data.timestamp).toLocaleString('id')
+    ? formatDateTime(data.timestamp)
     : ''
 
   return (

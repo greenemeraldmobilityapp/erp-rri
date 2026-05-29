@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Loader2 } from "lucide-react"
 import { apiFetch } from "@/lib/api/client"
+import { formatDateTime } from "@/lib/utils/date"
 
 interface Activity {
   id: string
@@ -50,7 +51,7 @@ export function ActivityTimeline({ tableName, recordId }: ActivityTimelineProps)
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{actionLabel}</span>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(item.created_at).toLocaleString("id-ID")}
+                  {formatDateTime(item.created_at)}
                 </span>
               </div>
               {item.users?.email && (

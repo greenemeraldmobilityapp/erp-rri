@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
+import { formatDateTime } from '@/lib/utils/date'
 import { Search, ClipboardCheck } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -50,7 +51,7 @@ export default function StockOpnamePage() {
     ]).finally(() => setLoading(false))
   }, [])
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const formatDate = (d: string) => formatDateTime(d, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
   const filtered = data.filter(s =>
     s.nomor.toLowerCase().includes(search.toLowerCase()) ||

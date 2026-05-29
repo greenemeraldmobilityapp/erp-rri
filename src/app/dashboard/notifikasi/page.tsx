@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/db/client'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { CheckCircle, XCircle, Clock } from 'lucide-react'
+import { formatDateTime } from '@/lib/utils/date'
 
 export default async function NotifikasiPage() {
   const { data, error } = await supabase
@@ -36,7 +37,7 @@ export default async function NotifikasiPage() {
               {data.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-muted-foreground whitespace-nowrap">
-                    {new Date(item.created_at).toLocaleString('id-ID')}
+                    {formatDateTime(item.created_at)}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{item.recipient}</TableCell>
                   <TableCell className="max-w-md truncate">{item.message}</TableCell>

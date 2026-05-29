@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/db/client'
 import { PageHeader } from '@/components/page-header'
 import { PeriodFilter } from '@/components/period-filter'
+import { formatDateTime } from '@/lib/utils/date'
 import { ExportPdfButton } from '@/components/export-pdf-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -213,7 +214,7 @@ export default async function PpnMasaPage({ searchParams }: { searchParams: Prom
       </div>
 
       <div className="hidden print:block text-xs text-muted-foreground text-center pt-4 border-t mt-8">
-        Dicetak pada {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        Dicetak pada {formatDateTime(new Date(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
       </div>
     </div>
   )

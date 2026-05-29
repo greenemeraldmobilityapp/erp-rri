@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from 'react'; import { apiFetch } from '@/lib/api/client'; import { Button } from '@/components/ui/button'
+import { useState, useEffect, useRef } from 'react'; import { apiFetch } from '@/lib/api/client'; import { formatDateTime } from '@/lib/utils/date'; import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, FileText, ExternalLink, FileUp, X, Eye } from 'lucide-react'; import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -235,7 +235,7 @@ export default function OcrKontrakPage() {
                       {h.file_name}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(h.extracted_at).toLocaleString('id-ID')}
+                      {formatDateTime(h.extracted_at)}
                     </TableCell>
                     <TableCell>
                       <Button variant="link" size="sm" asChild>

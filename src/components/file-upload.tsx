@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Upload, FileText, Trash2, ExternalLink, Eye } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { formatDateTime } from "@/lib/utils/date"
 
 export interface DocumentFile {
   id: string
@@ -108,7 +109,7 @@ export function FileUpload({ documents, onUpload, onDelete, uploading = false, a
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{doc.file_name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(doc.uploaded_at).toLocaleString("id-ID")}
+                    {formatDateTime(doc.uploaded_at)}
                   </p>
                 </div>
               </div>

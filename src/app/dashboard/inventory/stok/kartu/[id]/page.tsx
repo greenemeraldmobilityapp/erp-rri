@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/db/client'
+import { formatDateTime, formatDateShort } from '@/lib/utils/date'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -69,7 +70,7 @@ export default async function KartuStokPage({ params }: { params: Promise<{ id: 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Badge variant={tipeStyle[m.tipe as string] ?? 'outline'}>{tipeLabel[m.tipe as string] ?? m.tipe as string}</Badge>
-                            <span className="text-xs text-muted-foreground">{new Date(m.created_at as string).toLocaleString('id-ID')}</span>
+                            <span className="text-xs text-muted-foreground">{formatDateTime(m.created_at as string)}</span>
                           </div>
                           <span className="text-sm font-bold">Saldo: {m.saldo_sesudah as number}</span>
                         </div>
@@ -106,7 +107,7 @@ export default async function KartuStokPage({ params }: { params: Promise<{ id: 
                 <TableBody>
                   {mutasi.map((m) => (
                     <TableRow key={m.id as string}>
-                      <TableCell className="text-sm">{new Date(m.created_at as string).toLocaleDateString('id-ID')}</TableCell>
+                      <TableCell className="text-sm">{formatDateShort(m.created_at as string)}</TableCell>
                       <TableCell><Badge variant={tipeStyle[m.tipe as string] ?? 'outline'}>{tipeLabel[m.tipe as string] ?? m.tipe as string}</Badge></TableCell>
                       <TableCell className="text-right text-sm text-green-600">{m.tipe === 'masuk' ? `+${m.jumlah as number}` : '-'}</TableCell>
                       <TableCell className="text-right text-sm text-red-600">{m.tipe === 'keluar' ? `-${m.jumlah as number}` : '-'}</TableCell>

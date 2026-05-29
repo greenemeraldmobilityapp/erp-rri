@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { ActivityTimeline } from "@/components/activity-timeline"
+import { formatDateTime } from "@/lib/utils/date"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table"
@@ -346,7 +347,8 @@ export default function QuotationDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>#</TableHead>
+                  <TableHead className="w-20">#</TableHead>
+                  <TableHead className="w-20"></TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Specification</TableHead>
                   <TableHead className="text-center">Qty</TableHead>
@@ -361,6 +363,15 @@ export default function QuotationDetailPage() {
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell>
+                        {(item.barang?.image_url || item.image_url) ? (
+                          <img src={item.barang?.image_url || item.image_url!} alt="" className="w-10 h-10 rounded object-cover border" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.specification || item.barang?.spesifikasi || "-"}</TableCell>
                       <TableCell className="text-center">{item.jumlah}</TableCell>
@@ -470,7 +481,7 @@ export default function QuotationDetailPage() {
       </div>
 
       <div className="hidden print:block text-xs text-muted-foreground text-center pt-4 border-t mt-8">
-        Dicetak pada {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        Dicetak pada {formatDateTime(new Date(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
       </div>
     </div>
   )

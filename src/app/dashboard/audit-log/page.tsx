@@ -1,5 +1,6 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { supabase } from '@/lib/db/client'
+import { formatDateTime } from '@/lib/utils/date'
 
 export default async function AuditLogPage() {
   const { data, error } = await supabase.from('audit_log').select('*, users!user_id(email)').order('created_at', { ascending: false }).limit(100)
@@ -17,7 +18,7 @@ export default async function AuditLogPage() {
       </TableRow></TableHeader><TableBody>
         {data.map((item) => (
           <TableRow key={item.id}>
-            <TableCell className="text-muted-foreground">{new Date(item.created_at).toLocaleString('id-ID')}</TableCell>
+            <TableCell className="text-muted-foreground">{formatDateTime(item.created_at)}</TableCell>
             <TableCell>{item.users?.email ?? '-'}</TableCell>
             <TableCell><span className={`font-medium ${item.action === 'CREATE' ? 'text-emerald-600' : item.action === 'DELETE' ? 'text-red-600' : 'text-amber-600'}`}>{item.action}</span></TableCell>
             <TableCell className="font-mono text-xs">{item.table_name}</TableCell>
