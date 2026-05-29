@@ -23,8 +23,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 interface PicCustomer {
   id: string
-  customer: { nama: string }[]
+  customer: { nama: string } | null
   nama: string
+  jenis_kelamin: string | null
   jabatan: string | null
   no_hp: string | null
   email: string | null
@@ -41,20 +42,11 @@ export default function PicCustomerPage() {
   useEffect(() => {
     supabase
       .from("customer_pic")
-      .select(`
-        id,
-        customer!inner(nama),
-        nama,
-        jabatan,
-        no_hp,
-        email,
-        is_active,
-        created_at
-      `)
+      .select(`id, customer!customer_id(nama), nama, jenis_kelamin, jabatan, no_hp, email, is_active, created_at`)
       .order("created_at", { ascending: false })
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData((Array.isArray(result) ? result : []) as PicCustomer[])
+        else setData((Array.isArray(result) ? result : []) as unknown as PicCustomer[])
         setLoading(false)
       })
   }, [])
@@ -133,8 +125,9 @@ export default function PicCustomerPage() {
   )
 
   const columns: Column<PicCustomer>[] = [
-    { header: "Customer", accessor: (item) => item.customer?.[0]?.nama || "-" },
+    { header: "Customer", accessor: (item) => item.customer?.nama || "-" },
     { header: "Nama PIC", accessor: (item) => item.nama, sortKey: "nama" },
+    { header: "Jenis Kelamin", accessor: (item) => item.jenis_kelamin === 'L' ? 'Laki-laki' : item.jenis_kelamin === 'P' ? 'Perempuan' : '-' },
     { header: "Jabatan", accessor: (item) => item.jabatan || "-", sortKey: "jabatan" },
     { header: "No. HP", accessor: (item) => item.no_hp || "-", sortKey: "no_hp" },
     { header: "Email", accessor: (item) => item.email || "-", sortKey: "email" },

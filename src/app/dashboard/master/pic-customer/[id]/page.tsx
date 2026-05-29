@@ -18,8 +18,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 interface PicCustomer {
   id: string
-  customer: { nama: string }[]
+  customer: { nama: string } | null
   nama: string
+  jenis_kelamin: string | null
   jabatan: string | null
   no_hp: string | null
   email: string | null
@@ -39,21 +40,12 @@ export default function DetailPicCustomerPage() {
     if (!id) return
     supabase
       .from("customer_pic")
-      .select(`
-        id,
-        customer!inner(nama),
-        nama,
-        jabatan,
-        no_hp,
-        email,
-        is_active,
-        created_at
-      `)
+      .select(`id, customer!customer_id(nama), nama, jenis_kelamin, jabatan, no_hp, email, is_active, created_at`)
       .eq("id", id)
       .single()
       .then(({ data: result, error: err }) => {
         if (err) setError(err.message)
-        else setData(result as PicCustomer)
+        else setData(result as unknown as PicCustomer)
         setLoading(false)
       })
   }, [id])
@@ -105,11 +97,15 @@ export default function DetailPicCustomerPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Customer</label>
-              <p className="text-sm font-medium">{data.customer?.[0]?.nama || "-"}</p>
+              <p className="text-sm font-medium">{data.customer?.nama || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Nama PIC</label>
               <p className="text-sm font-medium">{data.nama}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Jenis Kelamin</label>
+              <p className="text-sm font-medium">{data.jenis_kelamin === 'L' ? 'Laki-laki' : data.jenis_kelamin === 'P' ? 'Perempuan' : '-'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Jabatan</label>

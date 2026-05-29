@@ -6,9 +6,10 @@ export const customerPic = pgTable("customer_pic", {
  customerId: text("customer_id").notNull(),
  nama: text("nama").notNull(),
  jabatan: text("jabatan"),
- noHp: text("no_hp"),
- email: text("email"),
- isActive: boolean("is_active").notNull().default(true),
+  noHp: text("no_hp"),
+  email: text("email"),
+  jenisKelamin: text("jenis_kelamin"),
+  isActive: boolean("is_active").notNull().default(true),
  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

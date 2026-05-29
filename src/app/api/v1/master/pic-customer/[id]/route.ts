@@ -7,6 +7,7 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 const schema = z.object({
   customer_id: z.string().optional(),
   nama: z.string().min(1, 'Nama PIC harus diisi').optional(),
+  jenis_kelamin: z.enum(['L', 'P'], { message: 'Jenis kelamin harus dipilih' }),
   jabatan: z.string().optional(),
   email: z.string().email('Email tidak valid').optional().or(z.literal('')),
   no_telp: z.string().optional(),

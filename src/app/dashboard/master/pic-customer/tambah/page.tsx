@@ -20,6 +20,7 @@ import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 const picSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
   nama: z.string().min(2, { message: "Nama PIC harus diisi" }),
+  jenisKelamin: z.enum(['L', 'P'], { message: 'Jenis kelamin harus dipilih' }),
   jabatan: z.string().optional(),
   noHp: z.string().optional(),
   email: z.string().email({ message: "Email tidak valid" }).optional().or(z.literal('')),
@@ -62,6 +63,7 @@ export default function TambahPICCustomerPage() {
         body: JSON.stringify({
           customer_id: data.customerId,
           nama: data.nama,
+          jenis_kelamin: data.jenisKelamin,
           jabatan: data.jabatan || null,
           no_hp: data.noHp || null,
           email: data.email || null,
@@ -124,6 +126,27 @@ export default function TambahPICCustomerPage() {
                 <FormControl>
                   <Input {...field} placeholder="Masukkan nama PIC" />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="jenisKelamin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jenis Kelamin <span className="text-destructive">*</span></FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis kelamin" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="L">Laki-laki</SelectItem>
+                    <SelectItem value="P">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

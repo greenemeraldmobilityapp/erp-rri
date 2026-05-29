@@ -97,6 +97,7 @@ interface QuotData {
   perihal: string | null
   pic_customer_nama: string | null
   pic_customer_no_hp: string | null
+  pic_jenis_kelamin: string | null
   customer: { nama: string; kode: string }
   alamat: string | null
   tanggal: string
@@ -219,7 +220,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
       H(View, { style: styles.alamatSection },
         H(Text, { style: styles.alamatTitle }, 'Kepada Yth.:'),
         H(Text, { style: styles.alamatName }, data.customer.nama),
-        data.pic_customer_nama ? H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + data.pic_customer_nama) : null,
+        data.pic_customer_nama ? H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + (data.pic_jenis_kelamin === 'L' ? 'Bapak' : 'Ibu') + ' ' + data.pic_customer_nama) : null,
         H(View, { style: styles.alamatAddress },
           H(Text, null, data.alamat || '')
         )
@@ -234,12 +235,10 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         ),
         H(Text, { style: styles.bodyText }, 'Dengan rincian sebagaimana terlampir.'),
 
-        data.keterangan && H(View, { style: styles.keteranganText },
+        (data.masa_berlaku && data.tanggal_berlaku_sampai || data.keterangan) && H(View, { style: styles.keteranganText },
           H(Text, { style: styles.bodyBold }, 'Keterangan:'),
-          H(Text, { style: { fontSize: 11 } }, data.keterangan)
-        ),
-        data.masa_berlaku && data.tanggal_berlaku_sampai && H(Text, { style: { fontSize: 11, marginTop: 2 } },
-          '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai
+          data.masa_berlaku && data.tanggal_berlaku_sampai && H(Text, { style: { fontSize: 11 } }, '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai),
+          data.keterangan && H(Text, { style: { fontSize: 11 } }, '- ' + data.keterangan),
         ),
         H(Text, { style: styles.penutupText },
           'Demikian surat penawaran ini kami sampaikan, atas perhatian dan pertimbangannya diucapkan terimakasih.'
@@ -336,7 +335,7 @@ export function QuotationPDF({ data }: { data: QuotData }) {
         isLast && (data.keterangan || (data.masa_berlaku && data.tanggal_berlaku_sampai)) ? H(View, { style: { marginTop: 12 } },
           H(Text, { style: styles.keteranganFootnote }, '* Keterangan:'),
           data.masa_berlaku && data.tanggal_berlaku_sampai ? H(Text, { style: styles.keteranganFootnote }, '- Informasi harga ini berlaku sampai ' + data.tanggal_berlaku_sampai) : null,
-          data.keterangan ? H(Text, { style: styles.keteranganFootnote }, data.keterangan) : null,
+          data.keterangan ? H(Text, { style: styles.keteranganFootnote }, '- ' + data.keterangan) : null,
         ) : null,
         H(View, { style: styles.footer },
           H(Text, { style: styles.footerText }, c.company_alamat || 'Jerukwangi - Bangsri, Jepara'),

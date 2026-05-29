@@ -67,7 +67,19 @@ export default function EditKontrakPage() {
 
   const form = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),
-    defaultValues: { isActive: true, items: [] },
+    defaultValues: {
+      nomorKontrak: '',
+      tanggalMulai: '',
+      tanggalSelesai: '',
+      tanggalTandaTangan: '',
+      penandatanganRriNama: '',
+      penandatanganRriJabatan: '',
+      penandatanganCustomerNama: '',
+      penandatanganCustomerJabatan: '',
+      catatan: '',
+      isActive: true,
+      items: [],
+    },
   });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'items' });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);

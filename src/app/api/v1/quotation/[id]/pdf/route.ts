@@ -74,15 +74,17 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   let picCustomerNama: string | null = null
   let picCustomerNoHp: string | null = null
+  let picCustomerJenisKelamin: string | null = null
   if (qtn.pic_customer_id) {
     const { data: pic } = await supabaseAdmin
       .from('customer_pic')
-      .select('nama, no_hp')
+      .select('nama, no_hp, jenis_kelamin')
       .eq('id', qtn.pic_customer_id)
       .single()
     if (pic) {
       picCustomerNama = pic.nama
       picCustomerNoHp = pic.no_hp
+      picCustomerJenisKelamin = pic.jenis_kelamin
     }
   }
 
@@ -115,6 +117,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     perihal: qtn.perihal ?? null,
     pic_customer_nama: picCustomerNama,
     pic_customer_no_hp: picCustomerNoHp,
+    pic_jenis_kelamin: picCustomerJenisKelamin,
     customer: customer ?? { nama: '-', kode: '-' },
     alamat: qtn.alamat ?? null,
     tanggal: new Date(qtn.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),

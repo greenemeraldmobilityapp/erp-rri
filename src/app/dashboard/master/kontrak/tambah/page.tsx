@@ -51,7 +51,18 @@ export default function TambahKontrakPage() {
 
   const form = useForm<KontrakFormValues>({
     resolver: zodResolver(kontrakSchema),
-    defaultValues: { isActive: true },
+    defaultValues: {
+      nomorKontrak: '',
+      tanggalMulai: '',
+      tanggalSelesai: '',
+      tanggalTandaTangan: '',
+      penandatanganRriNama: '',
+      penandatanganRriJabatan: '',
+      penandatanganCustomerNama: '',
+      penandatanganCustomerJabatan: '',
+      catatan: '',
+      isActive: true,
+    },
   });
   const { confirmLeave, showDialog, handleConfirm, handleCancel } = useUnsavedChanges(form.formState.isDirty);
 

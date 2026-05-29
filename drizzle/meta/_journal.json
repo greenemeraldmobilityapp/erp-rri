@@ -163,6 +163,20 @@
       "when": 1779915000000,
       "tag": "0023_rfq_customer_tambah_enhance",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1779926400000,
+      "tag": "0024_make_quotation_item_barang_id_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1779930000000,
+      "tag": "0025_add_customer_pic_jenis_kelamin",
+      "breakpoints": true
     }
   ]
 }

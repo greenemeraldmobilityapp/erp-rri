@@ -14,6 +14,7 @@ import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 const picSchema = z.object({
   customerId: z.string().min(1, { message: "Customer harus dipilih" }),
   nama: z.string().min(2, { message: "Nama PIC harus diisi" }),
+  jenisKelamin: z.enum(['L', 'P'], { message: 'Jenis kelamin harus dipilih' }),
   jabatan: z.string().optional(),
   noHp: z.string().optional(),
   email: z.string().email({ message: "Email tidak valid" }).optional().or(z.literal('')),
@@ -54,7 +55,8 @@ export default function EditPICCustomerPage() {
         })));
 
         const { data: picData } = await apiFetch<{
-          customer_id: string; nama: string; jabatan: string | null;
+          customer_id: string; nama: string; jenis_kelamin: 'L' | 'P';
+          jabatan: string | null;
           no_hp: string | null; email: string | null; is_active: boolean;
         }>(`/api/v1/master/pic-customer/${id}`);
 
@@ -64,6 +66,7 @@ export default function EditPICCustomerPage() {
           reset({
             customerId: picData.customer_id,
             nama: picData.nama,
+            jenisKelamin: picData.jenis_kelamin,
             jabatan: picData.jabatan || '',
             noHp: picData.no_hp || '',
             email: picData.email || '',
@@ -99,6 +102,7 @@ export default function EditPICCustomerPage() {
         body: JSON.stringify({
           customer_id: data.customerId,
           nama: data.nama,
+          jenis_kelamin: data.jenisKelamin,
           jabatan: data.jabatan || null,
           no_hp: data.noHp || null,
           email: data.email || null,
@@ -177,6 +181,22 @@ export default function EditPICCustomerPage() {
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.nama ? 'border-destructive' : ''}`}
           />
           {errors.nama && <p className="text-destructive text-sm mt-1">{errors.nama.message}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="jenisKelamin" className="block text-sm font-medium mb-1">
+            Jenis Kelamin <span className="text-destructive">*</span>
+          </label>
+          <select
+            id="jenisKelamin"
+            {...register('jenisKelamin')}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.jenisKelamin ? 'border-destructive' : ''}`}
+          >
+            <option value="">Pilih jenis kelamin</option>
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+          {errors.jenisKelamin && <p className="text-destructive text-sm mt-1">{errors.jenisKelamin.message}</p>}
         </div>
 
         <div>
