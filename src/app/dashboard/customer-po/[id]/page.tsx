@@ -23,6 +23,9 @@ interface CustomerPo {
   status: string
   nomor_po_customer: string | null
   terms_of_payment: string | null
+  waktu_pengiriman: number | null
+  pic_customer_id: string | null
+  customer_pic: { nama: string; jabatan: string | null; no_hp: string | null } | null
   customer: { nama: string; kode: string } | null
   items: Array<{
     id: string
@@ -121,6 +124,19 @@ export default function CustomerPoDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Terms of Payment</p>
               <p className="font-medium">{po.terms_of_payment ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">PIC Customer</p>
+              <p className="font-medium">{po.customer_pic?.nama ?? "-"}</p>
+              {po.customer_pic?.jabatan && <p className="text-xs text-muted-foreground">{po.customer_pic.jabatan}</p>}
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Waktu Pengiriman</p>
+              <p className="font-medium">{po.waktu_pengiriman ? `${po.waktu_pengiriman} hari` : "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Jatuh Tempo</p>
+              <p className="font-medium text-xs">Dihitung setelah invoice hardcopy diterima customer</p>
             </div>
           </div>
         </CardContent>

@@ -1,6 +1,6 @@
 "use client"
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -11,10 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { ArrowLeft, Loader2, Plus } from 'lucide-react'
+import { ArrowLeft, Loader2, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog'
 
-const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.string().optional() })
+const schema = z.object({ status: z.string().optional(), nomor_po_customer: z.string().optional(), terms_of_payment: z.string().optional(), waktu_pengiriman: z.coerce.number().int().positive().optional(), pic_customer_id: z.string().optional() })
 type FV = z.input<typeof schema>
 const statusOpts = [{ value: 'draft', label: 'Draft' }, { value: 'confirmed', label: 'Dikonfirmasi' }, { value: 'cancelled', label: 'Batal' }]
 
@@ -39,16 +40,28 @@ export default function EditPoPage() {
   const [unmappedItems, setUnmappedItems] = useState<UnmappedItem[]>([])
   const [kategoriOptions, setKategoriOptions] = useState<KategoriOption[]>([])
   const [kategoriMap, setKategoriMap] = useState<Record<string, string>>({})
-  const [newKategoriName, setNewKategoriName] = useState('')
-  const [creatingKategori, setCreatingKategori] = useState(false)
+  const [kategoriDialogOpen, setKategoriDialogOpen] = useState(false)
   const [pendingFormData, setPendingFormData] = useState<FV | null>(null)
 
   const { register, handleSubmit, reset } = useForm<FV>({ resolver: zodResolver(schema) })
+  const [picOpts, setPicOpts] = useState<Array<{ value: string; label: string }>>([])
 
   useEffect(() => {
-    apiFetch<{ status: string; nomor_po_customer: string | null; terms_of_payment: string | null }>(`/api/v1/customer-po/${params.id}`)
-      .then(r => {
-        reset({ status: r.data.status, nomor_po_customer: r.data.nomor_po_customer ?? '', terms_of_payment: r.data.terms_of_payment ?? '' })
+    apiFetch<{ status: string; nomor_po_customer: string | null; terms_of_payment: string | null; waktu_pengiriman: number | null; pic_customer_id: string | null; customer_id: string }>(`/api/v1/customer-po/${params.id}`)
+      .then(async r => {
+        reset({
+          status: r.data.status,
+          nomor_po_customer: r.data.nomor_po_customer ?? '',
+          terms_of_payment: r.data.terms_of_payment ?? '',
+          waktu_pengiriman: r.data.waktu_pengiriman ?? undefined,
+          pic_customer_id: r.data.pic_customer_id ?? '',
+        })
+        if (r.data.customer_id) {
+          try {
+            const picRes = await apiFetch<Array<{ id: string; nama: string; jabatan: string | null }>>(`/api/v1/master/pic-customer?customer_id=${r.data.customer_id}`)
+            setPicOpts((picRes.data ?? []).map(x => ({ value: x.id, label: x.jabatan ? `${x.nama} - ${x.jabatan}` : x.nama })))
+          } catch { /* ignore */ }
+        }
         setLoading(false)
       })
       .catch(() => { toast.error('Gagal memuat data'); router.push('/dashboard/customer-po') })
@@ -75,24 +88,12 @@ export default function EditPoPage() {
     }
   }
 
-  const handleCreateKategori = async () => {
-    if (!newKategoriName.trim()) return
-    setCreatingKategori(true)
+  const handleKategoriSuccess = useCallback(async () => {
     try {
-      const res = await apiFetch<{ id: string }>('/api/v1/master/kategori-barang', {
-        method: 'POST',
-        body: JSON.stringify({ nama: newKategoriName.trim() }),
-      })
-      const newOpt = { value: res.data.id, label: newKategoriName.trim() }
-      setKategoriOptions(prev => [...prev, newOpt])
-      setNewKategoriName('')
-      toast.success(`Kategori "${newOpt.label}" berhasil dibuat`)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal membuat kategori')
-    } finally {
-      setCreatingKategori(false)
-    }
-  }
+      const res = await apiFetch<KategoriOption[]>('/api/v1/master/kategori-barang')
+      setKategoriOptions(res.data ?? [])
+    } catch { /* ignore */ }
+  }, [])
 
   const confirmWithBarang = async () => {
     if (!pendingFormData) return
@@ -110,6 +111,7 @@ export default function EditPoPage() {
     setSubmitting(true)
     try {
       const body: Record<string, unknown> = { ...data }
+      if (body.waktu_pengiriman === '' || body.waktu_pengiriman === undefined || body.waktu_pengiriman === null) delete body.waktu_pengiriman
       if (barangAutoCreate) body.barang_auto_create = barangAutoCreate
 
       const res = await apiFetch<{ autoGenerated?: { id: string; nomor: string; type: string } }>(
@@ -173,6 +175,17 @@ export default function EditPoPage() {
                 <label className="text-sm font-medium">Terms of Payment</label>
                 <Input {...register('terms_of_payment')} />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">PIC Customer</label>
+                <select {...register('pic_customer_id')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring">
+                  <option value="">Pilih PIC</option>
+                  {picOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Waktu Pengiriman (hari)</label>
+                <Input type="number" min="1" placeholder="Contoh: 7" {...register('waktu_pengiriman')} />
+              </div>
             </CardContent>
           </Card>
           <div className="flex justify-end gap-3">
@@ -219,15 +232,9 @@ export default function EditPoPage() {
             ))}
           </div>
           <div className="flex items-center gap-2 pt-2 border-t">
-            <Input
-              placeholder="Nama kategori baru..."
-              value={newKategoriName}
-              onChange={(e) => setNewKategoriName(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="button" variant="outline" size="sm" onClick={handleCreateKategori} disabled={creatingKategori || !newKategoriName.trim()}>
-              {creatingKategori ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3 mr-1" />}
-              Buat
+            <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setKategoriDialogOpen(true)}>
+              <Settings2 className="h-3 w-3 mr-1" />
+              Kelola Kategori
             </Button>
           </div>
           <DialogFooter>
@@ -236,6 +243,8 @@ export default function EditPoPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <KelolaKategoriDialog open={kategoriDialogOpen} onOpenChange={setKategoriDialogOpen} onSuccess={handleKategoriSuccess} />
     </>
   )
 }

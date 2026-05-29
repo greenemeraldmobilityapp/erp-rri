@@ -338,8 +338,8 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 |---|---|
 | **Barang** | Data barang (nama, kode, kategori, satuan, spesifikasi, justification, image_url, harga beli default, harga jual default, stok minimum, is_active). Kolom `kontrak_id` (FK ke kontrak, ON DELETE CASCADE) untuk barang yang dibuat dari import kontrak — jika kontrak dihapus, barang ikut terhapus otomatis. Justification & image_url untuk lampiran Quotation SPH. **Auto-create:** Saat PO Customer di-confirm, barang dari RFQ Customer yang belum terdaftar (free-text `nama_barang`) otomatis dibuat ke master barang dengan kode `BRG-RRI-{auto-increment}`. User memilih kategori per barang via dialog sebelum konfirmasi. |
 | **Kategori Barang** | Pengelompokan barang (Cleaning Service, ATK, Peralatan, dll) |
-| **Supplier** | Data supplier — termasuk supplier marketplace (Shopee, Tokopedia) dengan field: nama toko, link toko, no. rekening, kontak. Untuk marketplace: field tambahan seperti link produk, marketplace, nama toko. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
-| **Customer** | Data customer, alamat, kontak. Dilengkapi **Terms of Payment** (TOP): Net 30, Net 60, Cash, Custom |
+| **Supplier** | Data supplier — termasuk supplier marketplace (Shopee, Tokopedia) dengan field: nama toko, link toko, no. rekening, kontak. Untuk marketplace: field tambahan seperti link produk, marketplace, nama toko. Dilengkapi **Terms of Payment** (TOP): Net 14, Net 30, Net 60, Net 90, Cash, Custom |
+| **Customer** | Data customer, alamat, kontak. Dilengkapi **Terms of Payment** (TOP): Net 14, Net 30, Net 60, Net 90, Cash, Custom |
 | **PIC Customer** | Multiple PIC per customer (nama, jabatan, no. HP, email). Tracking per RFQ/DI/Kontrak — setiap dokumen bisa diassign ke PIC berbeda |
 | **Karyawan** | Data karyawan RRI (data pribadi, jabatan, gaji pokok) |
 | **Chart of Accounts (COA)** | Daftar akun untuk pembukuan keuangan |
@@ -422,7 +422,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. Nomor otomatis: `RRI-RFQC-YY-MM-0001` |
 | **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (suffix `-R1` jika revisi > 0). **Status Workflow:** `draft → sent → proses_negosiasi → approved → closed`. Quick-action buttons di halaman detail: Kirim (draft→sent), Setujui/Tolak (sent/proses_negosiasi→approved/rejected), Revisi (rejected→draft), Tutup (approved→closed). Validasi transisi status di PATCH `/[id]/status` dan PUT `/[id]`. |
 | **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal. **Auto-status:** POST negoiasi → quotation status otomatis diubah dari `sent` ke `proses_negosiasi`. Saat negosiasi di-approve, harga quotation items di-update dengan harga hasil nego + PPN recalc + revisi increment. Saat di-reject, quotation status di-set ke `rejected`. Halaman detail quotation menampilkan section "Negosiasi" + tombol "Buat Negosiasi" (hanya saat `sent`/`proses_negosiasi`). |
-| **Quotation → PO** | Konversi quotation yang deal menjadi PO customer — auto-generate Sales Order |
+| **Customer PO** | Purchase Order dari customer. Field: nomor (auto `RRI-CPO-YY-MM-0001`), customer, quotation_id (opsional), tanggal, nomor_po_customer, terms_of_payment, pic_customer_id (PIC dari database — auto-load saat customer dipilih), waktu_pengiriman (hari), status (draft/confirmed/cancelled). Item: barang (linked master barang atau free-text nama_barang/satuan untuk auto-create master), jumlah, harga_satuan. TOP options: Net 14, Net 30, Net 60, Net 90, Cash, Custom. **Due date:** Jatuh tempo dihitung SETELAH invoice hardcopy diterima customer, bukan dari tanggal PO. Hitungan TOP dimulai setelah: barang terkirim → GRN customer → invoice hardcopy disubmit & diterima customer. **Waktu pengiriman** (hari) disimpan di PO dan di-propagate ke Sales Order → Delivery Order → Retur Penjualan. PIC Customer auto-fetch dari database saat customer dipilih. Konfirmasi PO → auto-close quotation + auto-generate Sales Order + auto-create master barang untuk item free-text. Halaman: Tambah, Detail (dengan FileUpload), Edit. Dokument: `dokumen/customer-po/{id}/{file}` |
 
 **Jalur Kontrak → DI (Delivery Instruction):**
 
@@ -435,10 +435,10 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Sales Order (SO)** | Order penjualan internal (berdasarkan PO Customer atau DI). Auto-generate saat PO/DI deal |
-| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim |
+| **Sales Order (SO)** | Order penjualan internal (berdasarkan PO Customer atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO |
+| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
-| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran |
+| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
 
 ### E. Procurement / Pembelian
@@ -660,7 +660,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 
 **Implementasi:**
 - **Utility:** `src/lib/utils/whatsapp.ts` — fungsi `sendWhatsapp(recipient, message, userId?)` yang memanggil Fonnte API (`POST https://api.fonnte.com/send`) dan mencatat ke tabel `whatsapp_log`.
-- **Cron Job:** `src/app/api/v1/cron/ar-reminder/route.ts` — endpoint yang dipanggil Vercel Cron setiap hari pukul 01:00 UTC (08:00 WIB). Logic: cek semua invoice aktif, hitung due date dari `tanggal + top`, kirim WA sesuai selisih hari.
+- **Cron Job:** `src/app/api/v1/cron/ar-reminder/route.ts` — endpoint yang dipanggil Vercel Cron setiap hari pukul 01:00 UTC (08:00 WIB). Logic: cek semua invoice aktif, hitung due date dari `tanggal + top` (TOP mulai dihitung setelah invoice hardcopy diterima customer — secara praktis dihitung dari tanggal invoice), kirim WA sesuai selisih hari.
 - **Schedule:** `vercel.json` — `"0 1 * * *"` (setiap hari jam 1 AM UTC = 8 AM WIB).
 - **Log:** Semua pengiriman tercatat di tabel `whatsapp_log` untuk monitoring.
 - **Halaman:** `/dashboard/notifikasi` — riwayat notifikasi WhatsApp.
@@ -1141,24 +1141,23 @@ quotation_pic            → assign PIC customer ke quotation
 negosiasi                → riwayat negosiasi
 negosiai_item            → detail item yang dinegosiasi
 
-customer_po              → po dari customer
+customer_po              → po dari customer (field: waktu_pengiriman INTEGER, pic_customer_id TEXT FK ke customer_pic)
 customer_po_item         → item dalam po customer
-customer_po_pic          → assign PIC customer ke po
 
 di                       → delivery instruction
 di_item                  → item dalam di
 di_pic                   → assign PIC customer ke di
 
-sales_order              → sales order internal
+sales_order              → sales order internal (field: waktu_pengiriman INTEGER — dari Customer PO)
 sales_order_item         → item dalam so
 
-delivery_order           → surat jalan
+delivery_order           → surat jalan (field: waktu_pengiriman INTEGER — dari Sales Order)
 delivery_order_item      → item dalam do
 
 grn                      → goods received note (dari customer)
 grn_item                 → item dalam grn
 
-retur_penjualan          → retur dari customer
+retur_penjualan          → retur dari customer (field: waktu_pengiriman INTEGER)
 retur_penjualan_item     → item retur
 retur_penjualan_dokumen  → dokumen retur
 

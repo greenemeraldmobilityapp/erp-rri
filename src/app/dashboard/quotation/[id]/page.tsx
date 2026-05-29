@@ -348,7 +348,7 @@ export default function QuotationDetailPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-20">#</TableHead>
-                  <TableHead className="w-20"></TableHead>
+                  <TableHead className="w-20">Picture</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Specification</TableHead>
                   <TableHead className="text-center">Qty</TableHead>

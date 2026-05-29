@@ -9,7 +9,7 @@ import { sendWhatsapp } from '@/lib/utils/whatsapp'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: po, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode)').eq('id', id).single()
+  const { data: po, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode), customer_pic!pic_customer_id(nama, jabatan, no_hp)').eq('id', id).single()
   if (error) return internalError(error)
   if (!po) return notFound('PO tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('customer_po_item').select('*, barang!barang_id(nama, kode, satuan)').eq('customer_po_id', id)
@@ -46,6 +46,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.nomor_po_customer !== undefined) upd.nomor_po_customer = body.nomor_po_customer
   if (body.terms_of_payment !== undefined) upd.terms_of_payment = body.terms_of_payment
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
+  if (body.waktu_pengiriman !== undefined) upd.waktu_pengiriman = body.waktu_pengiriman
+  if (body.pic_customer_id !== undefined) upd.pic_customer_id = body.pic_customer_id || null
   upd.updated_at = new Date().toISOString()
 
   const { data, error } = await supabaseAdmin.from('customer_po').update(upd).eq('id', id).select().single()

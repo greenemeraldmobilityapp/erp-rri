@@ -23,6 +23,7 @@ export async function generateSOFromPO(customerPoId: string) {
     customer_po_id: customerPoId,
     tanggal: po.tanggal,
     status: 'draft',
+    waktu_pengiriman: po.waktu_pengiriman ?? null,
     created_at: now,
     updated_at: now,
   }).select().single()
@@ -69,6 +70,7 @@ export async function generateDOFromSO(salesOrderId: string) {
     sales_order_id: salesOrderId,
     tanggal: so.tanggal,
     status: 'draft',
+    waktu_pengiriman: so.waktu_pengiriman ?? null,
     created_at: now,
     updated_at: now,
   }).select().single()
