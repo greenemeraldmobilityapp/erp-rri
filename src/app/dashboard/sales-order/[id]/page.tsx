@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api/client'
@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, FileText, ExternalLink, Loader2 } from 'lucide-react'
+import { ArrowLeft, FileText, ExternalLink, Loader2, ShoppingCart, ClipboardList, Truck, FileSearch, TrendingDown, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { SoDocuments } from '@/components/so-documents'
 
 const STATUS_MAP: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' },
@@ -34,6 +33,36 @@ const QUICK_ACTIONS: Record<string, Array<{ status: string; label: string; varia
   cancelled: [],
 }
 
+interface ProcurementItem {
+  id: string
+  purchase_request_id?: string
+  purchase_order_id?: string
+  rfq_supplier_id?: string
+  barang_id: string
+  jumlah: number
+  harga_penawaran?: number | null
+}
+
+interface ProcurementDoc {
+  id: string
+  nomor: string
+  status: string
+  items?: ProcurementItem[]
+}
+
+interface RfqSupplierDoc {
+  id: string
+  nomor: string
+  status: string
+  rfq_supplier_item: ProcurementItem[]
+}
+
+interface Procurement {
+  purchase_requests: ProcurementDoc[]
+  purchase_orders: ProcurementDoc[]
+  rfq_suppliers: RfqSupplierDoc[]
+}
+
 export default function SalesOrderDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -41,6 +70,7 @@ export default function SalesOrderDetailPage() {
   const [so, setSo] = useState<Record<string, unknown> | null>(null)
   const [items, setItems] = useState<Array<Record<string, unknown>>>([])
   const [doDoc, setDoDoc] = useState<Record<string, unknown> | null>(null)
+  const [procurement, setProcurement] = useState<Procurement | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [fetchKey, setFetchKey] = useState(0)
@@ -54,6 +84,7 @@ export default function SalesOrderDetailPage() {
         setSo(d)
         setItems((d.items as Array<Record<string, unknown>>) ?? [])
         setDoDoc((d.delivery_order as Record<string, unknown>) ?? null)
+        setProcurement((d.procurement as Procurement) ?? null)
         setLoading(false)
       })
       .catch(() => {
@@ -104,6 +135,41 @@ export default function SalesOrderDetailPage() {
     }
   }
 
+  const rfqPenawaranMap = useMemo(() => {
+    const map = new Map<string, { harga_penawaran: number; rfq_id: string; rfq_nomor: string }>()
+    for (const rfq of procurement?.rfq_suppliers ?? []) {
+      for (const item of rfq.rfq_supplier_item ?? []) {
+        if (item.harga_penawaran != null) {
+          map.set(item.barang_id, { harga_penawaran: item.harga_penawaran, rfq_id: rfq.id, rfq_nomor: rfq.nomor })
+        }
+      }
+    }
+    return map
+  }, [procurement])
+
+  const allRfqItems = (procurement?.rfq_suppliers ?? []).flatMap(r => r.rfq_supplier_item ?? [])
+  const allPrItems = (procurement?.purchase_requests ?? []).flatMap(pr => pr.items ?? [])
+  const allPoItems = (procurement?.purchase_orders ?? []).flatMap(po => po.items ?? [])
+  const rfqBarangIds = new Set(allRfqItems.map(i => i.barang_id))
+  const prBarangIds = new Set(allPrItems.map(i => i.barang_id))
+  const poBarangIds = new Set(allPoItems.map(i => i.barang_id))
+
+  const getItemStatus = (barangId: string) => {
+    if (poBarangIds.has(barangId)) return { label: 'Sudah di-PO', variant: 'success' as const }
+    if (prBarangIds.has(barangId)) return { label: 'Sudah di-PR', variant: 'warning' as const }
+    if (rfqBarangIds.has(barangId)) return { label: 'Sudah di-RFQ', variant: 'default' as const }
+    return { label: 'Belum di-RFQ', variant: 'secondary' as const }
+  }
+
+  const itemsWithPenawaran = useMemo(() => {
+    return items.filter((item: Record<string, unknown>) => {
+      const barang = item.barang as Record<string, unknown> ?? {}
+      const hargaBeli = barang.harga_beli_default as number ?? 0
+      const penawaran = rfqPenawaranMap.get(item.barang_id as string)
+      return penawaran && hargaBeli > 0 && penawaran.harga_penawaran < hargaBeli
+    })
+  }, [items, rfqPenawaranMap])
+
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>
   if (!so) return <div className="text-center py-20 text-muted-foreground">Sales Order tidak ditemukan</div>
 
@@ -112,15 +178,24 @@ export default function SalesOrderDetailPage() {
   const actions = QUICK_ACTIONS[statusKey] ?? []
   const customerPo = so.customer_po as Record<string, unknown> | null
   const customer = customerPo?.customer as Record<string, unknown> | null
-  const picCustomer = customerPo?.pic_customer as Record<string, unknown> | null
+  const picCustomer = so.pic_customer as Record<string, unknown> | null
 
   const total = items.reduce((sum: number, i: Record<string, unknown>) => {
     return sum + (i.jumlah as number) * (i.harga_satuan as number)
   }, 0)
 
+  const totalHargaBeli = items.reduce((sum: number, i: Record<string, unknown>) => {
+    const barang = i.barang as Record<string, unknown> ?? {}
+    const hargaBeli = barang.harga_beli_default as number ?? 0
+    return sum + (i.jumlah as number) * hargaBeli
+  }, 0)
+
   const estimasiKirim = so.waktu_pengiriman
     ? new Date(new Date(so.tanggal as string).getTime() + (so.waktu_pengiriman as number) * 86400000)
     : null
+
+  const totalMargin = total - totalHargaBeli
+  const marginPct = total > 0 ? (totalMargin / total) * 100 : 0
 
   return (
     <div className="space-y-6">
@@ -157,6 +232,36 @@ export default function SalesOrderDetailPage() {
           </Button>
         </div>
       </div>
+
+      {itemsWithPenawaran.length > 0 && (
+        <div className="rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 flex items-start gap-3">
+          <TrendingDown className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Harga penawaran supplier lebih rendah dari harga beli default
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              {itemsWithPenawaran.length} item memiliki penawaran lebih murah. Perbarui harga master barang di RFQ terkait untuk meningkatkan akurasi margin.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {Array.from(new Set(itemsWithPenawaran.map(i => {
+                const pen = rfqPenawaranMap.get(i.barang_id as string)
+                return pen?.rfq_id
+              }))).filter(Boolean).map(rfqId => {
+                const rfq = procurement?.rfq_suppliers.find(r => r.id === rfqId)
+                if (!rfq) return null
+                return (
+                  <Button key={rfqId!} variant="outline" size="sm" asChild>
+                    <Link href={`/dashboard/rfq/${rfqId}`}>
+                      <CheckCircle2 className="h-3 w-3 mr-1" />Lihat {rfq.nomor}
+                    </Link>
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-6">
         <Card>
@@ -217,7 +322,7 @@ export default function SalesOrderDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Telepon PIC</p>
-                <p className="font-medium">{picCustomer?.telepon as string ?? '-'}</p>
+                <p className="font-medium">{picCustomer?.no_hp as string ?? '-'}</p>
               </div>
               {customerPo?.waktu_pengiriman ? (
                 <div>
@@ -239,41 +344,156 @@ export default function SalesOrderDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Picture</TableHead>
                   <TableHead>Barang</TableHead>
                   <TableHead>Kode</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
                   <TableHead>Satuan</TableHead>
-                  <TableHead className="text-right">Harga</TableHead>
-                  <TableHead className="text-right">Subtotal</TableHead>
+                  <TableHead className="text-right">Harga Jual</TableHead>
+                  <TableHead className="text-right">Harga Beli</TableHead>
+                  <TableHead className="text-right">Harga Penawaran</TableHead>
+                  <TableHead className="text-right">Margin</TableHead>
+                  <TableHead>Status Pengadaan</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.map((item: Record<string, unknown>) => {
                   const barang = item.barang as Record<string, unknown> ?? {}
+                  const hargaJual = item.harga_satuan as number
+                  const hargaBeli = barang.harga_beli_default as number ?? 0
+                  const penawaran = rfqPenawaranMap.get(item.barang_id as string)
+                  const margin = hargaJual - hargaBeli
+                  const marginPctItem = hargaJual > 0 ? (margin / hargaJual) * 100 : 0
+                  const itemStatus = getItemStatus(item.barang_id as string)
                   return (
                     <TableRow key={item.id as string}>
+                      <TableCell>
+                        {barang.image_url ? (
+                          <img src={barang.image_url as string} alt="" className="w-10 h-10 rounded object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">{barang.nama as string}</TableCell>
                       <TableCell className="text-muted-foreground">{barang.kode as string}</TableCell>
                       <TableCell className="text-right">{item.jumlah as number}</TableCell>
                       <TableCell>{barang.satuan as string}</TableCell>
-                      <TableCell className="text-right">{(item.harga_satuan as number)?.toLocaleString('id-ID')}</TableCell>
-                      <TableCell className="text-right">{((item.jumlah as number) * (item.harga_satuan as number)).toLocaleString('id-ID')}</TableCell>
+                      <TableCell className="text-right">{hargaJual?.toLocaleString('id-ID')}</TableCell>
+                      <TableCell className="text-right">
+                        {hargaBeli > 0 ? hargaBeli.toLocaleString('id-ID') : '-'}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {penawaran ? (
+                          <span className={penawaran.harga_penawaran < hargaBeli ? 'text-green-600' : 'text-muted-foreground'}>
+                            {penawaran.harga_penawaran.toLocaleString('id-ID')}
+                            {penawaran.harga_penawaran < hargaBeli && (
+                              <TrendingDown className="h-3 w-3 inline ml-1" />
+                            )}
+                          </span>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell className={`text-right font-medium ${margin > 0 ? 'text-green-600' : margin < 0 ? 'text-red-600' : ''}`}>
+                        {hargaBeli > 0 ? (
+                          <span>{margin.toLocaleString('id-ID')} ({marginPctItem >= 0 ? '+' : ''}{marginPctItem.toFixed(1)}%)</span>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={itemStatus.variant}>{itemStatus.label}</Badge>
+                      </TableCell>
                     </TableRow>
                   )
                 })}
               </TableBody>
             </Table>
-            <div className="mt-4 text-right font-bold text-lg">
-              Total: {total.toLocaleString('id-ID')}
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium">Total Harga Jual:</span> {total.toLocaleString('id-ID')}
+                <span className="mx-4">|</span>
+                <span className="font-medium">Total Harga Beli:</span> {totalHargaBeli.toLocaleString('id-ID')}
+                <span className="mx-4">|</span>
+                <span className={`font-medium ${totalMargin > 0 ? 'text-green-600' : totalMargin < 0 ? 'text-red-600' : ''}`}>
+                  Total Margin: {totalMargin >= 0 ? '+' : ''}{totalMargin.toLocaleString('id-ID')} ({marginPct >= 0 ? '+' : ''}{marginPct.toFixed(1)}%)
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
       <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">Lampiran</h3>
-          <SoDocuments soId={id} />
+        <CardContent className="pt-6 space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />Status Pengadaan
+          </h3>
+
+          {(procurement?.rfq_suppliers.length ?? 0) > 0 && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                RFQ Supplier terhubung ({procurement?.rfq_suppliers.length}):
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {procurement?.rfq_suppliers.map(rfq => (
+                  <Link key={rfq.id} href={`/dashboard/rfq/${rfq.id}`}>
+                    <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                      <FileSearch className="h-3 w-3 mr-1" />
+                      {rfq.nomor}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(procurement?.purchase_requests.length ?? 0) > 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Purchase Request terhubung ({procurement?.purchase_requests.length}):
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {procurement?.purchase_requests.map(pr => (
+                  <Link key={pr.id} href={`/dashboard/purchase-request/${pr.id}`}>
+                    <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                      <ClipboardList className="h-3 w-3 mr-1" />
+                      {pr.nomor}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Belum ada Purchase Request untuk SO ini.</p>
+          )}
+
+          {(procurement?.purchase_orders.length ?? 0) > 0 && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Purchase Order terhubung ({procurement?.purchase_orders.length}):
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {procurement?.purchase_orders.map(po => (
+                  <Link key={po.id} href={`/dashboard/purchase-order/${po.id}`}>
+                    <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                      <Truck className="h-3 w-3 mr-1" />
+                      {po.nomor}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button variant="default" size="sm" asChild>
+              <Link href={`/dashboard/rfq/tambah?sales_order_id=${id}`}>
+                <FileSearch className="h-4 w-4 mr-1" />Buat RFQ Supplier
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/dashboard/purchase-request/tambah`}>
+                <ClipboardList className="h-4 w-4 mr-1" />Buat Purchase Request
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

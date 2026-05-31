@@ -10,12 +10,14 @@ const rfqItemSchema = z.object({
   jumlah: z.coerce.number().int().positive(),
   satuan: z.string().optional(),
   harga_target: z.coerce.number().nonnegative().optional(),
+  harga_penawaran: z.coerce.number().nonnegative().optional(),
   keterangan: z.string().optional(),
 })
 
 const schema = z.object({
   supplier_id: z.string().min(1, 'Supplier harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
+  sales_order_id: z.string().optional(),
   keterangan: z.string().optional(),
   items: z.array(rfqItemSchema).min(1, 'Minimal 1 item'),
 })
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('rfq_supplier')
-    .select('*, supplier!supplier_id(id, nama, kode)')
+    .select('*, supplier!supplier_id(id, nama, kode), sales_order!sales_order_id(id, nomor)')
     .order('created_at', { ascending: false })
 
   if (error) return internalError(error)
@@ -51,6 +53,7 @@ export async function POST(request: NextRequest) {
     .insert({
       nomor,
       supplier_id: parsed.data.supplier_id,
+      sales_order_id: parsed.data.sales_order_id ?? null,
       tanggal: parsed.data.tanggal,
       keterangan: parsed.data.keterangan ?? null,
       status: 'draft',
@@ -68,6 +71,7 @@ export async function POST(request: NextRequest) {
     jumlah: item.jumlah,
     satuan: item.satuan ?? null,
     harga_target: item.harga_target ?? null,
+    harga_penawaran: item.harga_penawaran ?? null,
     keterangan: item.keterangan ?? null,
     created_at: now,
     updated_at: now,

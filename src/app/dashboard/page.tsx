@@ -125,7 +125,7 @@ export default async function DashboardPage() {
 
   const recentItems: RecentItem[] = [
     ...(recentQuotation.data ?? []).map(q => ({ ...q, label: 'Quotation', href: `/dashboard/quotation/${q.id}/edit` })),
-    ...(recentSO.data ?? []).map(s => ({ ...s, label: 'Sales Order', href: `/dashboard/sales-order/${s.id}/edit` })),
+    ...(recentSO.data ?? []).map(s => ({ ...s, label: 'Sales Order', href: `/dashboard/sales-order/${s.id}` })),
     ...(recentInvoice.data ?? []).map(i => ({ ...i, label: 'Invoice', href: `/dashboard/invoice/${i.id}/edit` })),
     ...(recentPO.data ?? []).map(p => ({ ...p, label: 'Purchase Order', href: `/dashboard/purchase-order/${p.id}/edit` })),
   ].sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()).slice(0, 8)

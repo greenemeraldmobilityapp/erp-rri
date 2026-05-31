@@ -20,6 +20,7 @@ interface Barang {
   id: string
   nama: string
   kode: string
+  barcode: string | null
   kategori_barang: { nama: string }[]
   satuan: string | null
   spesifikasi: string | null
@@ -48,6 +49,7 @@ export default function DetailBarangPage() {
         id,
         nama,
         kode,
+        barcode,
         kategori_barang!inner(nama),
         satuan,
         spesifikasi,
@@ -121,6 +123,10 @@ export default function DetailBarangPage() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Kode</label>
               <p className="text-sm font-medium">{data.kode}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Barcode</label>
+              <p className="text-sm font-medium">{data.barcode || "-"}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Barang</label>

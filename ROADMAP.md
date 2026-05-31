@@ -67,7 +67,7 @@
 | # | Task | Status | File |
 |---|------|--------|------|
 | 1 | **Status workflow di detail page** — Konversi SO detail ke `"use client"`, tambah quick-action buttons inline (Konfirmasi, Proses, Kirim, Batalkan) | ✅ Done | `sales-order/[id]/page.tsx` |
-| 2 | **Item editing di edit page & API** — Edit page form items (dynamic row, add/remove). PUT handler support `body.items` (delete + re-insert). Tambah field `keterangan` ke edit form | ✅ Done | `sales-order/[id]/edit/page.tsx`, `api/v1/sales-order/[id]/route.ts` |
+| 2 | **Item editing di edit page & API** — Edit page form items (dynamic row, add/remove). PUT handler support `body.items` (delete + re-insert). Tambah field `keterangan` ke edit form | ❌ Removed — SO adalah dokumen binding, items tidak boleh diubah. Edit page dihapus. Status workflow via tombol detail page. | N/A |
 | 3 | **Customer info di detail page** — Resolve `customer_po -> customer` join, tampilkan: nama customer, nomor PO, PIC, TOP, waktu_pengiriman, estimasi timeline | ✅ Done | `sales-order/[id]/page.tsx` |
 | 4 | **Tab DI di tambah page** — Dua tab: "Dari Customer PO" (existing) dan "Dari Delivery Instruction" (baru). Tab DI: pilih DI (status `active`) → auto-load customer + items dari DI + **harga dari kontrak** | ✅ Done | `sales-order/tambah/page.tsx`, `lib/auto-sales.ts` (generateSOFromDI) |
 | 5 | **Document upload SO** — Schema `sales_order_document` + migration `0029` + API `/api/v1/sales-order/[id]/documents` + client `SoDocuments.tsx` + UI di detail page | ✅ Done | new files |
@@ -87,8 +87,25 @@
 |---|------|--------|------|
  | 10 | **Auto-populate items saat pilih PO** — Saat user pilih PO di tab PO, auto-load items + prices dari PO_items | ✅ Done | `sales-order/tambah/page.tsx` |
 | 11 | **is_active usage** — Tambahkan toggle/filter di list & detail, atau hapus field jika tidak dibutuhkan | ✅ Done | `sales-order/page.tsx`, `sales-order/[id]/page.tsx` |
-| 12 | **DI reference selector** — Di edit page, tampilkan `di_id` jika ada, izinkan replace | ✅ Done | `sales-order/[id]/edit/page.tsx` |
+| 12 | **DI reference selector** — Di edit page, tampilkan `di_id` jika ada, izinkan replace | ❌ Removed — edit page dihapus, DI reference hanya di set saat creation | N/A |
 | 13 | **Backfill SO untuk existing PO** — Confirmed PO tanpa SO: tampilkan tombol "Buat SO" yang trigger generateSOFromPO | ✅ Done | `customer-po/[id]/page.tsx`, `api/v1/customer-po/[id]/route.ts` |
+
+## 🔴 DO Scan Enhancement — Barcode + QR + Hybrid Checkbox
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| A | **QR Code DO → encode URL** — QR encode `window.location.origin + /dashboard/delivery-order/{id}` bukan UUID mentah | ✅ Done | `do-scan-panel.tsx` |
+| B | **Migration 0033** — `ALTER TABLE barang ADD COLUMN barcode text` + unique index | ✅ Done | `drizzle/0033_add_barang_barcode.sql` |
+| C | **Schema Drizzle** — tambah field `barcode: text("barcode")` | ✅ Done | `barang.ts` |
+| D | **API barang** — validasi + simpan `barcode` di POST/PUT | ✅ Done | `master/barang/route.ts`, `[id]/route.ts` |
+| E | **Form Tambah/Edit barang** — input field `Barcode` (opsional) | ✅ Done | `tambah/page.tsx`, `[id]/edit/page.tsx` |
+| F | **Detail barang** — tampilkan `Barcode` di card | ✅ Done | `[id]/page.tsx` |
+| G | **API DO items** — select include `barang.barcode` | ✅ Done | `delivery-order/[id]/route.ts` |
+| H | **Scanner match** — cocokkan `barcode` dulu, fallback `kode` | ✅ Done | `barcode-scanner.tsx` |
+| I | **Hybrid checkbox** — checklist per item + Check All di panel scan | ✅ Done | `do-scan-panel.tsx` |
+| J | **API scan** — terima `manual_verified_ids` + catat di audit log | ✅ Done | `delivery-order/[id]/scan/route.ts` |
+
+---
 
 ### Status Transition SO
 

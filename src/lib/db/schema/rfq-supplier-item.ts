@@ -8,6 +8,7 @@ export const rfqSupplierItem = pgTable("rfq_supplier_item", {
  jumlah: integer("jumlah").notNull(),
  satuan: text("satuan"),
  hargaTarget: real("harga_target"),
+ hargaPenawaran: real("harga_penawaran"),
  keterangan: text("keterangan"),
  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),

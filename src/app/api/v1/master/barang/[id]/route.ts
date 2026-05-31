@@ -15,6 +15,7 @@ const schema = z.object({
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().optional(),
+  barcode: z.string().optional(),
   is_active: z.boolean().optional(),
 })
 

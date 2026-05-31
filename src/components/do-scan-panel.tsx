@@ -1,12 +1,13 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { BarcodeScanner } from '@/components/barcode-scanner'
-import { QrCode, CheckCircle2, ScanBarcode, RotateCcw } from 'lucide-react'
+import { QrCode, CheckCircle2, ScanBarcode, RotateCcw, SquareCheckBig } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
 import { toast } from 'sonner'
 
@@ -22,28 +23,61 @@ interface DOScanPanelProps {
   doNomor: string
   items: Array<{
     id: string
-    barang?: { nama: string; kode: string; satuan: string }
+    barang?: { nama: string; kode: string; satuan: string; barcode?: string | null }
     jumlah: number
   }>
 }
 
 export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
   const [scannedItems, setScannedItems] = useState<DOScanItem[]>([])
+  const [manualVerifiedIds, setManualVerifiedIds] = useState<Set<string>>(new Set())
   const [confirmed, setConfirmed] = useState(false)
+  const [qrUrl, setQrUrl] = useState('')
+
+  useEffect(() => {
+    setQrUrl(window.location.origin + '/dashboard/delivery-order/' + doId)
+  }, [doId])
+
   const barangOptions = items.map(i => ({
     id: i.id,
     kode: i.barang?.kode ?? '',
+    barcode: i.barang?.barcode,
     nama: i.barang?.nama ?? ''
   }))
 
-  const matchedIds = new Set(scannedItems.filter(s => s.matched).map(s => {
-    const item = items.find(i => i.barang?.kode.toUpperCase() === s.kode.toUpperCase())
+  const scannedMatchedIds = new Set(scannedItems.filter(s => s.matched).map(s => {
+    const item = items.find(i =>
+      i.barang?.kode.toUpperCase() === s.kode.toUpperCase() ||
+      (i.barang?.barcode && i.barang.barcode.toUpperCase() === s.kode.toUpperCase())
+    )
     return item?.id
   }))
+
+  const allVerifiedIds = new Set([...scannedMatchedIds, ...manualVerifiedIds])
+  const allVerified = allVerifiedIds.size >= items.length && items.length > 0
 
   const handleScanComplete = (scanned: DOScanItem[]) => {
     setScannedItems(scanned)
     setConfirmed(false)
+  }
+
+  const handleManualToggle = (itemId: string) => {
+    setConfirmed(false)
+    setManualVerifiedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(itemId)) next.delete(itemId)
+      else next.add(itemId)
+      return next
+    })
+  }
+
+  const handleCheckAll = () => {
+    setConfirmed(false)
+    if (allVerified) {
+      setManualVerifiedIds(new Set())
+    } else {
+      setManualVerifiedIds(new Set(items.map(i => i.id)))
+    }
   }
 
   const handleKonfirmasi = async () => {
@@ -51,14 +85,22 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
       const matchedItems = scannedItems
         .filter(s => s.matched)
         .map(s => {
-          const item = items.find(i => i.barang?.kode.toUpperCase() === s.kode.toUpperCase())
+          const item = items.find(i =>
+            i.barang?.kode.toUpperCase() === s.kode.toUpperCase() ||
+            (i.barang?.barcode && i.barang.barcode.toUpperCase() === s.kode.toUpperCase())
+          )
           return item ? { delivery_order_item_id: item.id, kode: s.kode } : null
         })
         .filter(Boolean)
 
+      const manualIds = Array.from(manualVerifiedIds)
+
       await apiFetch('/api/v1/delivery-order/' + doId + '/scan', {
         method: 'POST',
-        body: JSON.stringify({ scanned_items: matchedItems })
+        body: JSON.stringify({
+          scanned_items: matchedItems,
+          manual_verified_ids: manualIds
+        })
       })
       toast.success('Scan berhasil dikonfirmasi')
       setConfirmed(true)
@@ -67,7 +109,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
     }
   }
 
-  const scanProgress = scannedItems.filter(s => s.matched).length
+  const scanProgress = allVerifiedIds.size
   const totalItems = items.length
 
   return (
@@ -84,7 +126,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
           <CardContent className="flex flex-col items-center gap-4">
             <div className="p-4 bg-white rounded-lg border">
               <QRCodeSVG
-                value={doId}
+                value={qrUrl}
                 size={160}
                 level="M"
                 includeMargin
@@ -108,13 +150,18 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {scanProgress}/{totalItems} item di-scan
+                {scanProgress}/{totalItems} item diverifikasi
+                {manualVerifiedIds.size > 0 && (
+                  <span className="text-muted-foreground ml-1">
+                    ({scannedMatchedIds.size} scan, {manualVerifiedIds.size} checklist)
+                  </span>
+                )}
               </p>
               {confirmed ? (
                 <Badge variant="success">Terkonfirmasi</Badge>
               ) : (
-                <Badge variant={scanProgress === totalItems ? 'success' : 'secondary'}>
-                  {scanProgress < totalItems ? 'Belum lengkap' : 'Siap konfirmasi'}
+                <Badge variant={allVerified ? 'success' : 'secondary'}>
+                  {allVerified ? 'Siap konfirmasi' : 'Belum lengkap'}
                 </Badge>
               )}
             </div>
@@ -127,13 +174,31 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
               />
             </div>
 
-            {/* Items list */}
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            {/* Items list with checkboxes */}
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="flex items-center gap-2 pb-1 border-b">
+                <Checkbox
+                  checked={allVerified}
+                  onCheckedChange={handleCheckAll}
+                  id="check-all"
+                />
+                <label htmlFor="check-all" className="text-sm font-medium cursor-pointer flex items-center gap-1">
+                  <SquareCheckBig className="h-3.5 w-3.5" />
+                  Check All
+                </label>
+              </div>
               {items.map(item => {
-                const isMatched = matchedIds.has(item.id)
+                const isScanned = scannedMatchedIds.has(item.id)
+                const isManual = manualVerifiedIds.has(item.id)
+                const isVerified = isScanned || isManual
                 return (
                   <div key={item.id} className="flex items-center gap-3 p-2 rounded-md bg-muted/50">
-                    {isMatched ? (
+                    <Checkbox
+                      checked={isVerified}
+                      onCheckedChange={() => handleManualToggle(item.id)}
+                      disabled={isScanned || confirmed}
+                    />
+                    {isVerified ? (
                       <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
                     ) : (
                       <div className="h-4 w-4 rounded-full border-2 border-muted-foreground flex-shrink-0" />
@@ -142,10 +207,13 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
                       <p className="text-sm font-medium truncate">
                         [{item.barang?.kode}] {item.barang?.nama}
                       </p>
+                      {item.barang?.barcode && (
+                        <p className="text-xs text-muted-foreground">Barcode: {item.barang.barcode}</p>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">x{item.jumlah}</p>
-                    <Badge variant={isMatched ? 'success' : 'outline'} className="text-xs">
-                      {isMatched ? 'Di-scan' : 'Belum'}
+                    <Badge variant={isVerified ? 'success' : 'outline'} className="text-xs">
+                      {isScanned ? 'Scan' : isManual ? 'Manual' : 'Belum'}
                     </Badge>
                   </div>
                 )
@@ -160,7 +228,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => { setScannedItems([]); setConfirmed(false); }}
+                onClick={() => { setScannedItems([]); setManualVerifiedIds(new Set()); setConfirmed(false); }}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Reset
@@ -169,7 +237,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
 
             {!confirmed && scanProgress > 0 && (
               <Button onClick={handleKonfirmasi} className="w-full" disabled={confirmed}>
-                Konfirmasi Scan
+                Konfirmasi Scan ({scanProgress} item)
               </Button>
             )}
           </CardContent>
@@ -211,6 +279,27 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Manual Verified Summary */}
+      {manualVerifiedIds.size > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              Manual Checklist ({manualVerifiedIds.size} item)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {items.filter(i => manualVerifiedIds.has(i.id)).map(item => (
+                <p key={item.id} className="text-sm">
+                  [{item.barang?.kode}] {item.barang?.nama} x{item.jumlah}
+                </p>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

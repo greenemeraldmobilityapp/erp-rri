@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,6 +28,7 @@ const rfqItemSchema = z.object({
 const rfqSchema = z.object({
   supplier_id: z.string().min(1, 'Supplier harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
+  sales_order_id: z.string().optional(),
   keterangan: z.string().optional(),
   items: z.array(rfqItemSchema).min(1, 'Minimal 1 item'),
 })
@@ -36,9 +37,12 @@ type RfqFormValues = z.input<typeof rfqSchema>
 
 export default function TambahRfqPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const soId = searchParams.get('sales_order_id')
   const [supplierOptions, setSupplierOptions] = useState<Array<{ value: string; label: string }>>([])
   const [barangOptions, setBarangOptions] = useState<Array<{ value: string; label: string; satuan: string }>>([])
   const [submitting, setSubmitting] = useState(false)
+  const [loadingSo, setLoadingSo] = useState(!!soId)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -46,11 +50,12 @@ export default function TambahRfqPage() {
     resolver: zodResolver(rfqSchema),
     defaultValues: {
       tanggal: today,
+      sales_order_id: soId ?? '',
       items: [{ barang_id: '', jumlah: 1, satuan: '', harga_target: undefined, keterangan: '' }],
     },
   })
 
-  const { register, handleSubmit, control, setValue } = form
+  const { register, handleSubmit, control, setValue, reset } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
   useEffect(() => {
@@ -62,6 +67,33 @@ export default function TambahRfqPage() {
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
     }).catch(() => toast.error('Gagal memuat data referensi'))
   }, [])
+
+  useEffect(() => {
+    if (!soId) return
+    apiFetch<{ nomor: string; items: Array<{ barang_id: string; jumlah: number; keterangan: string | null; barang: { nama: string; kode: string; satuan: string; harga_beli_default: number | null } }> }>(`/api/v1/sales-order/${soId}`)
+      .then((res) => {
+        const so = res.data
+        const items = (so.items ?? []).map((i: { barang_id: string; jumlah: number; keterangan: string | null; barang: { nama: string; kode: string; satuan: string; harga_beli_default: number | null } }) => ({
+          barang_id: i.barang_id,
+          jumlah: i.jumlah,
+          satuan: i.barang?.satuan ?? '',
+          harga_target: i.barang?.harga_beli_default ?? undefined,
+          keterangan: i.keterangan ?? '',
+        }))
+        reset({
+          tanggal: today,
+          sales_order_id: soId,
+          supplier_id: '',
+          keterangan: '',
+          items: items.length > 0 ? items : [{ barang_id: '', jumlah: 1 }],
+        })
+        setLoadingSo(false)
+      })
+      .catch(() => {
+        toast.error('Gagal memuat data Sales Order')
+        setLoadingSo(false)
+      })
+  }, [soId, reset, today])
 
   const onSubmit = async (data: RfqFormValues) => {
     setSubmitting(true)
@@ -77,6 +109,10 @@ export default function TambahRfqPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (loadingSo) {
+    return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>
   }
 
   return (
@@ -112,6 +148,12 @@ export default function TambahRfqPage() {
                   <FormItem><FormLabel>Tanggal *</FormLabel><FormControl><DatePicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
+              {soId && (
+                <div className="text-sm text-muted-foreground">
+                  Merujuk ke Sales Order: <span className="font-medium">{soId.slice(0, 8)}...</span>
+                  <input type="hidden" {...register('sales_order_id')} />
+                </div>
+              )}
               <FormField control={control} name="keterangan" render={({ field }) => (
                 <FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} placeholder="Catatan untuk RFQ ini" rows={2} /></FormControl><FormMessage /></FormItem>
               )} />

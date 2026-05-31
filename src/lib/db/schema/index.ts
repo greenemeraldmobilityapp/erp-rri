@@ -82,7 +82,6 @@ import { customerPoDocument } from "./customer-po-document";
 import { diDocument } from "./di-document";
 import { grnDocument } from "./grn-document";
 import { deliveryOrderDocument } from "./delivery-order-document";
-import { salesOrderDocument } from "./sales-order-document";
 
 export {
   users,
@@ -168,6 +167,5 @@ export {
   customerPoDocument,
   diDocument,
   grnDocument,
-  deliveryOrderDocument,
-  salesOrderDocument
+  deliveryOrderDocument
 };

@@ -15,6 +15,7 @@ export const barang = pgTable("barang", {
   hargaBeliDefault: real("harga_beli_default"),
   hargaJualDefault: real("harga_jual_default"),
   stokMinimum: integer("stok_minimum").notNull().default(0),
+  barcode: text("barcode"),
   kontrakId: text("kontrak_id").references(() => kontrak.id, { onDelete: "cascade" }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),

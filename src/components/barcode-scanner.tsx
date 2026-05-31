@@ -16,7 +16,7 @@ interface ScannedItem {
 }
 
 interface BarcodeScannerProps {
-  barangOptions: Array<{ kode: string; nama: string; id: string }>
+  barangOptions: Array<{ kode: string; barcode?: string | null; nama: string; id: string }>
   onScanComplete?: (scanned: ScannedItem[]) => void
   trigger?: React.ReactNode
 }
@@ -96,7 +96,9 @@ export function BarcodeScanner({ barangOptions, onScanComplete, trigger }: Barco
 
   const handleScannedCode = (kode: string) => {
     const normalized = kode.trim().toUpperCase()
-    const barang = barangOptions.find(b => b.kode.toUpperCase() === normalized)
+    const barang = barangOptions.find(
+      b => (b.barcode && b.barcode.toUpperCase() === normalized) || b.kode.toUpperCase() === normalized
+    )
 
     if (barang) {
       setScannedItems(prev => {

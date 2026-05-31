@@ -21,6 +21,7 @@ const barangSchema = z.object({
   spesifikasi: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  barcode: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().default(0),
@@ -139,6 +140,10 @@ export default function EditBarangPage() {
             <input type="text" {...register('kode')} className={`w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring ${errors.kode ? 'border-destructive' : ''}`} />
             {errors.kode && <p className="text-destructive text-sm mt-1">{errors.kode.message}</p>}
           </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Barcode</label>
+          <input type="text" {...register('barcode')} placeholder="Opsional — scan barcode barang" className="w-full px-3 py-2 border rounded-md focus:outline-none focus-visible:ring-3 focus-visible:ring-ring" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Kategori <span className="text-destructive">*</span></label>

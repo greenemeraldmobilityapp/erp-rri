@@ -32,6 +32,7 @@ const barangSchema = z.object({
   spesifikasi: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  barcode: z.string().optional(),
   harga_beli_default: z.coerce.number().nonnegative().optional(),
   harga_jual_default: z.coerce.number().nonnegative().optional(),
   stok_minimum: z.coerce.number().nonnegative().default(0),
@@ -294,6 +295,19 @@ export default function TambahBarangPage() {
                       <FormLabel>Kode Barang</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="Masukkan kode barang" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="barcode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Barcode</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Opsional — scan barcode barang" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

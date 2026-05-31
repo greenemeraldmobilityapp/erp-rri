@@ -7,12 +7,13 @@ import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { apiFetch } from '@/lib/api/client'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Loader2, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 const rfqItemSchema = z.object({
@@ -20,6 +21,7 @@ const rfqItemSchema = z.object({
   jumlah: z.coerce.number().int().positive(),
   satuan: z.string().optional(),
   harga_target: z.coerce.number().nonnegative().optional(),
+  harga_penawaran: z.coerce.number().nonnegative().optional(),
   keterangan: z.string().optional(),
 })
 
@@ -77,6 +79,7 @@ export default function EditRfqPage() {
         jumlah: number
         satuan: string | null
         harga_target: number | null
+        harga_penawaran: number | null
         keterangan: string | null
       }>
     }>(`/api/v1/rfq-supplier/${id}`)
@@ -92,6 +95,7 @@ export default function EditRfqPage() {
             jumlah: i.jumlah,
             satuan: i.satuan ?? '',
             harga_target: i.harga_target ?? undefined,
+            harga_penawaran: i.harga_penawaran ?? undefined,
             keterangan: i.keterangan ?? '',
           })) : [{ barang_id: '', jumlah: 1 }],
         })
@@ -184,9 +188,16 @@ export default function EditRfqPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Item Barang</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1 })}>
-              <Plus className="h-4 w-4 mr-1" />Tambah Item
-            </Button>
+            <div className="flex items-center gap-2">
+              {watch('status') === 'responded' && (
+                <Badge variant="success" className="gap-1">
+                  <DollarSign className="h-3 w-3" />Supplier telah merespon
+                </Badge>
+              )}
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1 })}>
+                <Plus className="h-4 w-4 mr-1" />Tambah Item
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
@@ -227,10 +238,14 @@ export default function EditRfqPage() {
                     <Input {...register(`items.${index}.satuan`)} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Harga Target</label>
                     <Input type="number" min="0" step="0.01" {...register(`items.${index}.harga_target`)} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Harga Penawaran</label>
+                    <Input type="number" min="0" step="0.01" {...register(`items.${index}.harga_penawaran`)} placeholder="Dari supplier" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Keterangan</label>

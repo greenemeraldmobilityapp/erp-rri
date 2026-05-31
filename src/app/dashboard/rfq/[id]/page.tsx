@@ -6,7 +6,7 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Pencil, Trash2 } from "lucide-react"
+import { Loader2, Pencil, Trash2, CheckCircle2, AlertCircle } from "lucide-react"
 import { CopyButton } from "@/components/copy-button"
 import { StatusWorkflow } from "@/components/status-workflow"
 import { PageHeader } from "@/components/page-header"
@@ -39,8 +39,9 @@ interface RFQItem {
   jumlah: number
   satuan: string
   harga_target: number
+  harga_penawaran: number | null
   keterangan: string | null
-  barang: { id: string; nama: string; kode: string; satuan: string }
+  barang: { id: string; nama: string; kode: string; satuan: string; harga_beli_default: number | null }
 }
 
 interface RFQ {
@@ -53,6 +54,7 @@ interface RFQ {
   is_active: boolean
   created_at: string
   supplier: { id: string; nama: string; kode: string }
+  sales_order: { id: string; nomor: string } | null
   items: RFQItem[]
 }
 
@@ -63,6 +65,7 @@ export default function RfqDetailPage() {
   const [data, setData] = useState<RFQ | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [applying, setApplying] = useState(false)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
 
@@ -114,10 +117,28 @@ export default function RfqDetailPage() {
     router.push("/dashboard/rfq")
   }
 
+  const handleApplyPrices = async () => {
+    if (!id) return
+    setApplying(true)
+    try {
+      await apiFetch(`/api/v1/rfq-supplier/${id}`, { method: 'POST', body: JSON.stringify({ action: 'apply_prices' }) })
+      toast.success('Harga penawaran berhasil diterapkan ke master barang!')
+      const res = await apiFetch<RFQ>(`/api/v1/rfq-supplier/${id}`)
+      setData(res.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menerapkan harga')
+    } finally {
+      setApplying(false)
+    }
+  }
+
   const formatCurrency = (v: number | null | undefined) => {
     if (v == null) return "-"
     return `Rp ${Number(v).toLocaleString("id-ID")}`
   }
+
+  const hasPenawaran = data?.items.some(i => i.harga_penawaran != null)
+  const hasPriceGap = data?.items.some(i => i.harga_penawaran != null && i.barang?.harga_beli_default != null && i.harga_penawaran !== i.barang.harga_beli_default)
 
   if (loading) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><div className="min-h-[200px] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /><p className="ml-3 text-muted-foreground">Memuat data...</p></div></div>
   if (error || !data) return <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8"><EmptyState title="Gagal memuat data" description={error || "Data tidak ditemukan"} /></div>
@@ -171,6 +192,12 @@ export default function RfqDetailPage() {
               <p className="text-sm text-muted-foreground">Dibuat Pada</p>
               <p className="font-medium">{new Date(data.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</p>
             </div>
+            {data.sales_order && (
+              <div>
+                <p className="text-sm text-muted-foreground">Referensi SO</p>
+                <p className="font-medium">{data.sales_order.nomor}</p>
+              </div>
+            )}
             {data.keterangan && (
               <div className="md:col-span-2">
                 <p className="text-sm text-muted-foreground">Keterangan</p>
@@ -181,9 +208,33 @@ export default function RfqDetailPage() {
         </CardContent>
       </Card>
 
+      {hasPriceGap && (
+        <div className="rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Harga penawaran berbeda dengan harga beli default</p>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              Beberapa item memiliki harga penawaran supplier yang belum diterapkan ke master data barang.
+            </p>
+          </div>
+          <Button size="sm" onClick={handleApplyPrices} disabled={applying}>
+            {applying ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+            Terapkan Semua
+          </Button>
+        </div>
+      )}
+
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">Item Barang</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Item Barang</h3>
+            {hasPenawaran && (
+              <Button variant="default" size="sm" onClick={handleApplyPrices} disabled={applying}>
+                {applying ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+                Terapkan Harga ke Master Barang
+              </Button>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -193,24 +244,41 @@ export default function RfqDetailPage() {
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Satuan</TableHead>
                   <TableHead className="text-right">Harga Target</TableHead>
+                  <TableHead className="text-right">Harga Penawaran</TableHead>
+                  <TableHead className="text-right">Harga Beli Default</TableHead>
                   <TableHead>Keterangan</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-mono text-xs">{item.barang?.kode || "-"}</TableCell>
-                    <TableCell className="font-medium">{item.barang?.nama || "-"}</TableCell>
-                    <TableCell className="text-right">{item.jumlah}</TableCell>
-                    <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.harga_target)}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.keterangan || "-"}</TableCell>
-                  </TableRow>
-                ))}
+                {data.items.map((item) => {
+                  const gap = item.harga_penawaran != null && item.barang?.harga_beli_default != null
+                    ? item.harga_penawaran - item.barang.harga_beli_default
+                    : null
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-mono text-xs">{item.barang?.kode || "-"}</TableCell>
+                      <TableCell className="font-medium">{item.barang?.nama || "-"}</TableCell>
+                      <TableCell className="text-right">{item.jumlah}</TableCell>
+                      <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.harga_target)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {item.harga_penawaran != null ? (
+                          <span className={gap != null && gap < 0 ? 'text-green-600' : gap != null && gap > 0 ? 'text-amber-600' : ''}>
+                            {formatCurrency(item.harga_penawaran)}
+                          </span>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatCurrency(item.barang?.harga_beli_default)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{item.keterangan || "-"}</TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t pt-4 mt-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Total item: <span className="font-medium">{data.items.length}</span>
             </p>

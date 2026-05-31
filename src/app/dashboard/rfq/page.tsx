@@ -15,7 +15,7 @@ const statusLabel: Record<string, { label: string; variant: 'secondary' | 'warni
 export default async function RfqPage() {
   const { data: rfqData, error } = await supabase
     .from('rfq_supplier')
-    .select('*, supplier!supplier_id(nama, kode)')
+    .select('*, supplier!supplier_id(nama, kode), sales_order!sales_order_id(id, nomor)')
     .order('created_at', { ascending: false })
 
   return (
@@ -50,6 +50,7 @@ export default async function RfqPage() {
             <TableHeader><TableRow>
                 <TableHead>Nomor</TableHead>
                 <TableHead>Supplier</TableHead>
+                <TableHead>Ref. SO</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
@@ -61,6 +62,9 @@ export default async function RfqPage() {
                     <span className="text-muted-foreground text-xs">{item.supplier?.kode}</span>
                     <br />
                     {item.supplier?.nama}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {item.sales_order?.nomor ?? '-'}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(item.tanggal).toLocaleDateString('id-ID')}
