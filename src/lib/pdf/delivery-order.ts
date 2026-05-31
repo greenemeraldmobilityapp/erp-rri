@@ -32,8 +32,6 @@ const styles = StyleSheet.create({
   signatureBox: { width: '45%', alignItems: 'center' },
   signatureTitle: { fontSize: 11, marginBottom: 2 },
   signatureCompany: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
-  signatureImage: { width: 100, height: 50, marginBottom: 2, objectFit: 'contain' },
-  stampImage: { width: 80, height: 80, objectFit: 'contain', position: 'absolute', left: 60, top: -10 },
   signatureWrap: { position: 'relative', marginTop: 4, minHeight: 105, alignItems: 'center' },
   signatureName: { fontSize: 11, fontWeight: 'bold', textDecoration: 'underline' },
   signatureJabatan: { fontSize: 11 },
@@ -153,7 +151,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
       H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 } },
         H(View, null,
           H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'No'),
+            H(Text, { style: styles.labelText }, 'No. Surat'),
             H(Text, { style: styles.colonText }, ':'),
             H(Text, { style: styles.valueText }, data.nomor)
           ),
@@ -163,7 +161,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
             H(Text, { style: styles.valueText }, data.ref || '-')
           ),
           H(View, { style: styles.labelValueRow },
-            H(Text, { style: styles.labelText }, 'Hal'),
+            H(Text, { style: styles.labelText }, 'Perihal'),
             H(Text, { style: styles.colonText }, ':'),
             H(Text, { style: [styles.valueText, { textDecoration: 'underline' }] }, 'Surat Jalan')
           )
@@ -178,21 +176,21 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
       H(View, { style: styles.table },
         H(View, { style: styles.tableHeader },
           H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Code'),
+          H(Text, { style: [styles.tableHeaderCell, { width: 90 }] }, 'Code'),
           H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item Description'),
           H(Text, { style: [styles.tableHeaderCell, { width: 50 }] }, 'Unit'),
           H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Qty'),
-          H(Text, { style: [styles.tableHeaderCell, { width: 65, borderRightWidth: 0 }] }, 'Keterangan')
+          H(Text, { style: [styles.tableHeaderCell, { width: 100, borderRightWidth: 0 }] }, 'Keterangan')
         ),
         ...data.items.map((item, i) => {
           const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
           return H(View, { key: i, style: styles.tableRow },
             v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(i + 1)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+            v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
             v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
             v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
             v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-            v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 65, padding: 4, textAlign: 'left' }),
+            v(H(Text, { style: { fontSize: 9 } }, item.keterangan || ''), { width: 100, padding: 4, textAlign: 'left' }),
           )
         }),
       ),
@@ -219,20 +217,17 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           H(View, { style: styles.signatureWrap },
             c.tanda_tangan_stempel_url
               ? H(Image, { src: c.tanda_tangan_stempel_url, style: { height: 100, marginBottom: 2, objectFit: 'contain', position: 'absolute', left: -10 } })
-              : [c.tanda_tangan_url && H(Image, { src: c.tanda_tangan_url, style: styles.signatureImage }),
-                 c.stempel_url && H(Image, { src: c.stempel_url, style: styles.stampImage })]
+              : null
           ),
-          H(View, { style: { marginTop: (c.tanda_tangan_stempel_url || c.tanda_tangan_url) ? 0 : 40 } },
-            H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
-            H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
-          )
+          H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
+          H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur')
         ),
         H(View, { style: styles.signatureBox },
           H(Text, { style: styles.signatureTitle }, 'Diterima Oleh,'),
           H(Text, { style: styles.signatureCompany }, data.customerNama),
-          H(View, { style: { marginTop: 60 } },
-            H(Text, { style: styles.signatureName }, '..................................................')
-          )
+          H(View, { style: styles.signatureWrap }),
+          H(Text, { style: styles.signatureName }, '..................................................'),
+          H(Text, { style: styles.signatureJabatan }, '')
         )
       ),
 
