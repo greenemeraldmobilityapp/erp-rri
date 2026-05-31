@@ -342,27 +342,7 @@ export default function SalesOrderDetailPage() {
                 <p className="text-sm text-muted-foreground">Telepon PIC</p>
                 <p className="font-medium">{picCustomer?.no_hp as string ?? '-'}</p>
               </div>
-              {estimasiKirim ? (
-                <div>
-                  <p className="text-sm text-muted-foreground">Batas Kirim Barang sesuai (PO)</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium">{estimasiKirim.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                    {daysUntilDue != null && daysUntilDue < 0 ? (
-                      <Badge variant="destructive" className="flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> Terlambat {-daysUntilDue} hari
-                      </Badge>
-                    ) : daysUntilDue != null && daysUntilDue <= 1 ? (
-                      <Badge variant="warning" className="flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> H-{daysUntilDue}
-                      </Badge>
-                    ) : daysUntilDue != null && daysUntilDue > 1 ? (
-                      <Badge variant="success" className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> H-{daysUntilDue}
-                      </Badge>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
+
             </div>
           </CardContent>
         </Card>

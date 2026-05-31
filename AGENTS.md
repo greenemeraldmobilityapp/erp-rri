@@ -77,6 +77,9 @@ dokumen/quotation/{id}/{file}
 dokumen/customer-po/{id}/{file}
 dokumen/kontrak/{id}/{file}
 dokumen/di/{id}/{file}
+dokumen/delivery-order/{id}/{file}               # DO documents
+dokumen/delivery-order/{id}/barang_diterima-{ts}-{file}  # Foto barang diterima (verifikasi kirim)
+dokumen/delivery-order/{id}/surat_jalan-{ts}-{file}      # Foto surat jalan ditandatangani (verifikasi kirim)
 dokumen/invoice/{id}/{file}
 dokumen/grn/{id}/{file}
 dokumen/retur-penjualan/{id}/{file}

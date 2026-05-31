@@ -44,6 +44,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     keteranganParts.push(`${manualCount} item diverifikasi manual`)
   }
 
+  const verifiedItemIds = [
+    ...(manualIds ?? []),
+    ...(scannedItems ?? []).map((s: { delivery_order_item_id: string }) => s.delivery_order_item_id),
+  ]
+  if (verifiedItemIds.length > 0) {
+    await supabaseAdmin.from('delivery_order_item').update({ scanned_at: now }).in('id', verifiedItemIds)
+  }
+
+  await supabaseAdmin.from('delivery_order').update({ status: 'awaiting_pickup', updated_at: now }).eq('id', id)
+
   await supabaseAdmin
     .from('audit_log')
     .insert({
@@ -57,7 +67,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   return NextResponse.json({
     data: {
-      message: 'Scan berhasil disimpan',
+      message: 'Scan berhasil dikonfirmasi, status DO: Siap Kirim',
       scanned_count: scannedItems?.length ?? 0,
       manual_count: manualCount,
     }

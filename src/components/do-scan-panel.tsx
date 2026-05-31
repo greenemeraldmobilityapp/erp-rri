@@ -23,15 +23,18 @@ interface DOScanPanelProps {
   doNomor: string
   items: Array<{
     id: string
+    scanned_at?: string | null
     barang?: { nama: string; kode: string; satuan: string; barcode?: string | null; image_url?: string | null }
     jumlah: number
   }>
+  initialVerifiedIds?: string[]
 }
 
-export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
+export function DOScanPanel({ doId, doNomor, items, initialVerifiedIds }: DOScanPanelProps) {
+  const hasConfirmed = initialVerifiedIds && initialVerifiedIds.length > 0
   const [scannedItems, setScannedItems] = useState<DOScanItem[]>([])
-  const [manualVerifiedIds, setManualVerifiedIds] = useState<Set<string>>(new Set())
-  const [confirmed, setConfirmed] = useState(false)
+  const [manualVerifiedIds, setManualVerifiedIds] = useState<Set<string>>(new Set(initialVerifiedIds ?? []))
+  const [confirmed, setConfirmed] = useState(hasConfirmed ?? false)
   const [qrUrl, setQrUrl] = useState('')
 
   useEffect(() => {
@@ -158,7 +161,10 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
                 )}
               </p>
               {confirmed ? (
-                <Badge variant="success">Terkonfirmasi</Badge>
+                <Badge variant="success">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  Terkonfirmasi ({scanProgress} item)
+                </Badge>
               ) : (
                 <Badge variant={allVerified ? 'success' : 'secondary'}>
                   {allVerified ? 'Siap konfirmasi' : 'Belum lengkap'}
@@ -180,6 +186,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
                 <Checkbox
                   checked={allVerified}
                   onCheckedChange={handleCheckAll}
+                  disabled={confirmed}
                   id="check-all"
                 />
                 <label htmlFor="check-all" className="text-sm font-medium cursor-pointer flex items-center gap-1">
@@ -233,6 +240,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={confirmed}
                 onClick={() => { setScannedItems([]); setManualVerifiedIds(new Set()); setConfirmed(false); }}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
@@ -241,7 +249,7 @@ export function DOScanPanel({ doId, doNomor, items }: DOScanPanelProps) {
             </div>
 
             {!confirmed && scanProgress > 0 && (
-              <Button onClick={handleKonfirmasi} className="w-full" disabled={confirmed}>
+              <Button onClick={handleKonfirmasi} className="w-full">
                 Konfirmasi Scan ({scanProgress} item)
               </Button>
             )}

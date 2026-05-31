@@ -172,6 +172,9 @@ Bucket: dokumen
 ├── dokumen/kontrak/{id}/{file}.pdf                    # Kontrak documents (all jenis)
 ├── dokumen/di/{id}/{file}.pdf                         # Delivery Instruction documents
 ├── dokumen/sales-order/{id}/{file}.pdf                # Sales Order documents
+├── dokumen/delivery-order/{id}/{file}.pdf             # Delivery Order documents
+├── dokumen/delivery-order/{id}/barang_diterima-{timestamp}-{file}  # Foto barang diterima customer (verifikasi)
+├── dokumen/delivery-order/{id}/surat_jalan-{timestamp}-{file}      # Foto surat jalan ditandatangani (verifikasi)
 ├── dokumen/invoice/{id}/{file}.pdf                    # Invoice documents
 ├── dokumen/grn/{id}/{file}.pdf                        # GRN documents
 ├── dokumen/retur-penjualan/{id}/{file}.pdf            # Retur Penjualan documents
@@ -260,6 +263,7 @@ Setiap modul transaksi memiliki fitur upload dokumen lampiran (PDF/gambar) denga
 | Customer PO | `/api/v1/customer-po/{id}/documents` | `customer_po_document` | `dokumen/customer-po/{id}/` |
 | DI | `/api/v1/di/{id}/documents` | `di_document` | `dokumen/di/{id}/` |
 | Sales Order | `/api/v1/sales-order/{id}/documents` | `sales_order_document` | `dokumen/sales-order/{id}/` |
+| Delivery Order | `/api/v1/delivery-order/{id}/documents` | `delivery_order_document` | `dokumen/delivery-order/{id}/` |
 | Invoice | `/api/v1/invoice/{id}/documents` | `invoice_document` | `dokumen/invoice/{id}/` |
 | Retur Penjualan | `/api/v1/retur-penjualan/{id}/documents` | `retur_penjualan_document` | `dokumen/retur-penjualan/{id}/` |
 | Retur Pembelian | `/api/v1/retur-pembelian/{id}/documents` | `retur_pembelian_document` | `dokumen/retur-pembelian/{id}/` |
@@ -438,7 +442,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
-| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order |
+| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + jurnal penjualan. |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
 | **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |

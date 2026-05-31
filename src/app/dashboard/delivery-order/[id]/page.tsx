@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Truck, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Camera } from 'lucide-react'
 import { DOScanPanel } from '@/components/do-scan-panel'
 import { DoDocuments } from '@/components/do-documents'
+import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
 
-const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
-  draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' },
+const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
+  draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
 }
 
 export default async function DeliveryOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -135,7 +136,41 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
         doId={doDoc.id}
         doNomor={doDoc.nomor}
         items={items ?? []}
+        initialVerifiedIds={(items ?? []).filter(i => i.scanned_at).map(i => i.id)}
       />
+
+      <DOPhotoConfirmation
+        doId={doDoc.id}
+        status={doDoc.status}
+        existingFotoBarang={doDoc.foto_barang_diterima_url}
+        existingFotoSuratJalan={doDoc.foto_surat_jalan_url}
+      />
+
+      {(doDoc.foto_barang_diterima_url || doDoc.foto_surat_jalan_url) && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Camera className="h-4 w-4" />Foto Verifikasi Pengiriman</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {doDoc.foto_barang_diterima_url && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Foto Barang Diterima</p>
+                  <a href={doDoc.foto_barang_diterima_url} target="_blank" rel="noopener noreferrer">
+                    <img src={doDoc.foto_barang_diterima_url} alt="Foto Barang Diterima" className="w-full h-48 object-cover rounded-md border" />
+                  </a>
+                </div>
+              )}
+              {doDoc.foto_surat_jalan_url && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Foto Surat Jalan</p>
+                  <a href={doDoc.foto_surat_jalan_url} target="_blank" rel="noopener noreferrer">
+                    <img src={doDoc.foto_surat_jalan_url} alt="Foto Surat Jalan" className="w-full h-48 object-cover rounded-md border" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="pt-6">
