@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import Link from "next/link"
-import { ArrowLeft, FileText, CheckCircle, Loader2, ExternalLink } from "lucide-react"
+import { ArrowLeft, FileText, CheckCircle, Loader2, ExternalLink, AlertTriangle, CheckCircle2 } from "lucide-react"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
 import { toast } from "sonner"
 
@@ -113,6 +113,13 @@ export default function CustomerPoDetailPage() {
     }
   }
 
+  const dueDate = po?.waktu_pengiriman && po?.tanggal
+    ? (() => { const d = new Date(po.tanggal); d.setDate(d.getDate() + po.waktu_pengiriman!); return d; })()
+    : null
+  const daysUntilDue = dueDate
+    ? Math.ceil((dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null
+
   if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
   if (error || !po) return <div className="text-center py-20 text-muted-foreground">Customer PO tidak ditemukan</div>
 
@@ -172,7 +179,7 @@ export default function CustomerPoDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tanggal</p>
-              <p className="font-medium">{new Date(po.tanggal).toLocaleDateString("id-ID")}</p>
+              <p className="font-medium">{new Date(po.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Customer</p>
@@ -192,33 +199,51 @@ export default function CustomerPoDetailPage() {
               {po.customer_pic?.jabatan && <p className="text-xs text-muted-foreground">{po.customer_pic.jabatan}</p>}
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Waktu Pengiriman</p>
-              <p className="font-medium">{po.waktu_pengiriman ? `${po.waktu_pengiriman} hari` : "-"}</p>
+              <p className="text-sm text-muted-foreground">Batas Kirim Barang</p>
+              {dueDate ? (
+                <div className="flex flex-col gap-1">
+                  <p className="font-medium">
+                    {dueDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{po.waktu_pengiriman} hari setelah PO Terbit</p>
+                  {daysUntilDue != null && daysUntilDue < 0 ? (
+                    <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                      <AlertTriangle className="h-3 w-3" /> Terlambat {-daysUntilDue} hari
+                    </Badge>
+                  ) : daysUntilDue != null && daysUntilDue <= 1 ? (
+                    <Badge variant="warning" className="flex items-center gap-1 w-fit">
+                      <AlertTriangle className="h-3 w-3" /> H-{daysUntilDue}
+                    </Badge>
+                  ) : daysUntilDue != null && daysUntilDue > 1 ? (
+                    <Badge variant="success" className="flex items-center gap-1 w-fit">
+                      <CheckCircle2 className="h-3 w-3" /> H-{daysUntilDue}
+                    </Badge>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="font-medium">-</p>
+              )}
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Jatuh Tempo</p>
+              <p className="text-sm text-muted-foreground">Jatuh Tempo Pembayaran</p>
               <p className="font-medium text-xs">Dihitung setelah invoice hardcopy diterima customer</p>
             </div>
           </div>
-          {(po.terms_of_payment || po.waktu_pengiriman) && (
+          {po.terms_of_payment && po.terms_of_payment !== 'Cash' && (
             <div className="mt-4 text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3 space-y-1">
-              <p className="font-medium text-blue-800">📋 Estimasi Waktu</p>
-              {po.terms_of_payment && (
-                <p className="text-blue-700">
-                  • {(() => {
-                    const match = po.terms_of_payment!.match(/\d+/)
-                    const days = match ? Number(match[0]) : null
-                    return po.terms_of_payment === 'Cash'
-                      ? 'Jatuh tempo pembayaran Invoice adalah Cash (lunas saat penerimaan invoice).'
-                      : `Jatuh tempo pembayaran Invoice adalah ${days} hari setelah hardcopy invoice diterima Customer.`
-                  })()}
-                </p>
-              )}
-              {po.waktu_pengiriman && po.tanggal && (
-                <p className="text-blue-700">
-                  • Waktu pengiriman {po.waktu_pengiriman} hari setelah PO terbit, maksimal pengiriman sampai {new Date(new Date(po.tanggal + 'T00:00:00').getTime() + po.waktu_pengiriman * 86400000).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.
-                </p>
-              )}
+              <p className="font-medium text-blue-800">Informasi TOP</p>
+              <p className="text-blue-700">
+                Jatuh tempo pembayaran Invoice adalah {(() => {
+                  const match = po.terms_of_payment!.match(/\d+/)
+                  return match ? Number(match[0]) : '—'
+                })()} hari setelah hardcopy invoice diterima Customer.
+              </p>
+            </div>
+          )}
+          {po.terms_of_payment === 'Cash' && (
+            <div className="mt-4 text-sm bg-blue-50 border border-blue-200 rounded-md px-4 py-3">
+              <p className="font-medium text-blue-800">Informasi TOP</p>
+              <p className="text-blue-700">Jatuh tempo pembayaran Invoice adalah Cash (lunas saat penerimaan invoice).</p>
             </div>
           )}
         </CardContent>

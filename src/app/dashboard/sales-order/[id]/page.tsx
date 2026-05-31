@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, FileText, ExternalLink, Loader2, ShoppingCart, ClipboardList, Truck, FileSearch, TrendingDown, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, FileText, ExternalLink, Loader2, ShoppingCart, ClipboardList, Truck, FileSearch, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const STATUS_MAP: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
@@ -193,6 +193,9 @@ export default function SalesOrderDetailPage() {
   const estimasiKirim = so.waktu_pengiriman
     ? new Date(new Date(so.tanggal as string).getTime() + (so.waktu_pengiriman as number) * 86400000)
     : null
+  const daysUntilDue = estimasiKirim
+    ? Math.ceil((estimasiKirim.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null
 
   const totalMargin = total - totalHargaBeli
   const marginPct = total > 0 ? (totalMargin / total) * 100 : 0
@@ -283,12 +286,27 @@ export default function SalesOrderDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tanggal</p>
-                <p className="font-medium">{new Date(so.tanggal as string).toLocaleDateString('id-ID')}</p>
+                <p className="font-medium">{new Date(so.tanggal as string).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
               </div>
               {estimasiKirim ? (
                 <div>
                   <p className="text-sm text-muted-foreground">Estimasi Kirim</p>
-                  <p className="font-medium">{estimasiKirim.toLocaleDateString('id-ID')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{estimasiKirim.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                    {daysUntilDue != null && daysUntilDue < 0 ? (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> Terlambat {-daysUntilDue} hari
+                      </Badge>
+                    ) : daysUntilDue != null && daysUntilDue <= 1 ? (
+                      <Badge variant="warning" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> H-{daysUntilDue}
+                      </Badge>
+                    ) : daysUntilDue != null && daysUntilDue > 1 ? (
+                      <Badge variant="success" className="flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> H-{daysUntilDue}
+                      </Badge>
+                    ) : null}
+                  </div>
                   <p className="text-xs text-muted-foreground">{so.waktu_pengiriman as string} hari setelah SO</p>
                 </div>
               ) : null}
@@ -324,10 +342,25 @@ export default function SalesOrderDetailPage() {
                 <p className="text-sm text-muted-foreground">Telepon PIC</p>
                 <p className="font-medium">{picCustomer?.no_hp as string ?? '-'}</p>
               </div>
-              {customerPo?.waktu_pengiriman ? (
+              {estimasiKirim ? (
                 <div>
-                  <p className="text-sm text-muted-foreground">Waktu Pengiriman (PO)</p>
-                  <p className="font-medium">{customerPo.waktu_pengiriman as string} hari</p>
+                  <p className="text-sm text-muted-foreground">Batas Kirim Barang sesuai (PO)</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium">{estimasiKirim.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                    {daysUntilDue != null && daysUntilDue < 0 ? (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> Terlambat {-daysUntilDue} hari
+                      </Badge>
+                    ) : daysUntilDue != null && daysUntilDue <= 1 ? (
+                      <Badge variant="warning" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> H-{daysUntilDue}
+                      </Badge>
+                    ) : daysUntilDue != null && daysUntilDue > 1 ? (
+                      <Badge variant="success" className="flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> H-{daysUntilDue}
+                      </Badge>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
             </div>
