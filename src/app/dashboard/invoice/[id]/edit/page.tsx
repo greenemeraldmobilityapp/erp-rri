@@ -15,6 +15,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import { DatePicker } from '@/components/ui/date-picker'
 import { toast } from 'sonner'
 
 interface InvoiceItem {
@@ -41,6 +42,7 @@ interface InvoiceData {
 }
 
 const schema = z.object({
+  tanggal: z.string().optional(),
   status: z.string().optional(),
   ppn_rate: z.coerce.number().optional(),
   pph_rate: z.coerce.number().optional(),
@@ -70,8 +72,14 @@ export default function EditInvoicePage() {
     apiFetch<InvoiceData>(`/api/v1/invoice/${params.id}`)
       .then((r) => {
         const d = r.data
+        const invTanggal = (() => {
+          const t = d.tanggal as unknown
+          if (t instanceof Date) return (t as Date).toISOString().split('T')[0]
+          return (t as string | undefined)?.split('T')[0] ?? ''
+        })()
         setInv(d)
         form.reset({
+          tanggal: invTanggal,
           status: d.status,
           ppn_rate: d.ppn_rate,
           pph_rate: d.pph_rate ?? undefined,
@@ -154,6 +162,9 @@ export default function EditInvoicePage() {
             <CardHeader><CardTitle className="text-base">Pengaturan</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="tanggal" render={({ field }) => (
+                  <FormItem><FormLabel>Tanggal</FormLabel><FormControl><DatePicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
+                )} />
                 <FormField control={form.control} name="top" render={({ field }) => (
                   <FormItem><FormLabel>TOP</FormLabel><FormControl><Input {...field} placeholder="e.g. 30 Hari" /></FormControl><FormMessage /></FormItem>
                 )} />

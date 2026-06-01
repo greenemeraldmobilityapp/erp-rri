@@ -216,7 +216,7 @@ export default function InvoiceDetailPage() {
         <div className="flex gap-2 items-center">
           <InvoicePdfActions invId={id!} nomor={inv.nomor} />
           <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
-          <Button variant="outline" asChild>
+          <Button className="bg-primary text-primary-foreground hover:opacity-95" asChild>
             <a href={`/dashboard/invoice/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />Edit
             </a>
@@ -263,33 +263,29 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
 
+      {inv && (() => {
+        const invDateRaw = (inv.tanggal as unknown) instanceof Date ? (inv.tanggal as unknown) as Date : new Date(inv.tanggal as string)
+        const jatuhTempoDate = new Date(invDateRaw)
+        jatuhTempoDate.setDate(jatuhTempoDate.getDate() + inv.top)
+        const isOverdue = new Date() > jatuhTempoDate
+        const isValidDate = !isNaN(jatuhTempoDate.getTime())
+        return (
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Informasi Invoice</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground">Customer</p>
                 <p className="font-medium">{inv.customer?.nama ?? "-"}</p>
                 <p className="text-xs text-muted-foreground">{inv.customer?.kode ?? ""}</p>
-                {inv.pic_nama && (
-                  <>
-                    <p className="text-sm text-muted-foreground mt-3">PIC Customer</p>
-                    <p className="font-medium">{inv.pic_nama}</p>
-                    {inv.pic_jabatan && <p className="text-xs text-muted-foreground">{inv.pic_jabatan}</p>}
-                  </>
-                )}
               </div>
+              {inv.pic_nama ? (
               <div>
-                <p className="text-sm text-muted-foreground">Sales Order</p>
-                <p className="font-medium">{inv.sales_order?.nomor ?? "-"}</p>
+                <p className="text-sm text-muted-foreground">PIC Customer</p>
+                <p className="font-medium">{inv.pic_nama}</p>
+                {inv.pic_jabatan && <p className="text-xs text-muted-foreground">{inv.pic_jabatan}</p>}
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tanggal</p>
-                <p className="font-medium">{new Date(inv.tanggal).toLocaleDateString("id-ID")}</p>
-              </div>
-              <div>
-                {/* empty cell */}
-              </div>
+              ) : <div />}
               <div>
                 <p className="text-sm text-muted-foreground">Kontrak Ref</p>
                 <p className="font-medium">{inv.kontrak_nomor ?? "-"}</p>
@@ -303,14 +299,36 @@ export default function InvoiceDetailPage() {
                 <p className="font-medium">{inv.sales_order?.di?.nomor ?? "-"}</p>
               </div>
               <div>
+                <p className="text-sm text-muted-foreground">Sales Order</p>
+                <p className="font-medium">{inv.sales_order?.nomor ?? "-"}</p>
+              </div>
+              <div>
                 <p className="text-sm text-muted-foreground">DO Ref</p>
                 <p className="font-medium">{inv.do_nomor ?? "-"}</p>
-                <p className="text-sm text-muted-foreground mt-3">TOP</p>
-                <p className="font-medium">{inv.top}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Tanggal</p>
+                <p className="font-medium">{new Date(inv.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">TOP</p>
+                <p className="font-medium">{inv.top} Hari</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Jatuh Tempo</p>
+                {isValidDate ? (
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${isOverdue ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"}`}>
+                    {jatuhTempoDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                ) : (
+                  <span className="mt-1 text-xs text-muted-foreground">-</span>
+                )}
               </div>
             </div>
         </CardContent>
       </Card>
+        )
+      })()}
 
       {kwitansiList.length > 0 && (
         <Card>
@@ -363,6 +381,12 @@ export default function InvoiceDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="flex justify-end gap-2 mb-4">
+        <Button className="bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]" onClick={() => setShowFpDialog(true)}>
+          <Receipt className="h-4 w-4 mr-2" />Buat Faktur Pajak
+        </Button>
+      </div>
 
       <Card>
         <CardContent className="pt-6">
@@ -433,7 +457,7 @@ export default function InvoiceDetailPage() {
                   <DatePicker value={payTanggal} onChange={setPayTanggal} />
                 </div>
                 <div className="flex items-end">
-                  <Button onClick={handleRecordPayment} disabled={recording} className="w-full">
+                  <Button onClick={handleRecordPayment} disabled={recording} className="w-full bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]">
                     {recording ? "Menyimpan..." : "Catat Pembayaran"}
                   </Button>
                 </div>
@@ -516,17 +540,6 @@ export default function InvoiceDetailPage() {
           />
         </CardContent>
       </Card>
-
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => setShowFpDialog(true)}>
-          <Receipt className="h-4 w-4 mr-2" />Buat Faktur Pajak
-        </Button>
-        <Button asChild>
-          <a href={`/dashboard/invoice/${id}/edit`}>
-            <Pencil className="h-4 w-4 mr-2" />Edit Invoice
-          </a>
-        </Button>
-      </div>
 
       {showFpDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowFpDialog(false)}>

@@ -60,11 +60,10 @@ export function InvoicePdfActions({ invId, nomor }: Props) {
     <div className="flex gap-2">
       <Button variant="outline" onClick={handlePreview} disabled={previewLoading}>
         {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
-        Preview PDF
+        Preview Invoice
       </Button>
-      <Button variant="outline" onClick={handleDownload} disabled={downloadLoading}>
-        {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-        Download PDF
+      <Button className="bg-primary text-primary-foreground hover:opacity-95" onClick={handleDownload} disabled={downloadLoading}>
+        {downloadLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
       </Button>
     </div>
   )

@@ -47,6 +47,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status
+  if (body.tanggal) upd.tanggal = new Date(body.tanggal + "T00:00:00.000Z")
   if (body.top) upd.top = body.top
   if (body.ppn_rate !== undefined) upd.ppn_rate = body.ppn_rate
   if (body.pph_rate !== undefined) upd.pph_rate = body.pph_rate
