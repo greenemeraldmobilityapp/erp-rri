@@ -97,11 +97,14 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
   // Toggle item in/out of active packing
   const toggleItem = (itemId: string, checked: boolean) => {
     setAssignments(prev => {
-      const currCount = packingCounts.get(activePacking) ?? 0
+      let currCount = 0
+      for (const [, pn] of prev) {
+        if (pn === activePacking) currCount++
+      }
       const next = new Map(prev)
       if (checked) {
-        if (currCount >= 10) {
-          toast.error('Maksimal 10 items per packing')
+        if (currCount >= 13) {
+          toast.error('Maksimal 13 items per packing')
           return prev
         }
         next.set(itemId, activePacking)
@@ -121,10 +124,8 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
   // Items with original index for fixed numbering
   const itemsWithIndex = items.map((item, idx) => ({ ...item, originalIndex: idx }))
 
-  // Unassigned items (not in any packing), filtered by search
-  const unassignedItems = itemsWithIndex.filter(i => {
-    const pn = assignments.get(i.id)
-    if (pn != null) return false
+  // All items filtered by search (no longer filtered by unassigned)
+  const filteredItems = itemsWithIndex.filter(i => {
     if (!search) return true
     const q = search.toLowerCase()
     return (
@@ -237,11 +238,11 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
                 >
                   Packing {pn}
                   <span className="ml-1.5 text-xs opacity-70">
-                    [{packingCounts.get(pn) ?? 0}/10]
+                    [{packingCounts.get(pn) ?? 0}/13]
                   </span>
                 </Button>
               ))}
-              <Button variant="ghost" size="sm" onClick={addPacking} disabled={unassignedItems.length === 0}>
+              <Button variant="ghost" size="sm" onClick={addPacking}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Packing baru
               </Button>
             </div>
@@ -252,14 +253,14 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
                 <h4 className="text-sm font-semibold">
                   Packing {activePacking}
                   <span className="ml-2 text-muted-foreground font-normal">
-                    ({activeCount}/10 items)
+                    ({activeCount}/13 items)
                   </span>
                 </h4>
               </div>
 
               {activePackingItems.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  Belum ada item. Centang item dari daftar &quot;Item Tersedia&quot; di bawah.
+                  Belum ada item. Centang item dari daftar &quot;Daftar Item&quot; di bawah.
                 </p>
               ) : (
                 <div className="border rounded-md">
@@ -296,46 +297,49 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
               )}
             </div>
 
-            {/* Unassigned items — available to add */}
-            {itemsWithIndex.filter(i => assignments.get(i.id) == null).length > 0 && (
-              <div className="space-y-2 mt-4">
-                <h4 className="text-sm font-semibold">
-                  Item Tersedia
-                </h4>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Cari berdasarkan kode atau nama barang..."
-                    className="pl-8 h-9 text-sm"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
-                <div className="border rounded-md max-h-48 overflow-y-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="text-left p-2 font-medium w-10"> </th>
-                        <th className="text-left p-2 font-medium w-16">No. Urut</th>
-                        <th className="text-left p-2 font-medium w-24">Kode Barang</th>
-                        <th className="text-left p-2 font-medium">Nama Barang</th>
-                        <th className="text-right p-2 font-medium w-20">Jumlah</th>
+            {/* All items — available to add to active packing */}
+            <div className="space-y-2 mt-4">
+              <h4 className="text-sm font-semibold">
+                Daftar Item
+              </h4>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari berdasarkan kode atau nama barang..."
+                  className="pl-8 h-9 text-sm"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="border rounded-md max-h-48 overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left p-2 font-medium w-10"> </th>
+                      <th className="text-left p-2 font-medium w-16">No. Urut</th>
+                      <th className="text-left p-2 font-medium w-24">Kode Barang</th>
+                      <th className="text-left p-2 font-medium">Nama Barang</th>
+                      <th className="text-right p-2 font-medium w-20">Jumlah</th>
+                      <th className="text-left p-2 font-medium w-20">Packing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-4 text-center text-sm text-muted-foreground">
+                          Tidak ada item yang cocok
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {unassignedItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="p-4 text-center text-sm text-muted-foreground">
-                            Tidak ada item yang cocok
-                          </td>
-                        </tr>
-                      ) : (
-                        unassignedItems.map((item) => (
+                    ) : (
+                      filteredItems.map((item) => {
+                        const currentPacking = assignments.get(item.id)
+                        const isInActive = currentPacking === activePacking
+                        return (
                           <tr key={item.id} className="border-b last:border-b-0 hover:bg-muted/30">
                             <td className="p-2 text-center">
                               <Checkbox
-                                checked={false}
-                                disabled={activeCount >= 10}
+                                checked={isInActive}
+                                disabled={!isInActive && activeCount >= 13}
                                 onCheckedChange={(checked) => toggleItem(item.id, checked === true)}
                               />
                             </td>
@@ -343,17 +347,20 @@ export function ResiPackingDialog({ doId, nomor, open, onOpenChange }: Props) {
                             <td className="p-2 font-mono text-xs">{item.barang?.kode ?? '-'}</td>
                             <td className="p-2 font-medium">{item.barang?.nama ?? '-'}</td>
                             <td className="p-2 text-right">{item.jumlah}</td>
+                            <td className="p-2 text-xs text-muted-foreground">
+                              {currentPacking != null ? `Packing ${currentPacking}` : '-'}
+                            </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {activeCount >= 10 && (
-                  <p className="text-xs text-destructive">Packing {activePacking} sudah penuh (maks 10 items). Buat packing baru.</p>
-                )}
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
+              {activeCount >= 13 && (
+                <p className="text-xs text-destructive">Packing {activePacking} sudah penuh (maks 13 items). Buat packing baru.</p>
+              )}
+            </div>
           </>
         )}
 

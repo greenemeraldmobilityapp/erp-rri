@@ -25,16 +25,16 @@ export async function PUT(_request: NextRequest, { params }: { params: Promise<{
 
   const { items } = parsed.data
 
-  // Validate: no packing_number exceeds 10 items
+  // Validate: no packing_number exceeds 13 items
   const countMap = new Map<number | null, number>()
   for (const item of items) {
     const key = item.packing_number
     countMap.set(key, (countMap.get(key) ?? 0) + 1)
   }
   for (const [pack, count] of countMap) {
-    if (pack != null && count > 10) {
+    if (pack != null && count > 13) {
       return NextResponse.json(
-        { error: `Packing ${pack} melebihi batas maksimal 10 items (saat ini ${count} items)` },
+        { error: `Packing ${pack} melebihi batas maksimal 13 items (saat ini ${count} items)` },
         { status: 400 }
       )
     }

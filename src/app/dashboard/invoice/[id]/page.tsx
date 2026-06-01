@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { DatePicker } from "@/components/ui/date-picker"
 import { ArrowLeft, FileText, Pencil, Download, Eye, FileSpreadsheet, Save, Wallet } from "lucide-react"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
 import { toast } from "sonner"
@@ -33,8 +36,15 @@ interface Invoice {
   ppn_rate: number
   pph_rate: number | null
   nomor_grn: string | null
-  sales_order: { nomor: string } | null
+  sales_order: {
+    nomor: string
+    di: { nomor: string; nomor_di_customer: string | null; kontrak_id: string | null } | null
+  } | null
   customer: { nama: string; kode: string } | null
+  kontrak_nomor: string | null
+  do_nomor: string | null
+  pic_nama: string | null
+  pic_jabatan: string | null
 }
 
 interface InvoiceItem {
@@ -169,9 +179,8 @@ export default function InvoiceDetailPage() {
   const isOverdue = inv.status === "overdue"
 
   const totalDpp = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
-  const totalPPN = items.reduce((s, i) => s + (i.ppn ?? 0), 0)
   const totalPPh = items.reduce((s, i) => s + (i.pph ?? 0), 0)
-  const grandTotal = totalDpp + totalPPN - totalPPh
+  const grandTotal = totalDpp - totalPPh
 
   return (
     <div className="space-y-6">
@@ -241,25 +250,49 @@ export default function InvoiceDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4">Informasi Invoice</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground">Customer</p>
-              <p className="font-medium">{inv.customer?.nama ?? "-"}</p>
-              <p className="text-xs text-muted-foreground">{inv.customer?.kode ?? ""}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-sm text-muted-foreground">Customer</p>
+                <p className="font-medium">{inv.customer?.nama ?? "-"}</p>
+                <p className="text-xs text-muted-foreground">{inv.customer?.kode ?? ""}</p>
+                {inv.pic_nama && (
+                  <>
+                    <p className="text-sm text-muted-foreground mt-3">PIC Customer</p>
+                    <p className="font-medium">{inv.pic_nama}</p>
+                    {inv.pic_jabatan && <p className="text-xs text-muted-foreground">{inv.pic_jabatan}</p>}
+                  </>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Sales Order</p>
+                <p className="font-medium">{inv.sales_order?.nomor ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Tanggal</p>
+                <p className="font-medium">{new Date(inv.tanggal).toLocaleDateString("id-ID")}</p>
+              </div>
+              <div>
+                {/* empty cell */}
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Kontrak Ref</p>
+                <p className="font-medium">{inv.kontrak_nomor ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">DI Cust. Ref</p>
+                <p className="font-medium">{inv.sales_order?.di?.nomor_di_customer ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">DI Ref</p>
+                <p className="font-medium">{inv.sales_order?.di?.nomor ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">DO Ref</p>
+                <p className="font-medium">{inv.do_nomor ?? "-"}</p>
+                <p className="text-sm text-muted-foreground mt-3">TOP</p>
+                <p className="font-medium">{inv.top}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Sales Order</p>
-              <p className="font-medium">{inv.sales_order?.nomor ?? "-"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tanggal</p>
-              <p className="font-medium">{new Date(inv.tanggal).toLocaleDateString("id-ID")}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">TOP</p>
-              <p className="font-medium">{inv.top}</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -346,9 +379,8 @@ export default function InvoiceDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="text-sm text-muted-foreground block mb-1">Jumlah</label>
-                  <input
+                  <Input
                     type="number"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="0"
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value)}
@@ -356,26 +388,22 @@ export default function InvoiceDetailPage() {
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground block mb-1">Metode</label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    value={payMetode}
-                    onChange={(e) => setPayMetode(e.target.value)}
-                  >
-                    <option value="transfer">Transfer Bank</option>
-                    <option value="cash">Cash</option>
-                    <option value="giro">Giro</option>
-                    <option value="cek">Cek</option>
-                    <option value="lainnya">Lainnya</option>
-                  </select>
+                  <Select value={payMetode} onValueChange={setPayMetode}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih metode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="transfer">Transfer Bank</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="giro">Giro</SelectItem>
+                      <SelectItem value="cek">Cek</SelectItem>
+                      <SelectItem value="lainnya">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground block mb-1">Tanggal</label>
-                  <input
-                    type="date"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={payTanggal}
-                    onChange={(e) => setPayTanggal(e.target.value)}
-                  />
+                  <DatePicker value={payTanggal} onChange={setPayTanggal} />
                 </div>
                 <div className="flex items-end">
                   <Button onClick={handleRecordPayment} disabled={recording} className="w-full">
@@ -401,7 +429,6 @@ export default function InvoiceDetailPage() {
                   <TableHead className="text-right">Jumlah</TableHead>
                   <TableHead className="text-right">Diskon</TableHead>
                   <TableHead className="text-right">DPP</TableHead>
-                  <TableHead className="text-right">PPN</TableHead>
                   {totalPPh > 0 && <TableHead className="text-right">PPh</TableHead>}
                   <TableHead className="text-right">Subtotal</TableHead>
                 </TableRow>
@@ -410,10 +437,9 @@ export default function InvoiceDetailPage() {
                 {items.map((item, i) => {
                   const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                   const diskon = item.diskon ?? 0
-                  const ppn = item.ppn ?? 0
                   const pph = item.pph ?? 0
                   const dpp = item.harga * item.jumlah - diskon
-                  const subtotal = dpp + ppn - pph
+                  const subtotal = dpp - pph
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
@@ -425,7 +451,6 @@ export default function InvoiceDetailPage() {
                       <TableCell className="text-right">{item.jumlah}</TableCell>
                       <TableCell className="text-right">{diskon > 0 ? diskon.toLocaleString("id-ID") : "-"}</TableCell>
                       <TableCell className="text-right">{dpp.toLocaleString("id-ID")}</TableCell>
-                      <TableCell className="text-right">{ppn > 0 ? ppn.toLocaleString("id-ID") : "-"}</TableCell>
                       {totalPPh > 0 && <TableCell className="text-right">{pph > 0 ? pph.toLocaleString("id-ID") : "-"}</TableCell>}
                       <TableCell className="text-right font-medium">{subtotal.toLocaleString("id-ID")}</TableCell>
                     </TableRow>
@@ -438,12 +463,6 @@ export default function InvoiceDetailPage() {
                 <span className="text-muted-foreground">DPP</span>
                 <span className="font-medium w-32 text-right">{totalDpp.toLocaleString("id-ID")}</span>
               </div>
-              {totalPPN > 0 && (
-                <div className="flex justify-end items-center gap-8">
-                  <span className="text-muted-foreground">PPN {(inv.ppn_rate * 100).toFixed(0)}%</span>
-                  <span className="font-medium w-32 text-right">{totalPPN.toLocaleString("id-ID")}</span>
-                </div>
-              )}
               {totalPPh > 0 && (
                 <div className="flex justify-end items-center gap-8">
                   <span className="text-muted-foreground">PPh {inv.pph_rate ? `(${(inv.pph_rate * 100).toFixed(0)}%)` : ""}</span>

@@ -7,11 +7,30 @@ import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama, kode)').eq('id', id).single()
+  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, kontrak_id)), customer!customer_id(nama, kode)').eq('id', id).single()
   if (error) return internalError(error)
   if (!inv) return notFound('Invoice tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id)
-  return NextResponse.json({ data: { ...inv, items: items ?? [] } })
+
+  let kontrak_nomor: string | null = null
+  if (inv.sales_order?.di?.kontrak_id) {
+    const { data: kontrak } = await supabaseAdmin.from('kontrak').select('nomor_kontrak').eq('id', inv.sales_order.di.kontrak_id).single()
+    if (kontrak) kontrak_nomor = kontrak.nomor_kontrak
+  }
+
+  let do_nomor: string | null = null
+  const { data: dos } = await supabaseAdmin.from('delivery_order').select('nomor').eq('sales_order_id', inv.sales_order_id)
+  if (dos && dos.length > 0) do_nomor = dos[0].nomor
+
+  let pic_nama: string | null = null
+  let pic_jabatan: string | null = null
+  const { data: pic } = await supabaseAdmin.from('customer_pic').select('nama, jabatan').eq('customer_id', inv.customer_id).eq('is_active', true).limit(1).maybeSingle()
+  if (pic) {
+    pic_nama = pic.nama
+    pic_jabatan = pic.jabatan
+  }
+
+  return NextResponse.json({ data: { ...inv, items: items ?? [], kontrak_nomor, do_nomor, pic_nama, pic_jabatan } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
