@@ -58,6 +58,7 @@ interface DOItem {
   satuan: string
   jumlah: number
   keterangan: string | null
+  urutan: number
 }
 
 interface CompanyData {
@@ -246,9 +247,8 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
         H(View, { style: styles.table },
           H(View, { style: styles.tableHeader }, ...tableHeaderRow),
           ...pageItems.map((item, i) => {
-            const itemNum = startIdx + i + 1
             return H(View, { key: i, style: styles.tableRow },
-              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(itemNum)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.urutan)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),

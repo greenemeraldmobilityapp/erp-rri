@@ -56,3 +56,43 @@ export async function generateInvoiceJournal(invoiceId: string) {
 
   return { success: true, jurnal }
 }
+
+export async function generatePaymentJournal(invoiceId: string, _paymentId: string, amount: number, tanggal: string) {
+  const { data: inv } = await supabaseAdmin
+    .from('invoice')
+    .select('*, customer!customer_id(nama)')
+    .eq('id', invoiceId)
+    .single()
+  if (!inv) return { success: false, error: 'Invoice not found' }
+
+  const { data: arAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1100').maybeSingle()
+  const { data: kasAkun } = await supabaseAdmin.from('coa').select('id').eq('kode', '1-1101').maybeSingle()
+
+  if (!arAkun) return { success: false, error: 'COA AR (1-1100) not configured' }
+  if (!kasAkun) return { success: false, error: 'COA Kas/Bank (1-1101) not configured. Buat akun dengan kode 1-1101' }
+
+  const now = new Date().toISOString()
+  const nomor = await generateDocumentNumber('JRN')
+
+  const { data: jurnal, error: jErr } = await supabaseAdmin.from('jurnal').insert({
+    nomor, tanggal, status: 'draft',
+    keterangan: `Pembayaran dari ${inv.customer?.nama ?? '-'} - ${inv.nomor}`,
+    created_at: now, updated_at: now,
+  }).select().single()
+  if (jErr) return { success: false, error: jErr.message }
+
+  const jurnalItems = [
+    { akun_id: kasAkun.id, debit: amount, credit: 0, keterangan: `Penerimaan Kas - ${inv.nomor}` },
+    { akun_id: arAkun.id, debit: 0, credit: amount, keterangan: `Pelunasan Piutang - ${inv.nomor}` },
+  ]
+
+  const { error: jiErr } = await supabaseAdmin.from('jurnal_item').insert(
+    jurnalItems.map(ji => ({ ...ji, jurnal_id: jurnal.id, created_at: now, updated_at: now }))
+  )
+  if (jiErr) {
+    await supabaseAdmin.from('jurnal').delete().eq('id', jurnal.id)
+    return { success: false, error: jiErr.message }
+  }
+
+  return { success: true, jurnal }
+}

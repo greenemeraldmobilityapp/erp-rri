@@ -9,7 +9,7 @@ import { DOScanPanel } from '@/components/do-scan-panel'
 import { DoDocuments } from '@/components/do-documents'
 import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
 import { DOKendaraanSelect } from '@/components/do-kendaraan-select'
-import { DOPdfDownload } from '@/components/do-pdf-download'
+import { DOHeaderActions } from '@/components/do-header-actions'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
@@ -38,7 +38,7 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild><Link href="/dashboard/delivery-order"><ArrowLeft className="h-5 w-5" /></Link></Button>
         <div className="flex-1"><h1 className="text-3xl font-heading font-bold">Detail DO</h1><p className="text-muted-foreground mt-1">{doDoc.nomor}</p></div>
-        <DOPdfDownload doId={id} nomor={doDoc.nomor} />
+        <DOHeaderActions doId={id} nomor={doDoc.nomor} />
       </div>
 
       <Card>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { ArrowLeft, FileText, Pencil, Download, Eye, FileSpreadsheet } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, Download, Eye, FileSpreadsheet, Save, Wallet } from "lucide-react"
 import { FileUpload, type DocumentFile } from "@/components/file-upload"
 import { toast } from "sonner"
 
@@ -32,6 +32,7 @@ interface Invoice {
   top: number
   ppn_rate: number
   pph_rate: number | null
+  nomor_grn: string | null
   sales_order: { nomor: string } | null
   customer: { nama: string; kode: string } | null
 }
@@ -57,17 +58,30 @@ export default function InvoiceDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [nomorGrn, setNomorGrn] = useState("")
+  const [kwitansiList, setKwitansiList] = useState<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>([])
+  const [savingGrn, setSavingGrn] = useState(false)
+  const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
+  const [payAmount, setPayAmount] = useState("")
+  const [payMetode, setPayMetode] = useState("transfer")
+  const [payTanggal, setPayTanggal] = useState("")
+  const [recording, setRecording] = useState(false)
 
   useEffect(() => {
     if (!id) return
     Promise.all([
-      apiFetch<Invoice>(`/api/v1/invoice/${id}`),
-      apiFetch<InvoiceItem[]>(`/api/v1/invoice/${id}/items`),
+      apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`),
       apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/documents`),
-    ]).then(([invRes, itemRes, docRes]) => {
-      setInv(invRes.data)
-      setItems(itemRes.data ?? [])
+      apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>(`/api/v1/kwitansi`),
+      apiFetch<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>(`/api/v1/invoice/${id}/payment`),
+    ]).then(([invRes, docRes, kwtRes, payRes]) => {
+      const invData = invRes.data
+      setInv(invData)
+      setItems(invData?.items ?? [])
       setDocuments(docRes.data ?? [])
+      setNomorGrn(invData?.nomor_grn ?? "")
+      setKwitansiList((kwtRes.data ?? []).filter((k: { invoice_id: string }) => k.invoice_id === id))
+      setPayments(payRes.data ?? [])
       setLoading(false)
     }).catch((err) => {
       setError(err.message)
@@ -100,6 +114,51 @@ export default function InvoiceDetailPage() {
       toast.success("File berhasil dihapus")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
+
+  const handleSaveNomorGrn = async () => {
+    if (!id) return
+    setSavingGrn(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ nomor_grn: nomorGrn || null }),
+      })
+      toast.success("Nomor GRN berhasil disimpan")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal simpan nomor GRN")
+    } finally {
+      setSavingGrn(false)
+    }
+  }
+
+  const handleRecordPayment = async () => {
+    if (!id) return
+    const amount = parseFloat(payAmount)
+    if (!amount || amount <= 0) { toast.error("Jumlah pembayaran harus lebih dari 0"); return }
+    if (!payMetode) { toast.error("Metode pembayaran harus diisi"); return }
+    setRecording(true)
+    try {
+      const r = await apiFetch<{ id: string }>(`/api/v1/invoice/${id}/payment`, {
+        method: "POST",
+        body: JSON.stringify({
+          amount,
+          metode: payMetode,
+          tanggal: payTanggal || undefined,
+        }),
+      })
+      setPayments((prev) => [r.data as { id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }, ...prev])
+      setPayAmount("")
+      setPayTanggal("")
+      toast.success("Pembayaran berhasil dicatat")
+      // Re-fetch invoice to update status
+      const invRes = await apiFetch<Invoice>(`/api/v1/invoice/${id}`)
+      if (invRes.data) setInv(invRes.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mencatat pembayaran")
+    } finally {
+      setRecording(false)
     }
   }
 
@@ -201,6 +260,131 @@ export default function InvoiceDetailPage() {
               <p className="font-medium">{inv.top}</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">GRN Customer</h3>
+          <div className="flex items-end gap-4">
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground block mb-1">Nomor GRN</label>
+              <input
+                type="text"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Input nomor GRN dari customer"
+                value={nomorGrn}
+                onChange={(e) => setNomorGrn(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleSaveNomorGrn} disabled={savingGrn}>
+              <Save className="h-4 w-4 mr-2" />{savingGrn ? "Menyimpan..." : "Simpan"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            File GRN customer bisa diupload via Lampiran di bawah.
+          </p>
+        </CardContent>
+      </Card>
+
+      {kwitansiList.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-2">Kwitansi</h3>
+            {kwitansiList.map((kwt) => (
+              <div key={kwt.id} className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <a href={`/dashboard/kwitansi/${kwt.id}`} className="text-primary hover:underline font-medium">
+                  {kwt.nomor}
+                </a>
+                <Badge variant="outline" className="text-xs">{kwt.status}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" />Pembayaran</h3>
+          {payments.length > 0 ? (
+            <div className="mb-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Metode</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                    <TableHead>Keterangan</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell>{new Date(p.tanggal).toLocaleDateString("id-ID")}</TableCell>
+                      <TableCell className="capitalize">{p.metode}</TableCell>
+                      <TableCell className="text-right font-medium">{p.amount.toLocaleString("id-ID")}</TableCell>
+                      <TableCell className="text-muted-foreground">{p.keterangan ?? "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="flex justify-end items-center gap-8 border-t mt-2 pt-2">
+                <span className="text-muted-foreground">Total Dibayar</span>
+                <span className="font-bold text-lg w-32 text-right text-green-600">
+                  {payments.reduce((s, p) => s + p.amount, 0).toLocaleString("id-ID")}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground mb-4">Belum ada pembayaran</p>
+          )}
+
+          {inv.status !== "paid" && (
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-semibold mb-3">Catat Pembayaran Baru</h4>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Jumlah</label>
+                  <input
+                    type="number"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="0"
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Metode</label>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={payMetode}
+                    onChange={(e) => setPayMetode(e.target.value)}
+                  >
+                    <option value="transfer">Transfer Bank</option>
+                    <option value="cash">Cash</option>
+                    <option value="giro">Giro</option>
+                    <option value="cek">Cek</option>
+                    <option value="lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">Tanggal</label>
+                  <input
+                    type="date"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={payTanggal}
+                    onChange={(e) => setPayTanggal(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={handleRecordPayment} disabled={recording} className="w-full">
+                    {recording ? "Menyimpan..." : "Catat Pembayaran"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

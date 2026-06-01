@@ -13,7 +13,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { data: sj, error } = await supabaseAdmin.from('delivery_order').select('*, sales_order!sales_order_id(nomor), kendaraan!kendaraan_id(nama, no_polisi)').eq('id', id).single()
   if (error) return internalError(error)
   if (!sj) return notFound('Delivery Order tidak ditemukan')
-  const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode)').eq('delivery_order_id', id)
+  const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode)').eq('delivery_order_id', id).order('urutan')
   return NextResponse.json({ data: { ...sj, items: items ?? [] } })
 }
 
@@ -42,6 +42,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status
+  if (body.tanggal) upd.tanggal = body.tanggal
   if (body.keterangan !== undefined) upd.keterangan = body.keterangan
   if (body.alasan_penolakan !== undefined) upd.alasan_penolakan = body.alasan_penolakan
   if (body.kendaraan_id !== undefined) upd.kendaraan_id = body.kendaraan_id || null
@@ -54,9 +55,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.items) {
     await supabaseAdmin.from('delivery_order_item').delete().eq('delivery_order_id', id)
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id: string; jumlah: number; keterangan?: string }) => ({
+    const items = body.items.map((item: { barang_id: string; jumlah: number; keterangan?: string }, idx: number) => ({
       delivery_order_id: id, barang_id: item.barang_id, jumlah: item.jumlah,
-      keterangan: item.keterangan ?? null, created_at: now, updated_at: now,
+      keterangan: item.keterangan ?? null, urutan: idx + 1, created_at: now, updated_at: now,
     }))
     const { error: itemsError } = await supabaseAdmin.from('delivery_order_item').insert(items)
     if (itemsError) return internalError(itemsError)
@@ -106,7 +107,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       // Auto-generate draft invoice
       const ppnRate = await getConfigNumber('ppn_rate', 0.11)
-      const nomor = await generateDocumentNumber('INV')
+      const nomorInv = await generateDocumentNumber('INV')
       const now = new Date().toISOString()
 
       const { data: soItems } = await supabaseAdmin
@@ -116,7 +117,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       if (soItems && soItems.length > 0 && customerId) {
         const { data: inv, error: invErr } = await supabaseAdmin.from('invoice').insert({
-          nomor,
+          nomor: nomorInv,
           sales_order_id: data.sales_order_id,
           customer_id: customerId,
           tanggal: now,
@@ -142,8 +143,31 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
               updated_at: now,
             }
           })
-          await supabaseAdmin.from('invoice_item').insert(invItems)
+          const { data: createdItems } = await supabaseAdmin.from('invoice_item').insert(invItems).select()
           await generateInvoiceJournal(inv.id)
+
+          // Auto-generate draft Kwitansi (barengan)
+          if (createdItems && createdItems.length > 0) {
+            const nomorKwt = await generateDocumentNumber('KWT')
+            const { data: kwt, error: kwtErr } = await supabaseAdmin.from('kwitansi').insert({
+              nomor: nomorKwt,
+              invoice_id: inv.id,
+              tanggal: now,
+              status: 'draft',
+              created_at: now,
+              updated_at: now,
+            }).select().single()
+            if (!kwtErr && kwt) {
+              const kwtItems = createdItems.map((ci: { id: string; jumlah: number }) => ({
+                kwitansi_id: kwt.id,
+                invoice_item_id: ci.id,
+                jumlah: ci.jumlah,
+                created_at: now,
+                updated_at: now,
+              }))
+              await supabaseAdmin.from('kwitansi_item').insert(kwtItems)
+            }
+          }
         }
       }
     }

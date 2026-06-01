@@ -27,12 +27,26 @@ const schema = z.object({
   items: z.array(itemSchema).min(1),
 })
 
+interface SoJoin { nomor: string; di?: { nomor: string; nomor_di_customer: string } | null; delivery_order?: { nomor: string }[] | null }
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor), customer!customer_id(nama)').order('created_at', { ascending: false })
+  const { data, error } = await supabaseAdmin.from('invoice')
+    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama)')
+    .order('created_at', { ascending: false })
   if (error) return internalError(error)
-  return NextResponse.json({ data: data ?? [] })
+  const enriched = (data ?? []).map((item: Record<string, unknown>) => {
+    const so = item.sales_order as SoJoin | null
+    const di = so?.di
+    const doArr = so?.delivery_order
+    return {
+      ...item,
+      di_ref: di?.nomor ?? null,
+      di_cust_ref: di?.nomor_di_customer ?? null,
+      do_ref: doArr?.[0]?.nomor ?? null,
+    }
+  })
+  return NextResponse.json({ data: enriched })
 }
 
 export async function POST(request: NextRequest) {

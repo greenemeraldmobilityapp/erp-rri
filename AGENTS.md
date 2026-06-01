@@ -5,6 +5,7 @@
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- **IMPORTANT**: Never run `lint` and `build` in parallel — run sequentially (lint first, then build) to avoid VPS RAM/CPU crash
 - Database migrations: Use Drizzle Kit directly (e.g., `npx drizzle-kit generate`)
 - Generate OpenAPI docs: `npx next-openapi-gen generate`
 

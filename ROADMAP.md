@@ -1,4 +1,4 @@
-# ROADMAP — Perbaikan Modul Quotation & Negosiasi
+# ROADMAP — Pengembangan ERP RRI
 
 ## 🔴 HIGH — Status Management & Quotation Fixes
 
@@ -172,6 +172,85 @@ DI diterbitkan (draft)
 | 7 | Update PRD.md — flow Quotation status + integrasi Negosiasi | ✅ Done | `PRD.md` |
 
 ---
+
+## 🟡 Invoice & Kwitansi Module — Post DO "Dikirim"
+
+### 🔴 Phase 1 — Auto-generate Kwitansi + GRN Input (Critical)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| 1 | **Migration** — add `nomor_grn` to `invoice` table | ✅ Done | `migrations/0016_add_nomor_grn_to_invoice.sql` |
+| 2 | **Schema update** — add `nomor_grn: text("nomor_grn")` to `invoice.ts` | ✅ Done | `src/lib/db/schema/invoice.ts` |
+| 3 | **Auto-generate Kwitansi** di DO PUT — saat DO → `dikirim`, generate Kwitansi barengan Invoice (reference ke Invoice ID) | ✅ Done | `src/app/api/v1/delivery-order/[id]/route.ts` |
+| 4 | **Invoice detail — GRN input** — form input `nomor_grn` + save button + upload file GRN via existing invoice document upload (`dokumen/invoice/{id}/`) | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
+| 5 | **Invoice detail — Kwitansi reference** — tampilkan nomor Kwitansi + link ke halaman Kwitansi | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
+
+### 🟢 Phase 2 — Payment & Jurnal Masuk (High)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| 6 | **Schema** — `invoice_payment` table (id, invoice_id, tanggal, amount, metode, keterangan) | ✅ Done | `src/lib/db/schema/invoice-payment.ts` + `migrations/0017_add_invoice_payment.sql` |
+| 7 | **API** — Payment recording `POST /api/v1/invoice/{id}/payment` → update invoice status partial/paid | ✅ Done | `src/app/api/v1/invoice/[id]/payment/route.ts` |
+| 8 | **Auto-jurnal payment** — saat payment tercatat, generate jurnal debit Cash/Bank, credit AR | ✅ Done | `src/lib/auto-jurnal.ts` |
+| 9 | **Invoice detail — Payment form** — UI: input amount, metode bayar, tanggal bayar | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
+| 10 | **Jurnal PDF component** — PDF template untuk jurnal umum | ✅ Done | `src/lib/pdf/jurnal.ts` + `src/app/api/v1/jurnal/[id]/pdf/route.ts` |
+
+### 🟢 Phase 3 — Enhancement (Medium)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| 11 | **AR Dashboard** — enhance AR aging dengan data payment & outstanding, filter by status | ✅ Done | `src/app/dashboard/laporan/ar-aging/page.tsx` |
+
+---
+
+## 🔵 Rencana Lanjutan — Post Invoice & Kwitansi
+
+### 🔴 High Priority — Faktur Pajak PDF + Auto-generate
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| FP-1 | **Faktur Pajak PDF route** — `GET /api/v1/faktur-pajak/[id]/pdf` | Pending | `src/app/api/v1/faktur-pajak/[id]/pdf/route.ts` + `src/lib/pdf/faktur-pajak.tsx` |
+| FP-2 | **Auto-generate dari Invoice** — tombol "Buat Faktur Pajak" di invoice detail yang auto-fill DPP/PPN/PPh dari invoice items | Pending | `src/app/dashboard/invoice/[id]/page.tsx` |
+| FP-3 | **Faktur Pajak detail page — PKP & NPWP** — ambil data company profile (bukan hardcoded "Radio Republik Indonesia"), tampilkan NPWP dari database | Pending | `src/app/dashboard/faktur-pajak/[id]/page.tsx` |
+
+### 🔴 High Priority — Kwitansi & Invoice Polish
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| K-1 | **Kwitansi detail page** — halaman `/dashboard/kwitansi/{id}` (sekarang cuma ada edit page) | ✅ Done | `src/app/dashboard/kwitansi/[id]/page.tsx` |
+| K-2 | **Invoice detail → link ke Kwitansi detail** (bukan edit) | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
+
+### ✅ Done — Resi Packing & Multi-Page PDF
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RP-1 | **Migration — add packing_number to delivery_order_item** | ✅ Done | `migrations/0019_add_packing_number_to_doi.sql` |
+| RP-2 | **Schema drizzle — packingNumber field** | ✅ Done | `delivery-order-item.ts` |
+| RP-3 | **API — PUT packing assignments** — validasi max 10 items/packing | ✅ Done | `api/v1/delivery-order/[id]/packing/route.ts` |
+| RP-4 | **PDF component — multi-page packing** — `packingGroups` input, per-group page, "packing i of n" | ✅ Done | `resi-pengiriman.ts` |
+| RP-5 | **Route handler — group items by packing_number** — backward compatible (all NULL = single group) | ✅ Done | `resi-pdf/route.ts` |
+| RP-6 | **Packing dialog** — dialog modal, packing tabs, checklist items, Simpan + Preview/Download Resi | ✅ Done | `resi-packing-dialog.tsx` |
+| RP-7 | **DO detail page** — ganti DOPdfDownload dengan DOHeaderActions (SJ buttons + button Resi Packing) | ✅ Done | `page.tsx`, `do-header-actions.tsx` |
+| RP-8 | **Packing dialog enhancement** — search by kode/nama di Item Tersedia, kolom No. Urut (fixed dari SJ) + Kode Barang, nomor urut tetap berdasarkan index original items | ✅ Done | `resi-packing-dialog.tsx` |
+| RP-9 | **urutan column — sinkron nomor item SJ & Resi PDF** — migration `0020` add `urutan integer` ke `delivery_order_item` + backfill. Semua insert handler assign `urutan`. SJ & Resi PDF sort by `urutan` | ✅ Done | `0020_add_urutan_to_doi.sql`, `delivery-order-item.ts`, `delivery-order/route.ts`, `[id]/route.ts`, `auto-sales.ts`, `pdf/route.ts`, `delivery-order.ts`, `resi-pdf/route.ts` |
+
+### 🟡 Medium Priority — Export & Precision
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| E-1 | **Export Excel UI buttons** — tombol "Export Excel" di semua halaman list (API `GET /api/v1/export` sudah ada) | Pending | `src/components/export-button.tsx` + pages |
+| E-2 | **Financial data type precision** — migrasi `real` → `numeric` untuk tabel keuangan (invoice, faktur_pajak, kwitansi, jurnal) | Pending | migrations |
+
+### 📧 Future — Email Delivery (dari ROADMAP existing)
+
+| # | Task | Status | Priority |
+|---|------|--------|----------|
+| EM-1 | Install `nodemailer` + types | Pending | Medium |
+| EM-2 | Buat utility `src/lib/utils/email.ts` — kirim email via Gmail SMTP | Pending | Medium |
+| EM-3 | Buat email template untuk Quotation (body + subject auto) | Pending | Medium |
+| EM-4 | Generate PDF Quotation + attach ke email saat Kirim | Pending | Medium |
+| EM-5 | Simpan log pengiriman ke tabel `email_log` | Pending | Low |
+| EM-6 | Tampilkan status email di halaman Quotation detail | Pending | Low |
 
 ## Catatan
 

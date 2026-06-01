@@ -158,11 +158,12 @@ export async function generateDOFromSO(salesOrderId: string) {
   }).select().single()
   if (sjError) return { success: false, error: sjError.message }
 
-  const doItems = items.map(i => ({
+  const doItems = items.map((i, idx) => ({
     delivery_order_id: sj.id,
     barang_id: i.barang_id,
     jumlah: i.jumlah,
     keterangan: i.keterangan ?? null,
+    urutan: idx + 1,
     created_at: now,
     updated_at: now,
   }))

@@ -12,7 +12,9 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function InvoicePage() {
-  const { data, error } = await supabase.from('invoice').select('*, sales_order!sales_order_id(nomor), customer!customer_id(nama)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('invoice')
+    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama)')
+    .order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -26,6 +28,9 @@ export default async function InvoicePage() {
         <TableHead>Nomor</TableHead>
         <TableHead>Customer</TableHead>
         <TableHead>SO Ref</TableHead>
+        <TableHead>DI Cust. Ref</TableHead>
+        <TableHead>DI Ref</TableHead>
+        <TableHead>DO Ref</TableHead>
         <TableHead>Tgl</TableHead>
         <TableHead>TOP</TableHead>
         <TableHead>Status</TableHead>
@@ -34,10 +39,13 @@ export default async function InvoicePage() {
         {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nomor}</TableCell>
-            <TableCell>{item.customer?.nama}</TableCell>
-            <TableCell className="text-muted-foreground">{item.sales_order?.nomor ?? '-'}</TableCell>
-            <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
-            <TableCell>{item.top}</TableCell>
+            <TableCell className="font-medium">{item.customer?.nama}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.di?.nomor_di_customer ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.di?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.sales_order?.delivery_order?.[0]?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
+            <TableCell className="font-medium">{item.top}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1">
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/invoice/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>

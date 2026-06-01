@@ -57,14 +57,14 @@ export function DOPdfDownload({ doId, nomor }: Props) {
   }
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" onClick={handlePreview} disabled={previewLoading}>
-        {previewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
-        Preview PDF
+    <div className="flex gap-1">
+      <Button variant="outline" size="sm" onClick={handlePreview} disabled={previewLoading}>
+        {previewLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+        SJ
       </Button>
-      <Button variant="default" onClick={handleDownload} disabled={downloadLoading}>
-        {downloadLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-        Download PDF
+      <Button variant="default" size="sm" onClick={handleDownload} disabled={downloadLoading}>
+        {downloadLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}
+        Download SJ
       </Button>
     </div>
   )

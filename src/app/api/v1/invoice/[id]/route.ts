@@ -7,7 +7,7 @@ import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor), customer!customer_id(nama)').eq('id', id).single()
+  const { data: inv, error } = await supabaseAdmin.from('invoice').select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer), delivery_order!fk_delivery_order_sales_order(nomor)), customer!customer_id(nama, kode)').eq('id', id).single()
   if (error) return internalError(error)
   if (!inv) return notFound('Invoice tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('invoice_item').select('*, barang!barang_id(nama, kode, satuan)').eq('invoice_id', id)
@@ -23,6 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const upd: Record<string, unknown> = {}
   if (body.status) upd.status = body.status
+  if (body.nomor_grn !== undefined) upd.nomor_grn = body.nomor_grn
   if (body.top) upd.top = body.top
   if (body.ppn_rate !== undefined) upd.ppn_rate = body.ppn_rate
   if (body.pph_rate !== undefined) upd.pph_rate = body.pph_rate

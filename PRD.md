@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 5.2
+**Versi:** 5.3
 **Status:** Draft
 **Tanggal:** 21 Mei 2026
 
@@ -442,8 +442,8 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
-| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + jurnal penjualan. |
-| **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice |
+| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + draft Kwitansi (barengan) + jurnal penjualan. |
+| **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice + draft Kwitansi |
 | **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
 
@@ -623,7 +623,7 @@ Quotation deal
   → Notifikasi ke Gudang & Procurement
 
 DO status "Dikirim"
-  → Auto-generate draft Invoice
+  → Auto-generate draft Invoice + draft Kwitansi (barengan)
   → Notifikasi ke Finance
 
 Invoice terbit
@@ -766,17 +766,23 @@ DELIVERY ORDER (DO) — Surat Jalan (nomor: RRI-SJ-YY-MM-0001)
   ↓
 Barang dikirim ke Customer
   ↓
-Customer beri GRN (tanda terima)
-  ↓
-DO status "Dikirim" → Auto-generate INVOICE
+DO status "Dikirim" → Auto-generate INVOICE + KWITANSI (barengan, draft)
   ↓
 INVOICE + KWITANSI (nomor: RRI-INV-YY-MM-0001, RRI-KWT-YY-MM-0001)
-Dokumen: DI, DO, GRN customer, Invoice, Kwitansi
+Dokumen kelengkapan Invoice diinput via halaman Invoice detail:
+- Nomor GRN dari customer (input manual)
+- File GRN customer (PDF upload via Invoice detail page)
 Termasuk PPN 11% dan PPh (jika berlaku)
   ↓
 Auto-buat JURNAL (debit AR, credit Revenue, credit PPN)
   ↓
-Finance: Tagih Customer (AR) — Auto-reminder jatuh tempo
+Finance: Tagih Customer (AR) sesuai TOP yang dipilih saat pembuatan Customer PO / DI
+  → Due date = tanggal Invoice + TOP (Net 14/30/60/90, Cash, Custom)
+  → Auto-reminder jatuh tempo
+  ↓
+Customer bayar
+  ↓
+Jurnal masuk (debit Cash/Bank, credit AR)
   ↓
 END
 ```
@@ -807,13 +813,23 @@ Cek stok → jika kurang → PROCUREMENT FLOW (sama seperti Jalur A)
   ↓
 Auto-generate DO → Kirim barang
   ↓
-Customer GRN → Auto-generate INVOICE
+DO status "Dikirim" → Auto-generate INVOICE + KWITANSI (barengan, draft)
   ↓
 INVOICE + KWITANSI
-Dokumen: PO Customer, DO, GRN customer, Invoice, Kwitansi
+Dokumen kelengkapan Invoice diinput via halaman Invoice detail:
+- Nomor GRN dari customer (input manual)
+- File GRN customer (PDF upload via Invoice detail page)
 Termasuk PPN 11% dan PPh (jika berlaku)
   ↓
-Auto-buat JURNAL (debit AR, credit Revenue, credit PPN) + Auto-reminder AR
+Auto-buat JURNAL (debit AR, credit Revenue, credit PPN)
+  ↓
+Finance: Tagih Customer (AR) sesuai TOP yang dipilih saat pembuatan Customer PO / DI
+  → Due date = tanggal Invoice + TOP (Net 14/30/60/90, Cash, Custom)
+  → Auto-reminder jatuh tempo
+  ↓
+Customer bayar
+  ↓
+Jurnal masuk (debit Cash/Bank, credit AR)
   ↓
 END
 ```

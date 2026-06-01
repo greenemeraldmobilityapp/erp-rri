@@ -3,7 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Plus, Pencil, Download } from 'lucide-react'
+import { Plus, Pencil, Download, Eye } from 'lucide-react'
 
 const s: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
   draft: { label: 'Draft', v: 'secondary' }, completed: { label: 'Selesai', v: 'success' },
@@ -34,6 +34,7 @@ export default async function KwitansiPage() {
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right space-x-1">
+              <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/kwitansi/${item.id}`}><Eye className="h-4 w-4" /></Link></Button>
               <Button variant="ghost" size="sm" asChild><a href={`/api/v1/kwitansi/${item.id}/pdf`} target="_blank"><Download className="h-4 w-4" /></a></Button>
               <Button variant="ghost" size="sm" asChild><Link href={`/dashboard/kwitansi/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button>
             </TableCell>

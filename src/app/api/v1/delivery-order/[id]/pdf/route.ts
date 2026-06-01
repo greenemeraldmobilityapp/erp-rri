@@ -66,11 +66,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  // Fetch items
+  // Fetch items, sorted by urutan
   const { data: items } = await supabaseAdmin
     .from('delivery_order_item')
     .select('*, barang!barang_id(nama, kode, satuan)')
     .eq('delivery_order_id', id)
+    .order('urutan')
   if (!items) return internalError('Gagal memuat item')
 
   const kendaraan = sj.kendaraan as { nama: string; no_polisi: string } | null
@@ -87,6 +88,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       satuan: (i.barang as { satuan: string })?.satuan ?? '',
       jumlah: i.jumlah,
       keterangan: i.keterangan ?? null,
+      urutan: (i as { urutan: number }).urutan,
     })),
     kendaraanNama: kendaraan?.nama ?? null,
     kendaraanNoPolisi: kendaraan?.no_polisi ?? null,
