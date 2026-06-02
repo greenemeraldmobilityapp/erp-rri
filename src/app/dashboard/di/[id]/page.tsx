@@ -35,6 +35,9 @@ interface Di {
     id: string
     jumlah: number
     harga_satuan: number
+    nama_barang?: string
+    kode_barang?: string
+    satuan?: string
     barang: { nama: string; kode: string; satuan: string } | null
   }>
 }
@@ -215,9 +218,9 @@ export default function DiDetailPage() {
               <TableBody>
                 {di.items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.barang?.nama}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.barang?.kode}</TableCell>
-                    <TableCell>{item.barang?.satuan}</TableCell>
+                    <TableCell className="font-medium">{item.nama_barang ?? item.barang?.nama}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kode_barang ?? item.barang?.kode}</TableCell>
+                    <TableCell>{item.satuan ?? item.barang?.satuan}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>
                     <TableCell className="text-right">{item.harga_satuan?.toLocaleString("id-ID")}</TableCell>
                     <TableCell className="text-right">{(item.jumlah * item.harga_satuan).toLocaleString("id-ID")}</TableCell>

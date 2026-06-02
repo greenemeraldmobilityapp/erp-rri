@@ -140,10 +140,10 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
                         <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{item.barang?.nama}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.barang?.kode}</TableCell>
+                    <TableCell className="font-medium">{item.nama_barang ?? item.barang?.nama}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kode_barang ?? item.barang?.kode}</TableCell>
                     <TableCell className="text-right">{item.jumlah}</TableCell>
-                    <TableCell>{item.barang?.satuan}</TableCell>
+                    <TableCell>{item.satuan ?? item.barang?.satuan}</TableCell>
                     <TableCell className="text-muted-foreground">{item.keterangan ?? '-'}</TableCell>
                   </TableRow>
                 ))}

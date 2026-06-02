@@ -42,7 +42,7 @@ interface KontrakOption {
 
 const GEMINI_PROMPT = `Extract delivery items from this contract PDF as a JSON array. Each item must have these exact fields:
 - "kode": string (item code from the contract, e.g. "CBL-001")
-- "nama": string (item name, e.g. "Kabel NYA 2.5mm")
+- "nama": string (item name exactly as written in DI, e.g. "CLT006_Brush_Paint Brush_in Pcs")
 - "satuan": string (item unit, e.g. "PCS", "METER", "ROLL")
 - "jumlah": number (quantity to deliver, e.g. 10)
 - "harga_satuan": number (unit price from the DI document, e.g. 15000)
@@ -249,7 +249,7 @@ export default function TambahDiPage() {
         key: `json-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         barang_id: match?.barang_id ?? '',
         kode_barang: String(item.kode),
-        nama_barang: match?.nama_barang ?? String(item.nama ?? '(unknown)'),
+        nama_barang: String(item.nama ?? match?.nama_barang ?? '(unknown)'),
         satuan: geminiSatuan,
         satuan_kontrak: match?.satuan ?? geminiSatuan,
         jumlah: Number(item.jumlah),
@@ -322,6 +322,9 @@ export default function TambahDiPage() {
           barang_id: i.barang_id,
           jumlah: i.jumlah,
           harga_satuan: i.harga_satuan,
+          nama_barang: i.nama_barang || undefined,
+          kode_barang: i.kode_barang || undefined,
+          satuan: i.satuan || undefined,
         })),
       }
       const res = await apiFetch<{ id: string }>('/api/v1/di', {
@@ -345,7 +348,7 @@ export default function TambahDiPage() {
 
     if (!confirmedRef.current) {
       const hargaDiffs = validItems.filter(i => i.harga_satuan_kontrak && i.harga_satuan !== i.harga_satuan_kontrak)
-      const satuanDiffsItems = validItems.filter(i => i.satuan_kontrak && i.satuan !== i.satuan_kontrak)
+      const satuanDiffsItems = validItems.filter(i => i.satuan_kontrak && i.satuan.toLowerCase() !== i.satuan_kontrak.toLowerCase())
       if (hargaDiffs.length > 0 || satuanDiffsItems.length > 0) {
         setPriceDiffs(hargaDiffs.map(i => ({ kode: i.kode_barang, nama: i.nama_barang, harga: i.harga_satuan, kontrak: i.harga_satuan_kontrak })))
         setSatuanDiffs(satuanDiffsItems.map(i => ({ kode: i.kode_barang, nama: i.nama_barang, satuan: i.satuan, kontrak: i.satuan_kontrak })))
@@ -600,14 +603,14 @@ export default function TambahDiPage() {
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             <Input type="text" value={item.satuan}
-                              className={item.satuan !== item.satuan_kontrak ? 'text-black dark:text-black border-amber-400 bg-amber-50' : ''}
+                              className={item.satuan.toLowerCase() !== item.satuan_kontrak.toLowerCase() ? 'text-black dark:text-black border-amber-400 bg-amber-50' : ''}
                               onChange={e => {
                                 const val = e.target.value
                                 setAddedItems(prev => prev.map(a =>
                                   a.key === item.key ? { ...a, satuan: val } : a
                                 ))
                               }} />
-                            {item.satuan !== item.satuan_kontrak && (
+                            {item.satuan.toLowerCase() !== item.satuan_kontrak.toLowerCase() && (
                               <span className="text-xs text-amber-600 flex items-center gap-1">
                                 <AlertTriangle className="h-3 w-3" />
                                 ≠ kontrak: {item.satuan_kontrak}

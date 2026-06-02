@@ -26,11 +26,11 @@ const styles = StyleSheet.create({
   labelText: { fontSize: 11, width: 80 },
   colonText: { fontSize: 11, width: 10 },
   valueText: { fontSize: 11 },
-  alamatSection: { marginBottom: 20 },
+  alamatSection: { marginBottom: 15 },
   alamatTitle: { fontSize: 11, marginBottom: 4 },
   alamatName: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
   alamatAddress: { fontSize: 11, maxWidth: 350, lineHeight: 1.3 },
-  bodyText: { fontSize: 11, marginBottom: 8, textAlign: 'justify' },
+  bodyText: { fontSize: 11, marginBottom: 5, textAlign: 'justify' },
   penutupText: { fontSize: 11, marginTop: 14, marginBottom: 4 },
   signatureSection: { marginTop: 16 },
   signatureTitle: { fontSize: 11, marginBottom: 2 },
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   footer: { position: 'absolute', bottom: 24, left: 50, right: 50, borderTopWidth: 1.5, borderTopColor: '#000', paddingTop: 6, alignItems: 'center' },
   footerText: { fontSize: 10 },
   pageNum: { position: 'absolute', bottom: 28, right: 50, fontSize: 10, color: '#0000FF' },
-  table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000', marginTop: 12 },
+  table: { width: '100%', borderStyle: 'solid', borderWidth: 1, borderColor: '#000', marginTop: 0 },
   tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableHeaderCell: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
@@ -83,6 +83,7 @@ interface InvoiceData {
   customerNama: string
   customerAlamat: string | null
   picNama: string | null
+  picJenisKelamin: string | null
   tanggal: string
   diCustomerRef: string | null
   grandTotal: number
@@ -128,8 +129,20 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     ? bidangUsaha.split('\n').map(s => s.trim()).filter(Boolean)
     : bidangUsaha.split(',').map(s => s.trim()).filter(Boolean)
 
-  const ROWS_PER_PAGE = 15
-  const totalPages = Math.ceil(data.items.length / ROWS_PER_PAGE) || 1
+  function getItemSlices(total: number): number[] {
+    const slices: number[] = []
+    let remaining = total
+    let pageIdx = 0
+    while (remaining > 0) {
+      const limit = pageIdx === 0 ? 16 : 24
+      slices.push(Math.min(limit, remaining))
+      remaining -= slices[slices.length - 1]
+      pageIdx++
+    }
+    return slices
+  }
+  const itemSlices = getItemSlices(data.items.length)
+  const totalPages = itemSlices.length || 1
 
   const v = (child: any, style: any) => H(View, { style: { justifyContent: 'center', ...style } }, child)
 
@@ -142,7 +155,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     H(Text, { style: [styles.tableHeaderCell, { width: 75, borderRightWidth: 0 }] }, 'Total'),
   ]
 
-  const headerSection = H(View, { style: { marginBottom: 18 } },
+  const headerSection = H(View, { style: { marginBottom: 15 } },
     H(View, { style: styles.header },
       c.company_logo_url
         ? H(Image, { src: c.company_logo_url, style: { width: 80, height: 80, marginTop: -5 } })
@@ -161,7 +174,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     H(View, { style: { borderBottomWidth: 0.5, borderBottomColor: '#000' } }),
   )
 
-  const docInfoSection = H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 } },
+  const docInfoSection = H(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 } },
     H(View, null,
       H(View, { style: styles.labelValueRow },
         H(Text, { style: styles.labelText }, 'No'),
@@ -188,7 +201,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
   const alamatSection = H(View, { style: styles.alamatSection },
     H(Text, { style: styles.alamatTitle }, 'Kepada Yth.'),
     H(Text, { style: styles.alamatName }, data.customerNama),
-    data.picNama ? H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + data.picNama) : null,
+    data.picNama ? H(Text, { style: { fontSize: 11, marginBottom: 2 } }, 'u.p. ' + (data.picJenisKelamin === 'L' ? 'Bapak' : 'Ibu') + ' ' + data.picNama) : null,
     data.customerAlamat ? H(View, { style: styles.alamatAddress },
       H(Text, null, data.customerAlamat)
     ) : null,
@@ -238,8 +251,9 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
 
   return H(Document, null,
     ...Array.from({ length: totalPages }, (_, pageIdx) => {
-      const startIdx = pageIdx * ROWS_PER_PAGE
-      const pageItems = data.items.slice(startIdx, startIdx + ROWS_PER_PAGE)
+      const pageItemCount = itemSlices[pageIdx]
+      const startIdx = itemSlices.slice(0, pageIdx).reduce((a, b) => a + b, 0)
+      const pageItems = data.items.slice(startIdx, startIdx + pageItemCount)
       const pageNumber = pageIdx + 1
       const isLastPage = pageIdx === totalPages - 1
 

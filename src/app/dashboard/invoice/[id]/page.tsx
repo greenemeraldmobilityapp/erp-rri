@@ -51,11 +51,15 @@ interface Invoice {
 
 interface InvoiceItem {
   id: string
+  invoice_id: string
+  barang_id: string
   harga: number
   jumlah: number
-  diskon: number | null
-  ppn: number | null
+  diskon: number
   pph: number | null
+  nama_barang: string | null
+  kode_barang: string | null
+  satuan: string | null
   barang: { nama: string; kode: string; satuan: string } | null
   created_at: string
 }
@@ -264,11 +268,16 @@ export default function InvoiceDetailPage() {
       </Card>
 
       {inv && (() => {
-        const invDateRaw = (inv.tanggal as unknown) instanceof Date ? (inv.tanggal as unknown) as Date : new Date(inv.tanggal as string)
-        const jatuhTempoDate = new Date(invDateRaw)
-        jatuhTempoDate.setDate(jatuhTempoDate.getDate() + inv.top)
-        const isOverdue = new Date() > jatuhTempoDate
-        const isValidDate = !isNaN(jatuhTempoDate.getTime())
+        const invDate = (() => { try { return new Date(inv.tanggal) } catch { return null } })()
+        const topDays = (() => { const m = String(inv.top ?? '').match(/\d+/); return m ? Number(m[0]) : NaN })()
+        const jatuhTempoDate = (() => {
+          if (!invDate || isNaN(invDate.getTime()) || isNaN(topDays)) return null
+          const d = new Date(invDate)
+          d.setDate(d.getDate() + topDays)
+          return isNaN(d.getTime()) ? null : d
+        })()
+        const isValidDate = jatuhTempoDate !== null && !isNaN(jatuhTempoDate.getTime())
+        const isOverdue = isValidDate ? new Date() > jatuhTempoDate : false
         return (
       <Card>
         <CardContent className="pt-6">
@@ -308,14 +317,14 @@ export default function InvoiceDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tanggal</p>
-                <p className="font-medium">{new Date(inv.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                <p className="font-medium">{invDate ? invDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">TOP</p>
-                <p className="font-medium">{inv.top} Hari</p>
+                <p className="font-medium">{isNaN(topDays) ? inv.top : `${topDays} Hari`}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Jatuh Tempo</p>
+                <p className="text-sm text-muted-foreground">Jatuh Tempo Pembayaran Invoice</p>
                 {isValidDate ? (
                   <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${isOverdue ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"}`}>
                     {jatuhTempoDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
@@ -485,7 +494,7 @@ export default function InvoiceDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item, i) => {
+                  {items.map((item, i) => {
                   const brg = item.barang as { nama: string; kode: string; satuan: string } | null
                   const diskon = item.diskon ?? 0
                   const pph = item.pph ?? 0
@@ -495,8 +504,8 @@ export default function InvoiceDetailPage() {
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell>
-                        <div className="text-sm font-medium">{brg?.nama ?? "-"}</div>
-                        <div className="text-xs text-muted-foreground">{brg?.kode} — {brg?.satuan}</div>
+                        <div className="text-sm font-medium">{item.nama_barang ?? brg?.nama ?? "-"}</div>
+                        <div className="text-xs text-muted-foreground">{item.kode_barang ?? brg?.kode} — {item.satuan ?? brg?.satuan}</div>
                       </TableCell>
                       <TableCell className="text-right">{item.harga.toLocaleString("id-ID")}</TableCell>
                       <TableCell className="text-right">{item.jumlah}</TableCell>

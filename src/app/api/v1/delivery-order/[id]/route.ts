@@ -115,7 +115,7 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
 
       const { data: soItems } = await supabaseAdmin
         .from('sales_order_item')
-        .select('barang_id, jumlah, harga_satuan')
+        .select('barang_id, jumlah, harga_satuan, nama_barang, kode_barang, satuan')
         .eq('sales_order_id', data.sales_order_id)
 
       if (soItems && soItems.length > 0 && customerId) {
@@ -133,13 +133,16 @@ const ppnRate = await getConfigNumber('ppn_rate', 0.11)
         }).select().single()
 
         if (!invErr && inv) {
-          const invItems = soItems.map((item: { barang_id: string; jumlah: number; harga_satuan: number }) => {
+          const invItems = soItems.map((item: { barang_id: string; jumlah: number; harga_satuan: number; nama_barang?: string; kode_barang?: string; satuan?: string }) => {
             const subtotal = item.harga_satuan * item.jumlah
             return {
               invoice_id: inv.id,
               barang_id: item.barang_id,
               harga: item.harga_satuan,
               jumlah: item.jumlah,
+              nama_barang: item.nama_barang ?? null,
+              kode_barang: item.kode_barang ?? null,
+              satuan: item.satuan ?? null,
               diskon: 0,
               ppn: subtotal * ppnRate,
               keterangan: null,

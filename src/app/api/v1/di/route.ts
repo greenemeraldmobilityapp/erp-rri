@@ -9,6 +9,9 @@ const itemSchema = z.object({
   barang_id: z.string().min(1),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().min(0),
+  nama_barang: z.string().optional(),
+  kode_barang: z.string().optional(),
+  satuan: z.string().optional(),
   keterangan: z.string().optional(),
 })
 
@@ -62,6 +65,9 @@ export async function POST(request: NextRequest) {
   const items = parsed.data.items.map(item => ({
     di_id: di.id, barang_id: item.barang_id, jumlah: item.jumlah,
     harga_satuan: item.harga_satuan,
+    nama_barang: item.nama_barang ?? null,
+    kode_barang: item.kode_barang ?? null,
+    satuan: item.satuan ?? null,
     keterangan: item.keterangan ?? null, created_at: now, updated_at: now,
   }))
   const { error: itemsError } = await supabaseAdmin.from('di_item').insert(items)

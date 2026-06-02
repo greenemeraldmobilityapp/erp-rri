@@ -12,14 +12,15 @@ const COMPANY_KEYS = [
   'company_bank_name', 'company_rekening_nama', 'company_rekening_nomor',
 ] as const
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await verifyAuth(_request)
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAuth(request)
   if (auth.error) return auth.error
   const { id } = await params
+  const itemsCountParam = request.nextUrl.searchParams.get('itemsCount')
 
   const { data: inv, error } = await supabaseAdmin
     .from('invoice')
-    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer)), customer!customer_id(nama, alamat)')
+    .select('*, sales_order!sales_order_id(nomor, di!fk_sales_order_di(nomor, nomor_di_customer, customer_pic(nama, jabatan, jenis_kelamin))), customer!customer_id(nama, alamat)')
     .eq('id', id)
     .single()
   if (error) return internalError(error)
@@ -36,16 +37,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  let picNama: string | null = null
-  const { data: pic } = await supabaseAdmin
-    .from('customer_pic')
-    .select('nama')
-    .eq('customer_id', inv.customer_id)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle()
-  if (pic) picNama = pic.nama
-
   const { data: items } = await supabaseAdmin
     .from('invoice_item')
     .select('*, barang!barang_id(nama, kode, satuan)')
@@ -53,23 +44,34 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     .order('urutan')
   if (!items) return internalError('Gagal memuat item')
 
-  const grandTotal = items.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+  const displayItems = (() => {
+    if (!itemsCountParam) return items
+    const n = parseInt(itemsCountParam, 10)
+    if (isNaN(n) || n < 1) return items
+    return items.slice(0, n)
+  })()
 
-  const so = inv.sales_order as { nomor: string; di: { nomor: string; nomor_di_customer: string | null } | null } | null
+  const grandTotal = displayItems.reduce((s, i) => s + (i.harga * i.jumlah - (i.diskon ?? 0)), 0)
+
+  const so = inv.sales_order as { nomor: string; di: { nomor: string; nomor_di_customer: string | null; customer_pic: { nama: string; jabatan: string; jenis_kelamin: string | null } | null } | null } | null
   const customer = inv.customer as { nama: string; alamat: string } | null
+
+  const picNama = so?.di?.customer_pic?.nama ?? null
+  const picJenisKelamin = so?.di?.customer_pic?.jenis_kelamin ?? null
 
   const pdfData = {
     nomor: inv.nomor,
     customerNama: customer?.nama ?? '-',
     customerAlamat: customer?.alamat ?? null,
     picNama,
+    picJenisKelamin,
     tanggal: 'Jepara, ' + new Date(inv.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     diCustomerRef: so?.di?.nomor_di_customer ?? null,
     grandTotal,
-    items: items.map(i => ({
-      nama: (i.barang as { nama: string })?.nama ?? '-',
-      kode: (i.barang as { kode: string })?.kode ?? '-',
-      satuan: (i.barang as { satuan: string })?.satuan ?? '',
+    items: displayItems.map(i => ({
+      nama: (i as { nama_barang: string }).nama_barang ?? (i.barang as { nama: string })?.nama ?? '-',
+      kode: (i as { kode_barang: string }).kode_barang ?? (i.barang as { kode: string })?.kode ?? '-',
+      satuan: (i as { satuan: string }).satuan ?? (i.barang as { satuan: string })?.satuan ?? '',
       jumlah: i.jumlah,
       hargaSatuan: i.harga,
       diskon: i.diskon ?? 0,

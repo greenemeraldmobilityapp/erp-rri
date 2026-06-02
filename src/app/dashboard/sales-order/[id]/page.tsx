@@ -389,10 +389,10 @@ export default function SalesOrderDetailPage() {
                           <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{barang.nama as string}</TableCell>
-                      <TableCell className="text-muted-foreground">{barang.kode as string}</TableCell>
+                      <TableCell className="font-medium">{(item.nama_barang as string) ?? (barang.nama as string)}</TableCell>
+                      <TableCell className="text-muted-foreground">{(item.kode_barang as string) ?? (barang.kode as string)}</TableCell>
                       <TableCell className="text-right">{item.jumlah as number}</TableCell>
-                      <TableCell>{barang.satuan as string}</TableCell>
+                      <TableCell>{(item.satuan as string) ?? (barang.satuan as string)}</TableCell>
                       <TableCell className="text-right">{hargaJual?.toLocaleString('id-ID')}</TableCell>
                       <TableCell className="text-right">
                         {hargaBeli > 0 ? hargaBeli.toLocaleString('id-ID') : '-'}

@@ -138,10 +138,9 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
 
   const tableHeaderRow = [
     v(H(Text, { style: styles.tableHeaderCell }, 'No'), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
-    v(H(Text, { style: styles.tableHeaderCell }, 'Code'), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-    v(H(Text, { style: styles.tableHeaderCell }, 'Item Description'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'Description'), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
     v(H(Text, { style: styles.tableHeaderCell }, 'Unit'), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-    v(H(Text, { style: styles.tableHeaderCell }, 'Qty'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+    v(H(Text, { style: styles.tableHeaderCell }, 'QTY'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
     v(H(Text, { style: styles.tableHeaderCell }, 'Keterangan'), { width: 100, padding: 4, ...ROW_BORDER }),
   ]
 
@@ -173,7 +172,7 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           H(Text, { style: styles.valueText }, data.nomor)
         ),
         H(View, { style: styles.labelValueRow },
-          H(Text, { style: styles.labelText }, 'No. Ref.'),
+          H(Text, { style: styles.labelText }, data.sourcePath === 'customer_po' ? 'No. PO Ref.' : data.sourcePath === 'di' ? 'No. DI Ref.' : 'No. Ref.'),
           H(Text, { style: styles.colonText }, ':'),
           H(Text, { style: styles.valueText }, data.ref || '-')
         ),
@@ -249,7 +248,6 @@ export function DeliveryOrderPDF({ data }: { data: DOData }): ReactElement {
           ...pageItems.map((item, i) => {
             return H(View, { key: i, style: styles.tableRow },
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.urutan)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000', ...COL_BORDER }),
-              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.kode), { width: 90, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan), { width: 50, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),

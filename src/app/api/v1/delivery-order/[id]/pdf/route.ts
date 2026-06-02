@@ -38,32 +38,37 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  // Resolve customer name and reference number
+  // Resolve customer name
   let customerNama = '-'
   let ref: string | null = null
 
   if (so?.customer_po_id) {
     const { data: po } = await supabaseAdmin
       .from('customer_po')
-      .select('customer!customer_id(nama), nomor_po_customer')
+      .select('customer!customer_id(nama)')
       .eq('id', so.customer_po_id)
       .single()
-    const poData = po as { customer: { nama: string } | null; nomor_po_customer: string | null } | null
-    if (poData) {
-      customerNama = poData.customer?.nama ?? '-'
-      ref = poData.nomor_po_customer
-    }
+    const poData = po as { customer: { nama: string } | null } | null
+    if (poData?.customer) customerNama = poData.customer.nama
   } else if (so?.di_id) {
     const { data: diRow } = await supabaseAdmin
       .from('di')
-      .select('customer!customer_id(nama), nomor')
+      .select('customer!customer_id(nama)')
       .eq('id', so.di_id)
       .single()
-    const diData = diRow as { customer: { nama: string } | null; nomor: string } | null
-    if (diData) {
-      customerNama = diData.customer?.nama ?? '-'
-      ref = diData.nomor
-    }
+    const diData = diRow as { customer: { nama: string } | null } | null
+    if (diData?.customer) customerNama = diData.customer.nama
+  }
+
+  // Ref uses DI's nomor_di_customer (customer-facing reference)
+  if (so?.di_id) {
+    const { data: diRef } = await supabaseAdmin
+      .from('di')
+      .select('nomor_di_customer')
+      .eq('id', so.di_id)
+      .single()
+    const refData = diRef as { nomor_di_customer: string | null } | null
+    if (refData) ref = refData.nomor_di_customer
   }
 
   // Fetch items, sorted by urutan
@@ -83,9 +88,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     tanggal: sj.tanggal,
     keterangan: sj.keterangan ?? null,
     items: items.map(i => ({
-      nama: (i.barang as { nama: string })?.nama ?? '-',
-      kode: (i.barang as { kode: string })?.kode ?? '-',
-      satuan: (i.barang as { satuan: string })?.satuan ?? '',
+      nama: (i as { nama_barang: string }).nama_barang ?? (i.barang as { nama: string })?.nama ?? '-',
+      kode: (i as { kode_barang: string }).kode_barang ?? (i.barang as { kode: string })?.kode ?? '-',
+      satuan: (i as { satuan: string }).satuan ?? (i.barang as { satuan: string })?.satuan ?? '',
       jumlah: i.jumlah,
       keterangan: i.keterangan ?? null,
       urutan: (i as { urutan: number }).urutan,
