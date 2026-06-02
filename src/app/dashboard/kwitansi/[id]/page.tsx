@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Pencil, Download, FileText, Loader2 } from 'lucide-react'
+import { ArrowLeft, Pencil, FileText, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { KwitansiPdfActions } from "@/components/kwitansi-pdf-actions"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
@@ -16,25 +18,35 @@ const statusMap: Record<string, { label: string; variant: 'secondary' | 'success
   completed: { label: 'Selesai', variant: 'success' },
 }
 
+interface KwitansiItem {
+  id: string
+  invoice_item_id: string
+  jumlah: number
+  invoice_item: {
+    barang_id: string
+    harga_satuan: number
+    harga: number
+    barang: { nama: string; kode: string; satuan: string } | null
+  } | null
+}
+
+interface KwitansiData {
+  id: string
+  nomor: string
+  invoice: { nomor: string } | null
+  tanggal: string
+  status: string
+  keterangan: string | null
+  items: KwitansiItem[]
+}
+
 export default function KwitansiDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState('')
-  const [data, setData] = useState<{
-    id: string
-    nomor: string
-    invoice: { nomor: string } | null
-    tanggal: string
-    status: string
-    keterangan: string | null
-    items: Array<{
-      id: string
-      invoice_item_id: string
-      jumlah: number
-      invoice_item: { barang_id: string; harga_satuan: number }
-    }>
-  } | null>(null)
+  const [data, setData] = useState<KwitansiData | null>(null)
   const [loading, setLoading] = useState(true)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
 
   useEffect(() => {
     params.then(p => setId(p.id))
@@ -42,7 +54,7 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     if (!id) return
-    apiFetch<typeof data>(`/api/v1/kwitansi/${id}`)
+    apiFetch<KwitansiData>(`/api/v1/kwitansi/${id}`)
       .then(r => { setData(r.data); setLoading(false) })
       .catch(() => setLoading(false))
 
@@ -79,6 +91,24 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
+  const handleComplete = async () => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/kwitansi/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      toast.success('Kwitansi diselesaikan!')
+      const r = await apiFetch<KwitansiData>(`/api/v1/kwitansi/${id}`)
+      if (r.data) setData(r.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mr-2" />Memuat...</div>
   }
@@ -97,6 +127,11 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
 
   const totalItems = data.items.reduce((sum, i) => sum + i.jumlah, 0)
 
+  const getBarangInfo = (item: KwitansiItem) => {
+    if (!item.invoice_item?.barang) return { nama: '-', kode: '', satuan: '' }
+    return { nama: item.invoice_item.barang.nama, kode: item.invoice_item.barang.kode, satuan: item.invoice_item.barang.satuan }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -113,12 +148,48 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <a href={`/api/v1/kwitansi/${id}/pdf`} target="_blank"><Download className="h-4 w-4 mr-2" />PDF</a>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/dashboard/kwitansi/${id}/edit`}><Pencil className="h-4 w-4 mr-2" />Edit</Link>
-          </Button>
+          {data.status === 'draft' && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={statusLoading} className="bg-[#22C55E] text-white hover:bg-[#16A34A] dark:bg-[#15803D] dark:hover:bg-[#166534]">
+                  {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                  Selesaikan
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    Konfirmasi Selesaikan Kwitansi
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Apakah Anda yakin ingin menyelesaikan kwitansi <span className="font-medium text-foreground">{data.nomor}</span>?
+                    Setelah diselesaikan, status tidak dapat dikembalikan ke draft.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={statusLoading}>Batal</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleComplete()
+                    }}
+                    className="bg-[#22C55E] text-white hover:bg-[#16A34A]"
+                    disabled={statusLoading}
+                  >
+                    {statusLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Ya, Selesaikan
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <KwitansiPdfActions kwtId={id} nomor={data.nomor} />
+          {data.status === 'draft' && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/dashboard/kwitansi/${id}/edit`}><Pencil className="h-4 w-4 mr-2" />Edit</Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -151,23 +222,30 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>
-                  <TableHead>Invoice Item ID</TableHead>
+                  <TableHead>Barang</TableHead>
+                  <TableHead>Kode</TableHead>
+                  <TableHead className="text-right">Harga Satuan</TableHead>
                   <TableHead className="text-right">Jumlah (Rp)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.items.map((item, i) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{item.invoice_item?.barang_id ?? item.invoice_item_id}</TableCell>
-                    <TableCell className="text-right font-medium">{item.jumlah.toLocaleString('id-ID')}</TableCell>
-                  </TableRow>
-                ))}
+                {data.items.map((item, i) => {
+                  const { nama, kode } = getBarangInfo(item)
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="font-medium">{nama}</TableCell>
+                      <TableCell className="text-muted-foreground">{kode}</TableCell>
+                      <TableCell className="text-right">{item.invoice_item?.harga ? item.invoice_item.harga.toLocaleString('id-ID') : '-'}</TableCell>
+                      <TableCell className="text-right font-medium">{item.jumlah.toLocaleString('id-ID')}</TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
             <div className="flex justify-end mt-4 pt-4 border-t">
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Total Item</p>
+                <p className="text-sm text-muted-foreground">Total</p>
                 <p className="text-lg font-bold">{totalItems.toLocaleString('id-ID')}</p>
               </div>
             </div>

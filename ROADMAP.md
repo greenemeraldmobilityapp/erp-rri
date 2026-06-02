@@ -220,6 +220,34 @@ DI diterbitkan (draft)
 | K-1 | **Kwitansi detail page** — halaman `/dashboard/kwitansi/{id}` (sekarang cuma ada edit page) | ✅ Done | `src/app/dashboard/kwitansi/[id]/page.tsx` |
 | K-2 | **Invoice detail → link ke Kwitansi detail** (bukan edit) | ✅ Done | `src/app/dashboard/invoice/[id]/page.tsx` |
 
+---
+
+## 🟡 Kwitansi Module — Gaps & Perbaikan (berdasarkan audit)
+
+### 🔴 High Priority — Critical Bugs
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| KW-1 | **Document upload broken** — detail page panggil `/api/v1/kwitansi/{id}/documents` tapi tidak ada API route. Buat schema `kwitansi_document` + drizzle export + API route (GET/POST/DELETE) + migration | ✅ Done | `kwitansi-document.ts`, `index.ts`, `documents/route.ts` |
+| KW-2 | **Create page unusable** — input `invoice_item_id` masih UUID manual, tidak auto-load items saat pilih invoice. Ganti dengan checkbox pilih item dari invoice + auto-fill jumlah | ✅ Done | `kwitansi/tambah/page.tsx` |
+| KW-3 | **Detail page — item display raw UUID** — kolom menampilkan `barang_id` (UUID) bukan nama barang. Tampilkan nama barang, kode, harga satuan | ✅ Done | `kwitansi/[id]/page.tsx`, `api/v1/kwitansi/[id]/route.ts` |
+
+### 🟡 Medium Priority — UX & Workflow
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| KW-4 | **Status quick-actions** — Tambah "Selesaikan" button di detail page (draft → completed), tanpa perlu edit page | ✅ Done | `kwitansi/[id]/page.tsx` |
+| KW-5 | **Filter kwitansi by invoice_id server-side** — ganti fetch all + client filter di invoice detail page | ✅ Done | `api/v1/kwitansi/route.ts`, `invoice/[id]/page.tsx` |
+| KW-6 | **Confirmation dialog** — konfirmasi sebelum ubah status ke completed | ✅ Done | `kwitansi/[id]/page.tsx` |
+| KW-7 | **PDF — redesign sesuai format contoh** — desain klasik dengan border biru ganda, bilingual labels, terbilang, signature block, ref DI/PO, tinggi setengah A4 | ✅ Done | `lib/pdf/kwitansi.tsx`, `lib/utils/terbilang.ts`, `api/v1/kwitansi/[id]/pdf/route.ts` |
+
+### ✅ Done
+
+| # | Task | Status |
+|---|------|--------|
+| K-1 | Kwitansi detail page | ✅ Done |
+| K-2 | Invoice → link ke Kwitansi | ✅ Done |
+
 ### ✅ Done — Invoice PDF Finalization
 
 | # | Task | Status | File |

@@ -20,7 +20,12 @@ const schema = z.object({
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor)').order('created_at', { ascending: false })
+  const { searchParams } = new URL(request.url)
+  const invoiceId = searchParams.get('invoice_id')
+  let query = supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor)')
+  if (invoiceId) query = query.eq('invoice_id', invoiceId)
+  query = query.order('created_at', { ascending: false })
+  const { data, error } = await query
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }

@@ -1,0 +1,265 @@
+import type { ReactElement } from 'react'
+import { Font, StyleSheet } from '@react-pdf/renderer'
+
+Font.register({
+  family: 'Arial',
+  fonts: [
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial@1.0.4/Arial.ttf', fontWeight: 'normal', fontStyle: 'normal' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-bold@1.0.4/Arial%20Bold.ttf', fontWeight: 'bold', fontStyle: 'normal' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-italic@1.0.4/Arial%20Italic.ttf', fontWeight: 'normal', fontStyle: 'italic' },
+    { src: 'https://cdn.jsdelivr.net/npm/@canvas-fonts/arial-bold-italic@1.0.4/Arial%20Bold%20Italic.ttf', fontWeight: 'bold', fontStyle: 'italic' },
+  ],
+})
+
+Font.registerHyphenationCallback((word) => [word])
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createEl(type: any, props?: any, ...children: any[]): ReactElement {
+  return {
+    $$typeof: Symbol.for('react.element'),
+    type,
+    key: null,
+    ref: null,
+    props: { ...props, children: children.length ? children : undefined },
+    _owner: null,
+  } as unknown as ReactElement
+}
+
+const BLUE = '#0000FF'
+
+const styles = StyleSheet.create({
+  page: {
+    padding: '20mm',
+    fontFamily: 'Arial',
+    fontSize: 10,
+  },
+  outerBorder: {
+    borderWidth: 3,
+    borderColor: BLUE,
+    padding: 3,
+    height: '50%',
+  },
+  innerBorder: {
+    borderWidth: 1,
+    borderColor: BLUE,
+    padding: '6mm 6mm 8mm',
+    flex: 1,
+    flexDirection: 'column',
+  },
+  titleSection: {
+    textAlign: 'center',
+    marginBottom: 24,
+    marginTop: 6,
+  },
+  titleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textDecoration: 'underline',
+    marginBottom: 2,
+    letterSpacing: 2,
+  },
+  titleNomor: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  formTable: {
+    marginBottom: 4,
+  },
+  formRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  formLabel: {
+    width: '25%',
+  },
+  formLabelText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginBottom: 3,
+  },
+  formLabelSub: {
+    fontSize: 8,
+    color: '#4B5563',
+    fontStyle: 'italic',
+  },
+  formColon: {
+    width: '3%',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 10,
+  },
+  formValue: {
+    flex: 1,
+    borderBottom: '2px dotted #374151',
+    paddingBottom: 4,
+    paddingLeft: 6,
+    paddingRight: 6,
+  },
+  formValueText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  terbilangBox: {
+    backgroundColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: '#9CA3AF',
+    padding: '4pt 10pt',
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    fontSize: 10,
+    color: '#000',
+  },
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginTop: 'auto',
+    paddingTop: 24,
+  },
+  amountBlueBox: {
+    backgroundColor: BLUE,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 2,
+  },
+  amountBlueText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    letterSpacing: 1,
+  },
+  signatureBlock: {
+    textAlign: 'center',
+    width: '40%',
+  },
+  signatureDate: {
+    fontSize: 9,
+    marginBottom: 4,
+  },
+  signatureCompany: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  signatureSpace: {
+    height: 48,
+  },
+  signatureName: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    textDecoration: 'underline',
+  },
+  signatureTitle: {
+    fontSize: 9,
+    marginTop: 2,
+  },
+})
+
+interface KwitansiPDFData {
+  nomor: string
+  customerNama: string
+  tanggal: string
+  terbilangStr: string
+  total: number
+  keterangan: string | null
+  invoiceNomor: string
+  refType: 'DI' | 'PO' | null
+  refNomor: string | null
+  companyNama: string
+  penandatanganNama: string
+  penandatanganJabatan: string
+}
+
+function FormRow(label: string, labelSub: string | undefined, valueEl: ReactElement | null): ReactElement {
+  return createEl(
+    'VIEW',
+    { style: styles.formRow },
+    createEl(
+      'VIEW',
+      { style: styles.formLabel },
+      label ? createEl('TEXT', { style: styles.formLabelText }, label) : null,
+      labelSub ? createEl('TEXT', { style: styles.formLabelSub }, labelSub) : null,
+    ),
+    label ? createEl('TEXT', { style: styles.formColon }, ':') : null,
+    createEl(
+      'VIEW',
+      { style: styles.formValue },
+      valueEl,
+    ),
+  )
+}
+
+function formatRp(n: number): string {
+  return `Rp. ${n.toLocaleString('id-ID')},-`
+}
+
+export function KwitansiPDF({ data }: { data: KwitansiPDFData }): ReactElement {
+  const showRef = data.refType && data.refNomor
+  return createEl(
+    'DOCUMENT',
+    null,
+    createEl(
+      'PAGE',
+      { size: 'A4', style: styles.page },
+      createEl(
+        'VIEW',
+        { style: styles.outerBorder },
+        createEl(
+          'VIEW',
+          { style: styles.innerBorder },
+          createEl(
+            'VIEW',
+            { style: styles.titleSection },
+            createEl('TEXT', { style: styles.titleText }, 'KWITANSI / RECEIPT'),
+            createEl('TEXT', { style: styles.titleNomor }, `Nomor: ${data.nomor}`),
+          ),
+          createEl(
+            'VIEW',
+            { style: styles.formTable },
+            FormRow('Telah terima dari', 'Received from',
+              createEl('TEXT', { style: styles.formValueText }, data.customerNama),
+            ),
+            FormRow('Sejumlah uang', 'Amount received',
+              createEl(
+                'VIEW',
+                { style: styles.terbilangBox },
+                createEl('TEXT', null, `# ${data.terbilangStr} #`),
+              ),
+            ),
+            FormRow('Untuk pembayaran', 'In payment of',
+              createEl('TEXT', { style: styles.formValueText }, data.keterangan || '-'),
+            ),
+            showRef ? FormRow('', undefined,
+              createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
+                `No. Ref. ${data.refType} : ${data.refNomor}`
+              ),
+            ) : null,
+            FormRow('', undefined,
+              createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
+                `No. Invoice : ${data.invoiceNomor}`
+              ),
+            ),
+          ),
+          createEl(
+            'VIEW',
+            { style: styles.bottomSection },
+            createEl(
+              'VIEW',
+              { style: styles.amountBlueBox },
+              createEl('TEXT', { style: styles.amountBlueText }, formatRp(data.total)),
+            ),
+            createEl(
+              'VIEW',
+              { style: styles.signatureBlock },
+              createEl('TEXT', { style: styles.signatureDate }, data.tanggal),
+              createEl('TEXT', { style: styles.signatureCompany }, data.companyNama),
+              createEl('VIEW', { style: styles.signatureSpace }),
+              createEl('TEXT', { style: styles.signatureName }, data.penandatanganNama),
+              createEl('TEXT', { style: styles.signatureTitle }, data.penandatanganJabatan),
+            ),
+          ),
+        ),
+      ),
+    ),
+  )
+}

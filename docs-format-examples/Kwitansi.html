@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kwitansi A4 - PT. Rizqi Ridho Ilahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Arial secara global */
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background-color: #d1d5db; /* gray-300 */
+        }
+        
+        /* Pengaturan ukuran kertas A4 untuk tampilan cetak/PDF */
+        @page { size: A4; margin: 0; }
+        
+        /* Kontainer untuk halaman A4 PENUH */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20mm auto;
+            background-color: white;
+            padding: 20mm; /* Padding standar */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hilangkan bayangan dan margin saat dicetak */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .a4-page { margin: 0; box-shadow: none; border: none; }
+        }
+
+        /* Styling Form Kwitansi */
+        .garis-isian {
+            border-bottom: 2px dotted #374151; /* gray-700 */
+            padding-left: 8px;
+            padding-right: 8px;
+            padding-bottom: 4px;
+        }
+        
+        table.tabel-form {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 16px; /* Jarak antar baris form */
+        }
+
+        /* Styling Warna Border Kustom (#0000FF) */
+        .border-blue-custom {
+            border-color: #0000FF !important;
+        }
+        
+        /* Styling Background Biru Kustom (#0000FF) */
+        .bg-blue-custom {
+            background-color: #0000FF !important;
+            color: white; /* Teks putih agar terlihat jelas */
+        }
+    </style>
+</head>
+<body class="py-8 text-gray-900 leading-relaxed">
+
+    <div class="a4-page">
+
+        <!-- KOTAK KWITANSI (Bingkai Ganda #0000FF) -->
+        <!-- Flex-grow ditambahkan agar kotak kwitansi mengisi ruang A4 -->
+        <div class="p-1 border-[3px] border-blue-custom relative flex-grow flex flex-col">
+            <div class="border-[1px] border-blue-custom p-8 pb-10 flex-grow flex flex-col">
+
+                <!-- Judul & Nomor (Dibuat Center / Rata Tengah) -->
+                <div class="text-center mb-16 mt-4">
+                    <h2 class="text-2xl font-bold tracking-widest underline decoration-2 underline-offset-4 mb-1">KWITANSI / RECEIPT</h2>
+                    <p class="text-base font-bold">No. RRI-KWT-26-044</p>
+                </div>
+
+                <!-- Tabel Isian Kwitansi -->
+                <table class="tabel-form text-[15px]">
+                    <tbody>
+                        <!-- Baris 1: Telah terima dari -->
+                        <tr>
+                            <td class="align-top w-[25%]">
+                                <span class="font-bold text-base">Telah terima dari</span><br>
+                                <span class="italic text-gray-600 text-xs">Received from</span>
+                            </td>
+                            <td class="align-top w-[3%] text-center font-bold text-base">:</td>
+                            <td class="align-bottom garis-isian font-bold text-lg">
+                                PT. Bhumi Jepara Service
+                            </td>
+                        </tr>
+                        
+                        <!-- Baris 2: Sejumlah Uang -->
+                        <tr>
+                            <td class="align-top">
+                                <span class="font-bold text-base">Sejumlah uang</span><br>
+                                <span class="italic text-gray-600 text-xs">Amount received</span>
+                            </td>
+                            <td class="align-top text-center font-bold text-base">:</td>
+                            <td class="align-bottom garis-isian">
+                                <!-- Teks terbilang dibuat rata kiri (text-left) -->
+                                <div class="bg-gray-200 italic font-bold text-base px-4 py-2 inline-block w-full text-left border border-gray-400 text-black">
+                                    # Enam Juta Enam Ratus Delapan Puluh Sembilan Ribu Rupiah #
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Baris 3: Untuk Pembayaran -->
+                        <tr>
+                            <td class="align-top">
+                                <span class="font-bold text-base">Untuk pembayaran</span><br>
+                                <span class="italic text-gray-600 text-xs">In payment of</span>
+                            </td>
+                            <td class="align-top text-center font-bold text-base">:</td>
+                            <td class="align-bottom garis-isian text-base font-semibold">
+                                Pembelian Barang
+                            </td>
+                        </tr>
+                        
+                        <!-- Baris 4: Lanjutan Untuk Pembayaran (Nomor DI) -->
+                        <tr>
+                            <td class="align-top"></td>
+                            <td class="align-top"></td>
+                            <td class="align-bottom garis-isian text-base font-semibold">
+                                DI Number : C-BJS-25-0004-HRGA-25
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Bagian Bawah: Nominal & Tanda Tangan -->
+                <!-- mt-auto digunakan agar bagian ini selalu menempel di bagian bawah kotak -->
+                <div class="flex justify-between items-end mt-auto pt-16">
+                    
+                    <!-- Box Nominal Angka (Background Biru Kustom #0000FF) -->
+                    <div class="bg-blue-custom border-[2px] border-blue-custom px-8 py-4 shadow-md rounded-sm">
+                        <span class="text-2xl font-bold tracking-wide">Rp. 6.689.000,-</span>
+                    </div>
+
+                    <!-- Blok Tanda Tangan -->
+                    <div class="text-center w-[40%]">
+                        <!-- Tanggal (Dipindah ke sini sesuai permintaan revisi) -->
+                        <p class="mb-2 text-[15px]">Jepara, 2 Juni 2026</p>
+
+                        <!-- Nama Perusahaan BOLD -->
+                        <p class="font-bold text-[15px]">PT. RIZQI RIDHO ILAHI</p>
+                        
+                        <!-- Ruang Tanda Tangan -->
+                        <div class="h-28"></div>
+                        
+                        <!-- Nama Direktur BOLD + UNDERLINE -->
+                        <p class="font-bold underline text-[15px]">Mohamad Marzuqi</p>
+                        
+                        <!-- Jabatan -->
+                        <p class="text-[15px] mt-1">Direktur</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

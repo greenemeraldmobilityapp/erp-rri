@@ -10,7 +10,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Receipt, Loader2 } from "lucide-react"
+import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Receipt, Loader2, Send } from "lucide-react"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
@@ -85,20 +85,21 @@ export default function InvoiceDetailPage() {
   const [nomorFaktur, setNomorFaktur] = useState("")
   const [fpCreating, setFpCreating] = useState(false)
   const [recording, setRecording] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
     Promise.all([
       apiFetch<Invoice & { items: InvoiceItem[] }>(`/api/v1/invoice/${id}`),
       apiFetch<DocumentFile[]>(`/api/v1/invoice/${id}/documents`),
-      apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>(`/api/v1/kwitansi`),
+      apiFetch<Array<{ id: string; nomor: string; invoice_id: string; status: string }>>(`/api/v1/kwitansi?invoice_id=${id}`),
       apiFetch<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>(`/api/v1/invoice/${id}/payment`),
     ]).then(([invRes, docRes, kwtRes, payRes]) => {
       const invData = invRes.data
       setInv(invData)
       setItems(invData?.items ?? [])
       setDocuments(docRes.data ?? [])
-      setKwitansiList((kwtRes.data ?? []).filter((k: { invoice_id: string }) => k.invoice_id === id))
+      setKwitansiList(kwtRes.data ?? [])
       setPayments(payRes.data ?? [])
       setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
       setLoading(false)
@@ -181,6 +182,24 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  const handleSendInvoice = async () => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'sent' }),
+      })
+      toast.success('Invoice berhasil dikirim!')
+      const invRes = await apiFetch<Invoice>(`/api/v1/invoice/${id}`)
+      if (invRes.data) setInv(invRes.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengirim invoice')
+    } finally {
+      setStatusLoading(false)
+    }
+  }
+
   const handleBuatFakturPajak = async () => {
     if (!nomorFaktur.trim()) { toast.error('Nomor Faktur Pajak wajib diisi'); return }
     setFpCreating(true)
@@ -220,6 +239,12 @@ export default function InvoiceDetailPage() {
         <div className="flex gap-2 items-center">
                   <InvoicePdfActions invId={id!} nomor={inv.nomor} totalItems={items.length} />
           <TandaTerimaPdfActions invId={id!} nomor={inv.nomor} />
+          {inv.status === 'draft' && (
+            <Button onClick={handleSendInvoice} disabled={statusLoading}>
+              {statusLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              Kirim Invoice
+            </Button>
+          )}
           <Button className="bg-primary text-primary-foreground hover:opacity-95" asChild>
             <a href={`/dashboard/invoice/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />Edit
