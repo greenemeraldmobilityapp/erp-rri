@@ -29,7 +29,7 @@ const BLUE = '#0000FF'
 
 const styles = StyleSheet.create({
   page: {
-    padding: '40 50',
+    padding: 40,
     fontFamily: 'Arial',
     fontSize: 10,
     flexDirection: 'column',
@@ -72,11 +72,11 @@ const styles = StyleSheet.create({
   contentWrap: {
     flex: 1,
     flexDirection: 'column',
-    padding: '6mm 6mm 8mm',
+    padding: '6mm 0 8mm',
   },
   titleSection: {
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
     marginTop: 2,
   },
   titleText: {
