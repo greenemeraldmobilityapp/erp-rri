@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
+import { FormSkeleton } from '@/components/ui/skeleton'
 
 interface InvoiceItemData {
   id: string
@@ -26,7 +27,7 @@ const schema = z.object({ invoice_id: z.string().min(1), tanggal: z.string().min
 type FV = z.input<typeof schema>
 
 export default function TambahKwitansiPage() {
-  const router = useRouter(); const [invOpts, setInvOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter(); const [invOpts, setInvOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false); const [formLoading, setFormLoading] = useState(true)
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItemData[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [loadingItems, setLoadingItems] = useState(false)
@@ -34,11 +35,14 @@ export default function TambahKwitansiPage() {
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [] } })
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'items' })
   const selectedInvoiceId = form.watch('invoice_id')
+  const watchedItems = form.watch('items')
+  const totalPembayaran = watchedItems.reduce((sum, item) => sum + Number(item.jumlah || 0), 0)
 
   useEffect(() => {
-    apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/invoice').then((inv) => {
-      setInvOpts((inv.data ?? []).map(x => ({ value: x.id, label: x.nomor })))
-    }).catch(() => toast.error('Gagal memuat invoice'))
+    apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/invoice')
+      .then((inv) => { setInvOpts((inv.data ?? []).map(x => ({ value: x.id, label: x.nomor }))) })
+      .catch(() => toast.error('Gagal memuat invoice'))
+      .finally(() => setFormLoading(false))
   }, [])
 
   useEffect(() => {
@@ -77,6 +81,13 @@ export default function TambahKwitansiPage() {
     setSubmitting(true); try { await apiFetch('/api/v1/kwitansi', { method: 'POST', body: JSON.stringify(data) }); toast.success('Kwitansi berhasil!'); router.push('/dashboard/kwitansi') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
+
+  if (formLoading) return (
+    <div className="max-w-3xl space-y-6">
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/kwitansi"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Kwitansi</h1></div></div>
+      <FormSkeleton />
+    </div>
+  )
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -156,6 +167,12 @@ export default function TambahKwitansiPage() {
                     </div>
                   )
                 })}
+                <div className="flex justify-end pt-4 border-t">
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Total Pembayaran</p>
+                    <p className="text-xl font-bold">Rp {totalPembayaran.toLocaleString('id-ID')}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}

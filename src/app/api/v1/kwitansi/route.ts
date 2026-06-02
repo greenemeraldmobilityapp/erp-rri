@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error
   const { searchParams } = new URL(request.url)
   const invoiceId = searchParams.get('invoice_id')
-  let query = supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor)')
+  let query = supabaseAdmin.from('kwitansi').select('*, invoice!invoice_id(nomor, customer!customer_id(nama, kode))')
   if (invoiceId) query = query.eq('invoice_id', invoiceId)
   query = query.order('created_at', { ascending: false })
   const { data, error } = await query

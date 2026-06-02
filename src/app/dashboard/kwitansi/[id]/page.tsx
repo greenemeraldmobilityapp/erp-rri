@@ -33,7 +33,7 @@ interface KwitansiItem {
 interface KwitansiData {
   id: string
   nomor: string
-  invoice: { nomor: string } | null
+  invoice: { nomor: string; customer: { nama: string; kode: string } | null } | null
   tanggal: string
   status: string
   keterangan: string | null
@@ -44,6 +44,7 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
   const [id, setId] = useState('')
   const [data, setData] = useState<KwitansiData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
@@ -55,8 +56,8 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     if (!id) return
     apiFetch<KwitansiData>(`/api/v1/kwitansi/${id}`)
-      .then(r => { setData(r.data); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then(r => { setData(r.data); setLoading(false); setError(null) })
+      .catch((err) => { setError(err instanceof Error ? err.message : 'Gagal memuat data'); setLoading(false) })
 
     apiFetch<DocumentFile[]>(`/api/v1/kwitansi/${id}/documents`)
       .then((res) => setDocuments(res.data ?? []))
@@ -120,7 +121,20 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
           <Button variant="ghost" size="icon" asChild><Link href="/dashboard/kwitansi"><ArrowLeft className="h-5 w-5" /></Link></Button>
           <div><h1 className="text-3xl font-heading font-bold">Kwitansi</h1></div>
         </div>
-        <Card><CardContent className="py-12 text-center text-muted-foreground">Kwitansi tidak ditemukan.</CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center">
+            {error ? (
+              <div className="space-y-2">
+                <p className="text-destructive font-medium">{error}</p>
+                <Button variant="outline" size="sm" onClick={() => { setLoading(true); setError(null); apiFetch<KwitansiData>(`/api/v1/kwitansi/${id}`).then(r => { setData(r.data); setLoading(false) }).catch((err) => { setError(err instanceof Error ? err.message : 'Gagal memuat data'); setLoading(false) }) }}>
+                  Coba Lagi
+                </Button>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">Kwitansi tidak ditemukan.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -201,8 +215,21 @@ export default function KwitansiDetailPage({ params }: { params: Promise<{ id: s
               <p className="font-medium">{data.invoice?.nomor ?? '-'}</p>
             </div>
             <div>
+              <p className="text-sm text-muted-foreground">Customer</p>
+              <p className="font-medium">{data.invoice?.customer?.nama ?? '-'}</p>
+              {data.invoice?.customer?.kode && (
+                <p className="text-xs text-muted-foreground">{data.invoice.customer.kode}</p>
+              )}
+            </div>
+            <div>
               <p className="text-sm text-muted-foreground">Tanggal</p>
               <p className="font-medium">{new Date(data.tanggal).toLocaleDateString('id-ID')}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <Badge variant={statusMap[data.status]?.variant ?? 'outline'}>
+                {statusMap[data.status]?.label ?? data.status}
+              </Badge>
             </div>
             {data.keterangan && (
               <div className="col-span-2">

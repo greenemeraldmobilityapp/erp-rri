@@ -241,28 +241,28 @@ DI diterbitkan (draft)
 | KW-6 | **Confirmation dialog** — konfirmasi sebelum ubah status ke completed | ✅ Done | `kwitansi/[id]/page.tsx` |
 | KW-7 | **PDF — redesign sesuai format contoh** — desain klasik dengan border biru ganda, bilingual labels, terbilang, signature block, ref DI/PO, tinggi setengah A4 | ✅ Done | `lib/pdf/kwitansi.tsx`, `lib/utils/terbilang.ts`, `api/v1/kwitansi/[id]/pdf/route.ts` |
 
-### 🔴 High Priority — Kwitansi Page Polish (from audit vs Invoice)
+### ✅ Done — Kwitansi Page Polish (from audit vs Invoice)
 
 | # | Task | Status | File |
 |---|------|--------|------|
-| K-8 | **Tampilkan customer info di list & detail** — join `invoice → customer`, tampilkan `customer.nama` di tabel list dan full customer card di detail (nama, kode, PIC) | 🔴 Pending | `page.tsx`, `[id]/page.tsx` |
-| K-9 | **Perbaiki edit page** — tambah edit tanggal, tampilkan items current, shadcn `<Select>` not raw `<select>`, navigasi balik ke detail page | 🔴 Pending | `[id]/edit/page.tsx` |
+| K-8 | **Tampilkan customer info di list & detail** — join `invoice → customer`, tampilkan `customer.nama` di tabel list dan customer card di detail (nama, kode) | ✅ Done | `page.tsx`, `[id]/page.tsx`, `api/v1/kwitansi/route.ts`, `[id]/route.ts` |
+| K-9 | **Perbaiki edit page** — tambah edit tanggal, tampilkan items current, shadcn `<Select>` not raw `<select>`, navigasi balik ke detail page | ✅ Done | `[id]/edit/page.tsx` |
+| K-13 | **shadcn Select di edit page** — subsumed by K-9 | ❌ Removed | N/A |
+| K-15 | **Navigasi edit → detail** — subsumed by K-9 | ❌ Removed | N/A |
 
-### 🟡 Medium Priority
-
-| # | Task | Status | File |
-|---|------|--------|------|
-| K-10 | **Running total saat create** — tampilkan total pembayaran agregat dari item yang dipilih | 🟡 Pending | `tambah/page.tsx` |
-| K-11 | **Kolom total amount di list** — tampilkan nominal kwitansi di tabel list | 🟡 Pending | `page.tsx` |
-| K-12 | **Error state di detail page** — set error state variable, tampilkan error UI (bukan silent "not found") | 🟡 Pending | `[id]/page.tsx` |
-
-### 🟢 Low Priority
+### ✅ Done — Medium Priority
 
 | # | Task | Status | File |
 |---|------|--------|------|
-| K-13 | **shadcn Select di edit page** — ganti raw `<select>` dengan shadcn `<Select>` | 🟢 Pending | `[id]/edit/page.tsx` |
-| K-14 | **Loading skeleton di create** — skeleton loading saat inisialisasi form | 🟢 Pending | `tambah/page.tsx` |
-| K-15 | **Navigasi edit → detail** — cancel/success redirect ke detail page, bukan list | 🟢 Pending | `[id]/edit/page.tsx` |
+| K-10 | **Running total saat create** — tampilkan total pembayaran agregat dari item yang dipilih | ✅ Done | `tambah/page.tsx` |
+| K-11 | **Kolom total amount di list** — tampilkan nominal kwitansi di tabel list | ✅ Done | `page.tsx` |
+| K-12 | **Error state di detail page** — set error state variable, tampilkan error UI (bukan silent "not found") | ✅ Done | `[id]/page.tsx` |
+
+### ✅ Done — Low Priority
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| K-14 | **Loading skeleton di create** — skeleton loading saat inisialisasi form | ✅ Done | `tambah/page.tsx` |
 
 ### ✅ Done
 
@@ -320,6 +320,25 @@ DI diterbitkan (draft)
 | TT-7 | **Invoice detail/edit** — remove nomor_grn field from detail & edit pages + API | ✅ Done | `invoice/[id]/page.tsx`, `invoice/[id]/edit/page.tsx`, `api/v1/invoice/[id]/route.ts` |
 | TT-8 | **API route rewrite** — fetch all 11 document numbers (RFQ, SPH, PO, Kontrak, DI, Delivery Slip, Surat Jalan, GRN, Invoice, Kwitansi) via joined chain | ✅ Done | `api/v1/invoice/[id]/tanda-terima/pdf/route.ts` |
 | TT-9 | **PDF component** — change "Jenis Dokumen" → "Nama Dokumen", replace "Kelengkapan" checkbox column with "Nomor Dokumen" text column, dynamic `dokumenList` data | ✅ Done | `lib/pdf/tanda-terima.ts` |
+
+## ✅ Done — Skenario B: Non-PKP (PPN/PPh Removal)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| SB-1 | **Invoice API POST** — hapus `ppn_rate`, `pph_rate`, per-item `ppn`/`pph` dari Zod schema dan insert logic | ✅ Done | `api/v1/invoice/route.ts` |
+| SB-2 | **Invoice API PUT** — hapus field PPN/PPh dari update | ✅ Done | `api/v1/invoice/[id]/route.ts` |
+| SB-3 | **Invoice create page** — hapus input PPN Rate, PPh Rate, PPN/PPh columns dari item table & form | ✅ Done | `invoice/tambah/page.tsx` |
+| SB-4 | **Invoice edit page** — hapus PPN Rate, PPh Rate inputs + PPN/PPh columns | ✅ Done | `invoice/[id]/edit/page.tsx` |
+| SB-5 | **Invoice detail page** — hapus PPh column, "Buat Faktur Pajak" button/dialog; grand total = DPP only | ✅ Done | `invoice/[id]/page.tsx` |
+| SB-6 | **DO → auto-invoice route** — hapus `getConfigNumber`, `ppnRate`, `ppn_rate` from invoice insert | ✅ Done | `api/v1/delivery-order/[id]/route.ts` |
+| SB-7 | **Sidebar** — hapus "Faktur Pajak" menu item | ✅ Done | `sidebar-content.tsx` |
+| SB-8 | **Dashboard main** — hapus pending faktur pajak count & alert | ✅ Done | `dashboard/page.tsx` |
+| SB-9 | **Finance dashboard** — hapus faktur pajak stat card & quick action | ✅ Done | `dashboards/finance.tsx` |
+| SB-10 | **Quotation** — default `ppn_enabled: false` di schema, form, dan API POST | ✅ Done | `quotation/tambah/page.tsx`, `[id]/edit/page.tsx`, `api/v1/quotation/route.ts` |
+| SB-11 | **Kwitansi PDF redesign** — blue border → double black, terbilang single-line with auto-wrap, DI ref dari `nomor_di_customer`, padding 40pt, amount styling | ✅ Done | `lib/pdf/kwitansi.ts` |
+| SB-12 | **Finance dashboard** — remove unused `ReceiptText` import | ✅ Done | `dashboards/finance.tsx` |
+
+**Keputusan:** PPN=0 (non-PKP), PPh dibayar langsung perusahaan ke kantor pajak, tidak dipotong dari invoice customer. DB columns (`ppn_rate`, `pph_rate`, `ppn`, `pph`) tetap ada untuk skenario PKP masa depan — API dan UI hanya mengabaikannya.
 
 ## Catatan
 
