@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   titleNomor: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   formTable: {
@@ -75,10 +75,11 @@ const styles = StyleSheet.create({
   formLabelText: {
     fontSize: 10,
     fontWeight: 'bold',
+    textDecoration: 'underline',
     marginBottom: 3,
   },
   formLabelSub: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#4B5563',
     fontStyle: 'italic',
   },
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     marginTop: 'auto',
-    paddingTop: 24,
+    paddingTop: 10,
   },
   amountBlueBox: {
     backgroundColor: BLUE,
@@ -134,24 +135,24 @@ const styles = StyleSheet.create({
     width: '40%',
   },
   signatureDate: {
-    fontSize: 9,
+    fontSize: 11,
     marginBottom: 4,
   },
   signatureCompany: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   signatureSpace: {
-    height: 70,
+    height: 80,
   },
   signatureName: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 'bold',
     textDecoration: 'underline',
   },
   signatureTitle: {
-    fontSize: 9,
+    fontSize: 11,
     marginTop: 2,
   },
 })
