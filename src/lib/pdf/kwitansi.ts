@@ -29,7 +29,7 @@ const BLUE = '#0000FF'
 
 const styles = StyleSheet.create({
   page: {
-    padding: '20mm',
+    padding: '10mm',
     fontFamily: 'Arial',
     fontSize: 10,
   },
@@ -48,14 +48,14 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     textAlign: 'center',
-    marginBottom: 24,
-    marginTop: 6,
+    marginBottom: 10,
+    marginTop: 2,
   },
   titleText: {
     fontSize: 16,
     fontWeight: 'bold',
     textDecoration: 'underline',
-    marginBottom: 2,
+    marginBottom: 4,
     letterSpacing: 2,
   },
   titleNomor: {
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   formValue: {
     flex: 1,
-    borderBottom: '2px dotted #374151',
+    borderBottom: '1px dashed #374151',
     paddingBottom: 4,
     paddingLeft: 6,
     paddingRight: 6,
@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
     borderWidth: 1,
     borderColor: '#9CA3AF',
-    padding: '4pt 10pt',
+    padding: '4pt 4pt 16pt',
+    justifyContent: 'center',
     fontStyle: 'italic',
     fontWeight: 'bold',
     fontSize: 10,
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   signatureSpace: {
-    height: 48,
+    height: 70,
   },
   signatureName: {
     fontSize: 9,
@@ -180,7 +181,9 @@ function FormRow(label: string, labelSub: string | undefined, valueEl: ReactElem
       label ? createEl('TEXT', { style: styles.formLabelText }, label) : null,
       labelSub ? createEl('TEXT', { style: styles.formLabelSub }, labelSub) : null,
     ),
-    label ? createEl('TEXT', { style: styles.formColon }, ':') : null,
+    label
+      ? createEl('TEXT', { style: styles.formColon }, ':')
+      : createEl('VIEW', { style: { width: '3%' } }),
     createEl(
       'VIEW',
       { style: styles.formValue },
@@ -210,8 +213,11 @@ export function KwitansiPDF({ data }: { data: KwitansiPDFData }): ReactElement {
           createEl(
             'VIEW',
             { style: styles.titleSection },
-            createEl('TEXT', { style: styles.titleText }, 'KWITANSI / RECEIPT'),
-            createEl('TEXT', { style: styles.titleNomor }, `Nomor: ${data.nomor}`),
+            createEl('TEXT', { style: styles.titleText },
+              'KWITANSI / ',
+              createEl('TEXT', { style: { fontStyle: 'italic' } }, 'RECEIPT'),
+            ),
+            createEl('TEXT', { style: styles.titleNomor }, `No : ${data.nomor}`),
           ),
           createEl(
             'VIEW',
@@ -227,7 +233,7 @@ export function KwitansiPDF({ data }: { data: KwitansiPDFData }): ReactElement {
               ),
             ),
             FormRow('Untuk pembayaran', 'In payment of',
-              createEl('TEXT', { style: styles.formValueText }, data.keterangan || '-'),
+              createEl('TEXT', { style: styles.formValueText }, data.keterangan || 'Pembelian Barang'),
             ),
             showRef ? FormRow('', undefined,
               createEl('TEXT', { style: { ...styles.formValueText, fontSize: 10 } },
