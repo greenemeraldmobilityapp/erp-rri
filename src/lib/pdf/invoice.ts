@@ -148,9 +148,9 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
 
   const tableHeaderCells = [
     H(Text, { style: [styles.tableHeaderCell, { width: 25 }] }, 'No'),
-    H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Item Description'),
-    H(Text, { style: [styles.tableHeaderCell, { width: 40 }] }, 'Unit'),
-    H(Text, { style: [styles.tableHeaderCell, { width: 35 }] }, 'Qty'),
+    H(Text, { style: [styles.tableHeaderCell, { flex: 1 }] }, 'Description'),
+    H(Text, { style: [styles.tableHeaderCell, { width: 75 }] }, 'Unit'),
+    H(Text, { style: [styles.tableHeaderCell, { width: 35 }] }, 'QTY'),
     H(Text, { style: [styles.tableHeaderCell, { width: 65 }] }, 'Unit Price'),
     H(Text, { style: [styles.tableHeaderCell, { width: 75, borderRightWidth: 0 }] }, 'Total'),
   ]
@@ -181,11 +181,6 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
         H(Text, { style: styles.colonText }, ':'),
         H(Text, { style: styles.valueText }, data.nomor)
       ),
-      H(View, { style: styles.labelValueRow },
-        H(Text, { style: styles.labelText }, 'Perihal'),
-        H(Text, { style: styles.colonText }, ':'),
-        H(Text, { style: styles.valueText }, 'Tagihan')
-      ),
       ...(data.diCustomerRef
         ? [H(View, { style: styles.labelValueRow },
             H(Text, { style: styles.labelText }, 'No. Ref. DI'),
@@ -193,6 +188,11 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             H(Text, { style: styles.valueText }, data.diCustomerRef)
           )]
         : []
+      ),
+      H(View, { style: styles.labelValueRow },
+        H(Text, { style: styles.labelText }, 'Perihal'),
+        H(Text, { style: styles.colonText }, ':'),
+        H(Text, { style: { fontSize: 11, fontWeight: 'bold' } }, 'Tagihan')
       ),
     ),
     H(Text, { style: styles.valueText }, data.tanggal)
@@ -236,7 +236,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
   const signatureSection = H(View, { style: styles.signatureSection },
     H(Text, { style: styles.signatureTitle }, 'Hormat kami'),
     H(Text, { style: styles.signatureCompany }, c.company_nama || 'PT. RIZQI RIDHO ILAHI'),
-    H(View, { style: { marginTop: 40 } },
+    H(View, { style: { marginTop: 90 } },
       H(Text, { style: styles.signatureName }, c.penandatangan_nama || 'Mohamad Marzuqi'),
       H(Text, { style: styles.signatureJabatan }, c.penandatangan_jabatan || 'Direktur'),
     ),
@@ -270,7 +270,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             return H(View, { key: item.urutan, style: styles.tableRow },
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.urutan)), { width: 25, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9 } }, item.nama), { flex: 1, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
-              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan || '-'), { width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
+              v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, item.satuan || '-'), { width: 75, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'center' } }, String(item.jumlah)), { width: 35, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, 'Rp ' + formatCurrency(item.hargaSatuan)), { width: 65, padding: 4, borderRightWidth: 1, borderRightColor: '#000' }),
               v(H(Text, { style: { fontSize: 9, textAlign: 'right' } }, 'Rp ' + formatCurrency(lineTotal)), { width: 75, padding: 4 }),
