@@ -89,9 +89,9 @@
 - To add a new virtual document type: add a `UNION ALL` to the `all_documents` view migration.
 
 ### PDF Download from Document Management Page
-- **Simple `window.open` pattern**: The Document Management page (`dokumen/page.tsx`) uses `openFile(url, filename)` which calls `window.open(url, '_blank', 'noopener,noreferrer')` directly.
+- **Blob fetch pattern for virtual PDFs**: The Document Management page (`dokumen/page.tsx`) uses `openFile(url, filename)` which detects API routes (starts with `/api/`) and uses blob fetch with auth token: `window.open('')` (anti-popup) → `getAuthToken()` → `fetch(url, {Authorization})` → blob → `URL.createObjectURL()` → `win.location.href = blobUrl`. For public storage URLs, uses `window.open(url)` directly.
+- **Download button**: Each row has a separate Download icon button that uses the same blob fetch pattern and triggers download via `<a download>` click.
 - Office documents (.doc, .docx, .xls, .xlsx, .ppt, .pptx) are opened via Google Docs Viewer: `window.open('https://docs.google.com/viewer?url=...&embedded=true', ...)`
-- **Known issue**: Virtual PDF entries (from `all_documents` view) with `fileurl` pointing to API routes like `/api/v1/quotation/{id}/pdf` **cannot** be opened this way because those routes require `verifyAuth()` (Bearer token). `window.open()` cannot send auth headers, so these entries will fail to load.
 
 ### Storage Structure
 - Bucket: `dokumen` (Supabase Storage)

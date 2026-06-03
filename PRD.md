@@ -331,6 +331,104 @@ interface CompactFileUploadProps {
 | GRN | ✅ Migrated |
 | Kwitansi | ✅ Migrated |
 
+### 5.10 Halaman Manajemen Dokumen & Virtual PDF
+
+Halaman `/dashboard/dokumen` menyatukan semua dokumen dari seluruh modul — baik file yang di-upload ke Supabase Storage (real documents) maupun PDF yang di-generate on-the-fly via API routes (virtual PDF entries).
+
+#### `all_documents` View
+
+PostgreSQL view (`all_documents`) menggabungkan real uploaded documents dari tabel `*_document` dengan virtual PDF entries via `UNION ALL`. Setiap entry:
+
+| Field | Deskripsi |
+|-------|-----------|
+| `id` | Unique ID — virtual: `pdf-{modul}-{recordId}` |
+| `filename` | Nama file untuk ditampilkan |
+| `fileurl` | Storage: public URL Supabase. Virtual: relative API route (`/api/v1/{modul}/{id}/pdf`) |
+| `modul` | Nama modul asal |
+| `nomordokumen` | Format `RRI-...` |
+| `customerid` / `customernama` | Resolusi customer via joins |
+| `uploadedat` | Timestamp (real: upload time, virtual: current timestamp) |
+
+#### Virtual PDF Entries
+
+| Modul | fileurl | ID Prefix |
+|-------|---------|-----------|
+| Quotation | `/api/v1/quotation/{id}/pdf` | `pdf-quotation-` |
+| Delivery Order / Surat Jalan | `/api/v1/delivery-order/{id}/pdf` | `pdf-do-` |
+| Invoice | `/api/v1/invoice/{id}/pdf` | `pdf-invoice-` |
+| Tanda Terima | `/api/v1/invoice/{id}/tanda-terima/pdf` | `pdf-tandaterima-` |
+| Kwitansi | `/api/v1/kwitansi/{id}/pdf` | `pdf-kwitansi-` |
+| Resi Pengiriman | `/api/v1/delivery-order/{id}/resi-pdf` | `pdf-resi-` |
+
+#### Full List of Moduls in `all_documents` View
+
+**10 real document modules (from `*_document` tables):**
+RFQ Customer, Quotation, Customer PO, DI, Invoice, Retur Penjualan, Kontrak, Delivery Order, GRN Customer, Kwitansi, Retur Pembelian, RFQ Supplier, GRN, Sales Order
+
+**2 virtual-only modules (generated PDFs, no upload table):**
+Delivery Slip (from `delivery_order.delivery_slip_file_url`), Tanda Terima
+
+**1 hybrid module (both real upload + virtual PDF):**
+Quotation, Delivery Order, Invoice, Kwitansi
+
+**3 supplier-side modules (customer resolved via SO → PO/DI chain):**
+RFQ Supplier (via SO), Retur Pembelian (via PO → SO), GRN (via DI)
+
+Untuk menambah virtual document baru: tambah `UNION ALL` ke view `all_documents` migration.
+
+#### API: `/api/v1/dokumen`
+
+| Parameter | Type | Deskripsi |
+|-----------|------|-----------|
+| `customerId` | string | Filter by customer |
+| `modul` | string | Filter by modul |
+| `search` | string | Cari filename |
+| `startDate` / `endDate` | string | Filter rentang tanggal |
+
+Response: `{ data: Document[], count: number }`
+
+#### Document Upload API Pattern
+
+Setiap modul yang mendukung upload dokumen memiliki route handler di `/api/v1/{modul}/[id]/documents/route.ts`:
+- **GET** — daftar dokumen milik record
+- **POST** — upload file baru (multipart form-data, field `file`)
+- **DELETE** — hapus file (`?docId=...`)
+
+Modul dengan document API: `quotation`, `customer-po`, `di`, `invoice`, `delivery-order`, `retur-penjualan`, `retur-pembelian`, `rfq-customer`, `rfq-supplier`, `grn`, `grn-customer`, `kwitansi`, `master/kontrak`, **`sales-order`**
+
+#### Halaman Frontend
+
+`src/app/dashboard/dokumen/page.tsx` — client component "use client":
+
+- **Filter panel**: dropdown Customer, dropdown Modul, input Cari File, Date Range, tombol Cari & Reset
+- **Tabel**: Nama File, Modul (badge warna), Nomor Dokumen, Customer, Tanggal, Aksi
+- **Aksi per baris**: Tombol "Buka" + tombol "Download" (icon)
+- **Office docs**: `.doc/.docx/.xls/.xlsx/.ppt/.pptx` dibuka via Google Docs Viewer
+
+#### Blob Fetch Pattern (untuk Virtual PDF)
+
+Route PDF memerlukan `verifyAuth()` (Bearer token) — `window.open(url)` tidak bisa mengirim custom header. Solusi:
+
+```typescript
+// Buka di tab baru (anti-popup blocker):
+const win = window.open('', '_blank')
+const token = await getAuthToken()
+const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+const blob = await res.blob()
+win.location.href = URL.createObjectURL(blob)
+
+// Download via blob:
+const token = await getAuthToken()
+const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+const blob = await res.blob()
+const blobUrl = URL.createObjectURL(blob)
+const a = document.createElement('a')
+a.href = blobUrl; a.download = filename; a.click()
+URL.revokeObjectURL(blobUrl)
+```
+
+Untuk storage public URLs: tetap `window.open(url)` langsung — tidak perlu auth.
+
 ## 6. Scalability & Arsitektur
 
 ### 6.1 Background Jobs

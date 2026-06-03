@@ -84,6 +84,7 @@ import { customerPoDocument } from "./customer-po-document";
 import { kendaraan } from "./kendaraan";
 import { diDocument } from "./di-document";
 import { grnDocument } from "./grn-document";
+import { salesOrderDocument } from "./sales-order-document";
 import { deliveryOrderDocument } from "./delivery-order-document";
 import { grnCustomer } from "./grn-customer";
 import { grnCustomerItem } from "./grn-customer-item";
@@ -174,6 +175,7 @@ export {
   customerPoDocument,
   diDocument,
   grnDocument,
+  salesOrderDocument,
   deliveryOrderDocument,
   kendaraan,
   grnCustomer,

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/api/client'
+import { apiFetch, getAuthToken } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { Search, ExternalLink, FileText, Loader2, RotateCcw } from 'lucide-react'
+import { Search, ExternalLink, FileText, Loader2, RotateCcw, Download } from 'lucide-react'
 
 interface Document {
   id: string
@@ -30,21 +30,41 @@ interface Customer {
 
 const modulOptions = [
   'RFQ Customer',
+  'RFQ Supplier',
   'Quotation',
+  'Sales Order',
   'Customer PO',
   'DI',
+  'Delivery Order',
+  'Delivery Slip',
+  'Resi Pengiriman',
+  'GRN',
+  'GRN Customer',
   'Invoice',
+  'Kwitansi',
+  'Tanda Terima',
   'Retur Penjualan',
+  'Retur Pembelian',
   'Kontrak',
 ]
 
 const modulColors: Record<string, 'secondary' | 'warning' | 'success' | 'outline' | 'destructive'> = {
   'RFQ Customer': 'secondary',
+  'RFQ Supplier': 'secondary',
   Quotation: 'warning',
+  'Sales Order': 'success',
   'Customer PO': 'success',
   DI: 'outline',
+  'Delivery Order': 'outline',
+  'Delivery Slip': 'outline',
+  'Resi Pengiriman': 'outline',
+  GRN: 'outline',
+  'GRN Customer': 'outline',
   Invoice: 'destructive',
+  Kwitansi: 'warning',
+  'Tanda Terima': 'outline',
   'Retur Penjualan': 'warning',
+  'Retur Pembelian': 'warning',
   Kontrak: 'outline',
 }
 
@@ -119,13 +139,42 @@ export default function DokumenPage() {
 
   const officeExts = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
 
-  const openFile = (url: string, filename: string) => {
+  const openFile = async (url: string, filename: string) => {
     const ext = filename.slice(filename.lastIndexOf('.')).toLowerCase()
     if (officeExts.includes(ext)) {
       window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (url.startsWith('/api/')) {
+      const win = window.open('', '_blank')
+      if (!win) return
+      const token = await getAuthToken()
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      if (!res.ok) { win.close(); return }
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      win.location.href = blobUrl
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
     } else {
       window.open(url, '_blank', 'noopener,noreferrer')
     }
+  }
+
+  const downloadFile = async (url: string, filename: string) => {
+    const token = url.startsWith('/api/') ? await getAuthToken() : null
+    const res = await fetch(url, {
+      ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(blobUrl)
   }
 
   return (
@@ -253,14 +302,23 @@ export default function DokumenPage() {
                           {formatDate(doc.uploadedat)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openFile(doc.fileurl, doc.filename)}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Buka
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openFile(doc.fileurl, doc.filename)}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Buka
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadFile(doc.fileurl, doc.filename)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

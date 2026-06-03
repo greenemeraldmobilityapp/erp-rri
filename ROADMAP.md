@@ -9,11 +9,14 @@
 | SN-3 | **Sidebar: "Manajemen Dokumen" pindah** — dari top-level ke dalam grup Master Data, di bawah "Kategori Barang" | ✅ Done | `src/components/sidebar-content.tsx` |
 | DM-1 | **Migration all_documents view** — tambah `recordid` column + 4 UNION baru (DO, Delivery Slip, GRN Customer, Kwitansi) | ✅ Done | `0027_update_all_documents_view.sql` |
 | DM-2 | **Migration virtual PDF entries** — 5 UNION virtual PDF (Quotation, DO/Surat Jalan, Invoice, Tanda Terima, Kwitansi) dengan prefix `pdf-{modul}-{id}` | ✅ Done | `0028_add_virtual_pdf_entries.sql` |
-| DM-3 | **Migration Resi Pengiriman** — add virtual PDF entries untuk Resi Pengiriman | ✅ Done | `0029_add_resi_pengiriman_view.sql` |
+| DM-3 | **Migration Resi Pengiriman** — add virtual PDF entries untuk Resi Pengiriman | ✅ Done | `0029_add_virtual_pdf_resi_pengiriman.sql` |
 | DM-4 | **API dokumen — filter nomorPo & nomorDi** — tambah filter via `.or('and(...)')` | ✅ Done | `src/app/api/v1/dokumen/route.ts` |
 | DM-5 | **Frontend dokumen page** — semua modul dropdown, smart filters, PDF buttons per modul | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
-| DM-6 | **PDF blob fetch** — ganti `window.open` dengan blob fetch via auth token untuk akses PDF dari halaman dokumen | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
-| DM-7 | **Download button storage files** — tombol download terpisah untuk file di Supabase Storage (non-PDF) | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-6 | **PDF blob fetch pattern** — virtual PDF entries (fileurl `/api/...`) di-fetch dengan auth token via blob fetch → `URL.createObjectURL()` → `window.open(blobUrl)`. Storage files tetap `window.open(url)` langsung. Anti-popup blocker: buka tab kosong dulu, set `location.href` setelah blob siap. | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-7 | **Download button storage files** — tombol Download terpisah (icon `Download`) di samping tombol Buka per baris. Untuk semua tipe file: blob fetch (dengan auth jika API route, tanpa jika public URL) → download via `<a download>` click. | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
+| DM-8 | **Fix: Missing modules in all_documents view** — tambah Retur Pembelian, RFQ Supplier, GRN ke view (supplier-side, NULL customer) | ✅ Done | `0030_add_missing_document_modules.sql` |
+| DM-9 | **Fix: Sales Order document upload 404** — buat `sales_order_document` table + API route + Drizzle schema + tambah ke view | ✅ Done | `0031_create_sales_order_document.sql`, `0032_add_sales_order_to_documents_view.sql`, `sales-order/[id]/documents/route.ts` |
+| DM-10 | **Update frontend dropdown** — tambah 5 modul baru (Resi Pengiriman, Retur Pembelian, RFQ Supplier, GRN, Sales Order) ke filter dan badge colors | ✅ Done | `src/app/dashboard/dokumen/page.tsx` |
 
 ## 🔴 HIGH — Status Management & Quotation Fixes
 
