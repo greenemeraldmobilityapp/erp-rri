@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({
   invoice_item_id: z.string().min(1),
@@ -38,7 +38,21 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('KWT')
+  let nomor: string
+  if (parsed.data.invoice_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('invoice')
+      .select('nomor')
+      .eq('id', parsed.data.invoice_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'KWT')
+    } else {
+      nomor = await generateGlobalDocumentNumber('KWT')
+    }
+  } else {
+    nomor = await generateGlobalDocumentNumber('KWT')
+  }
   const now = new Date().toISOString()
 
   const { data: kwt, error: kwtError } = await supabaseAdmin.from('kwitansi').insert({

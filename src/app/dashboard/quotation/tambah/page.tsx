@@ -73,55 +73,11 @@ export default function TambahQuotationPage() {
   const [rfqOptions, setRfqOptions] = useState<Array<{ value: string; label: string }>>([])
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [nomorAuto, setNomorAuto] = useState('')
-  const [reserveId, setReserveId] = useState<string>('')
-  const [expiresAt, setExpiresAt] = useState<string>('')
-  const [expiringSoon, setExpiringSoon] = useState(false)
   const [rfqPicLabel, setRfqPicLabel] = useState('')
   const [rfqItemLabels, setRfqItemLabels] = useState<string[]>([])
   const [isRfqLoaded, setIsRfqLoaded] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
-
-  // Fetch nomor reserve saat mount
-  useEffect(() => {
-    apiFetch<{ nomor: string; reserveId: string; expiresAt: string }>('/api/v1/quotation/next-number')
-      .then(res => {
-        setNomorAuto(res.data.nomor)
-        setReserveId(res.data.reserveId)
-        setExpiresAt(res.data.expiresAt)
-      })
-      .catch(err => {
-        console.error('Failed to reserve number:', err)
-        toast.error('Gagal reserve nomor. Silakan refresh halaman.')
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  // Countdown timer untuk expiry
-  useEffect(() => {
-    if (!expiresAt) return
-    
-    const checkExpiry = setInterval(() => {
-      const now = new Date()
-      const expiry = new Date(expiresAt)
-      const diff = expiry.getTime() - now.getTime()
-      
-      // Warning 5 menit sebelum expired
-      if (diff < 5 * 60 * 1000 && diff > 0) {
-        setExpiringSoon(true)
-        toast.warning('Nomor akan kadaluarsa segera. Silakan submit form.')
-      }
-      
-      // Handle expired
-      if (diff <= 0) {
-        setExpiringSoon(false)
-        toast.error('Nomor reservasi kadaluarsa. Silakan refresh halaman.')
-      }
-    }, 10000) // Check setiap 10 detik
-    
-    return () => clearInterval(checkExpiry)
-  }, [expiresAt])
 
   const form = useForm<QtnFormValues>({
     resolver: zodResolver(qtnSchema),
@@ -142,9 +98,6 @@ export default function TambahQuotationPage() {
   const selectedRfqId = watch('rfq_id')
 
   useEffect(() => {
-    apiFetch<{ nomor: string }>('/api/v1/quotation/next-number')
-      .then(res => setNomorAuto(res.data.nomor))
-      .catch(() => {})
     const rfqIdFromUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('rfq_id') : null
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string; alamat?: string }>>('/api/v1/master/customer'),
@@ -272,13 +225,9 @@ export default function TambahQuotationPage() {
   const onSubmit = async (data: QtnFormValues) => {
     setSubmitting(true)
     try {
-      const payload = {
-        ...data,
-        reserveId, // Include reserveId untuk validasi
-      }
       const res = await apiFetch<{ id: string }>('/api/v1/quotation', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       })
 
       toast.success('Quotation berhasil dibuat!')
@@ -309,10 +258,6 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Header Surat</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <FormItem>
-                <FormLabel>Nomor Quotation (Auto)</FormLabel>
-                <Input value={nomorAuto} placeholder="Memuat..." disabled className="bg-muted" />
-              </FormItem>
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="rfq_id" render={({ field }) => (
                   <FormItem><FormLabel>No. Referensi (RFQ)</FormLabel>

@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 import { sendWhatsapp } from '@/lib/utils/whatsapp'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { formatChildNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -140,8 +140,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
 
       // Auto-generate draft invoice
-        const nomorInv = await generateDocumentNumber('INV')
-        const nomorTT = await generateDocumentNumber('TT')
+        const nomorInv = formatChildNumber(data.nomor, 'INV')
+        const nomorTT = formatChildNumber(data.nomor, 'TT')
         const now = new Date().toISOString()
 
       const { data: soItems } = await supabaseAdmin
@@ -197,7 +197,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
           // Auto-generate draft Kwitansi (barengan)
           if (createdItems && createdItems.length > 0) {
-            const nomorKwt = await generateDocumentNumber('KWT')
+            const nomorKwt = formatChildNumber(nomorInv, 'KWT')
             const { data: kwt, error: kwtErr } = await supabaseAdmin.from('kwitansi').insert({
               nomor: nomorKwt,
               invoice_id: inv.id,
@@ -234,7 +234,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           .eq('delivery_order_id', id)
 
         if (doItems && doItems.length > 0 && data.gudang_id) {
-          const nomorGrnc = await generateDocumentNumber('GRNC')
+          const nomorGrnc = formatChildNumber(data.nomor, 'GRNC')
           const { data: grnc, error: grncErr } = await supabaseAdmin.from('grn_customer').insert({
             nomor: nomorGrnc,
             delivery_order_id: id,

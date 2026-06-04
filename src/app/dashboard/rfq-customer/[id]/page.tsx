@@ -142,6 +142,7 @@ export default function RfqCustomerDetailPage() {
         <CardContent className="pt-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">No. Dokumen Internal</p>
               <h2 className="text-xl font-bold font-mono">{data.nomor}</h2>
             </div>
             <Badge variant={statusLabel[data.status]?.variant ?? "outline"}>

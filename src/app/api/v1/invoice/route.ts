@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 import { generateInvoiceJournal } from '@/lib/auto-jurnal'
 
 const itemSchema = z.object({
@@ -57,7 +57,21 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('INV')
+  let nomor: string
+  if (parsed.data.sales_order_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('sales_order')
+      .select('nomor')
+      .eq('id', parsed.data.sales_order_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'INV')
+    } else {
+      nomor = await generateGlobalDocumentNumber('INV')
+    }
+  } else {
+    nomor = await generateGlobalDocumentNumber('INV')
+  }
   const now = new Date().toISOString()
 
   const { data: inv, error: invError } = await supabaseAdmin.from('invoice').insert({
@@ -85,7 +99,7 @@ export async function POST(request: NextRequest) {
   const { error: itemsError } = await supabaseAdmin.from('invoice_item').insert(items)
   if (itemsError) { await supabaseAdmin.from('invoice').delete().eq('id', inv.id); return internalError(itemsError) }
 
-  const nomorKwt = await generateDocumentNumber('KWT')
+  const nomorKwt = formatChildNumber(nomor, 'KWT')
   await supabaseAdmin.from('kwitansi').insert({
     nomor: nomorKwt,
     invoice_id: inv.id,

@@ -27,7 +27,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), keterangan: z.string().optional() })
 const schema = z.object({ customer_id: z.string().min(1), delivery_order_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
@@ -49,7 +49,21 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('RTJ')
+  let nomor: string
+  if (parsed.data.delivery_order_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('delivery_order')
+      .select('nomor')
+      .eq('id', parsed.data.delivery_order_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'RTJ')
+    } else {
+      nomor = await generateGlobalDocumentNumber('RTJ')
+    }
+  } else {
+    nomor = await generateGlobalDocumentNumber('RTJ')
+  }
   const now = new Date().toISOString()
 
   const { data: retur, error: returError } = await supabaseAdmin.from('retur_penjualan').insert({

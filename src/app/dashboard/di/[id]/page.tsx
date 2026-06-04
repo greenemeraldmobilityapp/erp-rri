@@ -168,8 +168,8 @@ export default function DiDetailPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">Nomor</p>
-              <p className="font-medium">{di.nomor}</p>
+              <p className="text-sm text-muted-foreground">No. Dokumen Internal</p>
+              <p className="font-medium font-mono">{di.nomor}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Status</p>

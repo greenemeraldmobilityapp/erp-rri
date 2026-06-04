@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), nama_barang: z.string().optional(), kode_barang: z.string().optional(), satuan: z.string().optional(), urutan: z.number().int().optional(), keterangan: z.string().optional() })
 const schema = z.object({ retur_penjualan_id: z.string().optional(), delivery_order_id: z.string().optional(), customer_id: z.string().optional(), gudang_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('GRNC')
+  const nomor = await generateGlobalDocumentNumber('GRNC')
   const now = new Date().toISOString()
 
   const { data: grn, error: grnError } = await supabaseAdmin.from('grn_customer').insert({

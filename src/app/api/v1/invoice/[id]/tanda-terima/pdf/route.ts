@@ -3,7 +3,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { notFound, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber } from '@/lib/utils/document-number'
 import { TandaTerimaPDF } from '@/lib/pdf/tanda-terima'
 
 const COMPANY_KEYS = [
@@ -140,7 +140,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   let nomor = inv.nomor_tanda_terima
   if (!nomor) {
-    nomor = await generateDocumentNumber('TT')
+    nomor = await generateGlobalDocumentNumber('TT')
     await supabaseAdmin.from('invoice').update({ nomor_tanda_terima: nomor }).eq('id', id)
   }
 

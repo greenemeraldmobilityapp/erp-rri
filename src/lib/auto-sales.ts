@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/api/supabase-server'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { formatChildNumber } from '@/lib/utils/document-number'
 
 export async function generateSOFromPO(customerPoId: string) {
   const existing = await supabaseAdmin
@@ -22,7 +22,7 @@ export async function generateSOFromPO(customerPoId: string) {
     .eq('customer_po_id', customerPoId)
   if (!items?.length) return { success: false, error: 'No items in PO' }
 
-  const nomor = await generateDocumentNumber('SO')
+  const nomor = formatChildNumber(po.nomor, 'SO')
   const now = new Date().toISOString()
 
   const { data: so, error: soError } = await supabaseAdmin.from('sales_order').insert({
@@ -90,7 +90,7 @@ export async function generateSOFromDI(diId: string) {
     }
   }
 
-  const nomor = await generateDocumentNumber('SO')
+  const nomor = formatChildNumber(diDoc.nomor, 'SO')
   const now = new Date().toISOString()
 
   const { data: so, error: soError } = await supabaseAdmin.from('sales_order').insert({
@@ -147,7 +147,7 @@ export async function generateDOFromSO(salesOrderId: string) {
     .eq('sales_order_id', salesOrderId)
   if (!items?.length) return { success: false, error: 'No items in SO' }
 
-  const nomor = await generateDocumentNumber('SJ')
+  const nomor = formatChildNumber(so.nomor, 'SJ')
   const now = new Date().toISOString()
 
   const { data: sj, error: sjError } = await supabaseAdmin.from('delivery_order').insert({

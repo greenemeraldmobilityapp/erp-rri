@@ -42,7 +42,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { formatChildNumber } from '@/lib/utils/document-number'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (!existingGrn) {
       const { data: items } = await supabaseAdmin.from('retur_penjualan_item').select('*').eq('retur_penjualan_id', id)
       if (items && items.length > 0) {
-        const nomor = await generateDocumentNumber('GRNC')
+        const nomor = formatChildNumber(data.nomor, 'GRNC')
         const now = new Date().toISOString()
 
         // Look up gudang from the DO linked to this retur; fallback ke null

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({
   barang_id: z.string().min(1),
@@ -35,7 +35,32 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('SO')
+  let nomor: string
+  if (parsed.data.customer_po_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('customer_po')
+      .select('nomor')
+      .eq('id', parsed.data.customer_po_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'SO')
+    } else {
+      nomor = await generateGlobalDocumentNumber('SO')
+    }
+  } else if (parsed.data.di_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('di')
+      .select('nomor')
+      .eq('id', parsed.data.di_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'SO')
+    } else {
+      nomor = await generateGlobalDocumentNumber('SO')
+    }
+  } else {
+    nomor = await generateGlobalDocumentNumber('SO')
+  }
   const now = new Date().toISOString()
 
   const { data: so, error: soError } = await supabaseAdmin.from('sales_order').insert({

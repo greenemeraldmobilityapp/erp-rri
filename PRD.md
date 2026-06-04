@@ -702,24 +702,23 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **RFQ Customer** | Merekam RFQ dari customer. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. Nomor otomatis: `RRI-RFQC-YY-MM-0001` |
-| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor otomatis: `RRI-SPH-YY-MM-0001` (suffix `-R1` jika revisi > 0). **Status Workflow:** `draft → sent → proses_negosiasi → approved → closed`. Quick-action buttons di halaman detail: Kirim (draft→sent), Setujui/Tolak (sent/proses_negosiasi→approved/rejected), Revisi (rejected→draft), Tutup (approved→closed). Validasi transisi status di PATCH `/[id]/status` dan PUT `/[id]`. |
-| **Negosiasi** | Setelah Quotation dikirim, Procurement customer bisa negosiasi. Fitur: track history negosiasi, counter offer, approval internal. **Auto-status:** POST negoiasi → quotation status otomatis diubah dari `sent` ke `proses_negosiasi`. Saat negosiasi di-approve, harga quotation items di-update dengan harga hasil nego + PPN recalc + revisi increment. Saat di-reject, quotation status di-set ke `rejected`. Halaman detail quotation menampilkan section "Negosiasi" + tombol "Buat Negosiasi" (hanya saat `sent`/`proses_negosiasi`). |
-| **Customer PO** | Purchase Order dari customer. Field: nomor (auto `RRI-CPO-YY-MM-0001`), customer, quotation_id (opsional), tanggal, nomor_po_customer, terms_of_payment, pic_customer_id (PIC dari database — auto-load saat customer dipilih), waktu_pengiriman (hari), status (draft/confirmed/cancelled). Item: barang (linked master barang atau free-text nama_barang/satuan untuk auto-create master), jumlah, harga_satuan. TOP options: Net 14, Net 30, Net 60, Net 90, Cash, Custom. **Due date:** Jatuh tempo dihitung SETELAH invoice hardcopy diterima customer, bukan dari tanggal PO. Hitungan TOP dimulai setelah: barang terkirim → GRN customer → invoice hardcopy disubmit & diterima customer. **Waktu pengiriman** (hari) disimpan di PO dan di-propagate ke Sales Order → Delivery Order → Retur Penjualan. PIC Customer auto-fetch dari database saat customer dipilih. Konfirmasi PO → auto-close quotation + auto-generate Sales Order + auto-create master barang untuk item free-text. Halaman: Tambah, Detail (dengan FileUpload), Edit. Dokument: `dokumen/customer-po/{id}/{file}` |
+| **RFQ Customer** | Merekam RFQ dari customer. **Entry point parent** — nomor dari global counter via `generateGlobalDocumentNumber('RFQC')` → `RRI-RFQC-YY-MM-NNNNN`. Tabel: `rfq_customer`, `rfq_customer_item`, `rfq_customer_document`, `rfq_customer_pic`. Assign ke PIC Customer spesifik. Upload file RFQ (PDF/gambar/Excel/Word) via upload-temp. Item images upload (1 per item). Detail, Edit, Delete di list page. API: `/api/v1/rfq-customer`. |
+| **Quotation** | Membuat Surat Penawaran Harga (SPH) dengan format 2 halaman PDF. Field: rfq_customer_id (referensi ke RFQ Customer), lampiran (text), perihal, pic_customer_id, alamat (auto-fill), masa_berlaku dropdown (1 Minggu–1 Bulan), PPN toggle. Item: spec/justification/image_url/satuan default dari master Barang (bisa di-override). Auto-populate: saat pilih RFQ Customer, form otomatis mengisi customer_id, pic_customer_id, alamat, referensi, dan items. Company profile (nama, alamat, kontak, tanda tangan, stempel) dari `site_settings`. Nomor: copy dari RFQ parent via `formatChildNumber(parentNumber, 'SPH')` → `RRI-SPH-YY-MM-NNNNN`. Tanpa parent: `generateGlobalDocumentNumber('SPH')`. **Status Workflow:** `draft → sent → proses_negosiasi → approved → closed`. Quick-action buttons di halaman detail: Kirim (draft→sent), Setujui/Tolak (sent/proses_negosiasi→approved/rejected), Revisi (rejected→draft), Tutup (approved→closed). Validasi transisi status di PATCH `/[id]/status` dan PUT `/[id]`. |
+| **Customer PO** | Purchase Order dari customer. Nomor: copy dari Quotation/RFQ parent via `formatChildNumber()` → `RRI-CPO-YY-MM-NNNNN`. Tanpa parent: `generateGlobalDocumentNumber('CPO')`. Field: customer, quotation_id (opsional), tanggal, nomor_po_customer, terms_of_payment, pic_customer_id (PIC dari database — auto-load saat customer dipilih), waktu_pengiriman (hari), status (draft/confirmed/cancelled). Item: barang (linked master barang atau free-text nama_barang/satuan untuk auto-create master), jumlah, harga_satuan. TOP options: Net 14, Net 30, Net 60, Net 90, Cash, Custom. **Due date:** Jatuh tempo dihitung SETELAH invoice hardcopy diterima customer, bukan dari tanggal PO. Hitungan TOP dimulai setelah: barang terkirim → GRN customer → invoice hardcopy disubmit & diterima customer. **Waktu pengiriman** (hari) disimpan di PO dan di-propagate ke Sales Order → Delivery Order → Retur Penjualan. PIC Customer auto-fetch dari database saat customer dipilih. Konfirmasi PO → auto-close quotation + auto-generate Sales Order + auto-create master barang untuk item free-text. Halaman: Tambah, Detail (dengan FileUpload), Edit. Dokument: `dokumen/customer-po/{id}/{file}` |
 
 **Jalur Kontrak → DI (Delivery Instruction):**
 
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Kontrak Customer** | Kontrak fixed price list. Upload PDF → AI OCR → simpan harga kontrak. Assign PIC Customer. Upload dokumen fisik kontrak via Lampiran |
-| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. Assign PIC Customer. Upload dokumen pendukung via Lampiran. **Input Item Barang:** 2 opsi — (1) Import JSON dari Gemini AI: paste JSON array hasil ekstraksi PDF kontrak (+ kode + jumlah + nama) → auto-match harga_satuan dari kontrak. (2) Input Manual: ketik kode barang + jumlah → auto-lookup dari kontrak. Tidak ada tabel Select 137 item — hanya tabel item yang sudah ditambahkan (editable qty & harga_satuan). **Harga cross-check:** setiap item menyimpan `harga_satuan_kontrak` (client-side) — jika user mengubah `harga_satuan` sehingga berbeda dengan kontrak, tampil visual warning (amber bg + icon AlertTriangle + teks "≠ kontrak: Rp X"). Saat submit, jika ada perbedaan harga, muncul modal konfirmasi berisi tabel selisih harga — user bisa "Kembali Edit" atau "Lanjutkan Simpan". |
+| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. **Entry point parent** — nomor dari global counter via `generateGlobalDocumentNumber('DI')` → `RRI-DI-YY-MM-NNNNN`. Assign PIC Customer. Upload dokumen pendukung via Lampiran. **Input Item Barang:** 2 opsi — (1) Import JSON dari Gemini AI: paste JSON array hasil ekstraksi PDF kontrak (+ kode + jumlah + nama) → auto-match harga_satuan dari kontrak. (2) Input Manual: ketik kode barang + jumlah → auto-lookup dari kontrak. Tidak ada tabel Select 137 item — hanya tabel item yang sudah ditambahkan (editable qty & harga_satuan). **Harga cross-check:** setiap item menyimpan `harga_satuan_kontrak` (client-side) — jika user mengubah `harga_satuan` sehingga berbeda dengan kontrak, tampil visual warning (amber bg + icon AlertTriangle + teks "≠ kontrak: Rp X"). Saat submit, jika ada perbedaan harga, muncul modal konfirmasi berisi tabel selisih harga — user bisa "Kembali Edit" atau "Lanjutkan Simpan". |
 
 ### D. Sales Order & Pengiriman
 
 | Sub-Modul | Deskripsi |
 |---|---|
-| **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
-| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor otomatis: `RRI-SJ-YY-MM-0001`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + draft Kwitansi (barengan) + jurnal penjualan. |
+| **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Nomor: copy dari parent (CPO/DI) via `formatChildNumber(parentNumber, 'SO')` → `RRI-SO-YY-MM-NNNNN`. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
+| **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor: copy dari SO parent via `formatChildNumber(parentNumber, 'SJ')` → `RRI-SJ-YY-MM-NNNNN`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + draft Kwitansi (barengan) + jurnal penjualan. |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice + draft Kwitansi |
 | **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
@@ -799,10 +798,13 @@ Semua dokumen berikut digenerate dalam format PDF yang bisa diprint dan disave:
 | **Nota Retur** | `RRI-RTJ-YY-MM-0001` (jual) / `RRI-RP-YY-MM-0001` (beli) | Sales / Procurement |
 
 **Ketentuan Nomor Dokumen:**
-- Format: `{RRI}-{KODE}-{YY}-{MM}-{0001}`
-- Setiap tahun berganti, nomor urut di-reset ke `0001`
-- Diimplementasikan dengan sequence/counter table PostgreSQL — di-reset otomatis setiap tahun via trigger atau cron job
-- Contoh reset: Desember 2026 nomor `RRI-INV-26-12-0015`, Januari 2027 menjadi `RRI-INV-27-01-0001`
+- Format: `{RRI}-{KODE}-{YY}-{MM}-{NNNNN}`
+- **Global single counter**: Semua dokumen menggunakan 1 counter global (`GLB`). Hanya 2 parent entry points (RFQ Customer, DI) yang memanggil counter langsung via `generateGlobalDocumentNumber(kodeDokumen)`.
+- **Child documents**: Quotation, Customer PO, Sales Order, DO, Invoice, Kwitansi, Tanda Terima, GRN, Retur — semuanya menyalin nomor dari parent (dokumen asal) dan menambahkan prefix masing-masing via `formatChildNumber(parentNumber, kodeDokumen)`. Jika parent tidak ada, fallback ke global counter langsung.
+- **Hierarki**: `RFQC`/`DI` (parent, global) → `QTN`/`CPO`/`SO` (copy parent) → `SJ`/`INV`/`KWT`/`TT`/dll (copy parent lagi)
+- Setiap tahun berganti, counter di-reset ke `00001`
+- Implementasi: PG function `increment_document_counter(p_kode_dokumen, p_tahun, p_bulan)` upsert & increment atomically; di `lib/utils/document-number.ts`
+- Contoh: DI `RRI-DI-26-06-00001` → Quotation anaknya `RRI-SPH-26-06-00001`
 
 **Nama File Download PDF:** Menggunakan nomor dokumen saja (tanpa prefix kode dokumen).
 - Contoh: `RRI-SJ-26-06-0001.pdf`, `RRI-SPH-26-06-0001.pdf`
@@ -922,17 +924,28 @@ Invoice jatuh tempo
 - Invoice pending > 7 hari → escalation ke Owner
 
 ### 8.3 Smart Document Numbering
-Nomor dokumen digenerate otomatis — tidak perlu input manual:
-```
-Quotation:  RRI-SPH-26-05-0001
-DO:         RRI-SJ-26-05-0001
-Invoice:    RRI-INV-26-05-0001
-Kwitansi:   RRI-KWT-26-05-0001
-Tanda Terima: RRI-TT-26-05-0001
-RFQ Customer: RRI-RFQC-26-05-0001
-RFQ Supplier: RRI-RFQ-26-05-0001
-Customer PO:  RRI-CPO-26-05-0001
-```
+Nomor dokumen digenerate otomatis — tidak perlu input manual. Menggunakan **single global counter** dengan hierarki parent-child:
+
+**Parent entry points (global counter):**
+- RFQ Customer → `generateGlobalDocumentNumber('RFQC')`
+- DI → `generateGlobalDocumentNumber('DI')`
+
+**Child documents (copy nomor dari parent + format prefix):**
+- Quotation (dari RFQC) → `formatChildNumber(parentNumber, 'SPH')` → `RRI-SPH-26-05-00001`
+- Customer PO (dari QTN atau RFQC) → `formatChildNumber(parentNumber, 'CPO')`
+- Sales Order (dari CPO atau DI) → `formatChildNumber(parentNumber, 'SO')`
+- DO/Surat Jalan (dari SO) → `formatChildNumber(parentNumber, 'SJ')`
+- Invoice (dari SO) → `formatChildNumber(parentNumber, 'INV')`
+- Kwitansi (dari INV) → `formatChildNumber(parentNumber, 'KWT')`
+- Tanda Terima (dari INV) → `formatChildNumber(parentNumber, 'TT')`
+- GRN (dari DO) → `formatChildNumber(parentNumber, 'GRN')`
+- Retur Penjualan (dari DO) → `formatChildNumber(parentNumber, 'RTJ')`
+- Retur Pembelian (dari PO) → `formatChildNumber(parentNumber, 'RP')`
+
+**Utility functions** di `src/lib/utils/document-number.ts`:
+- `generateGlobalDocumentNumber(kodeDokumen)` — increment global counter, return `RRI-{KODE}-YY-MM-NNNNN`
+- `formatChildNumber(parentNumber, kodeDokumen)` — ekstrak nomor urut dari parent, ganti prefix → `RRI-{KODE}-YY-MM-NNNNN`
+- `generateDocumentNumber(kodeDokumen)` — legacy per-document counter (masih ada untuk backward compat, tapi tidak lagi dipakai oleh dokumen baru)
 
 ### 8.4 WhatsApp Notification Integration
 

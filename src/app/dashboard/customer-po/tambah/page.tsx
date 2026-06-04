@@ -39,7 +39,6 @@ export default function TambahPoPage() {
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [nomorAuto, setNomorAuto] = useState('')
   const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([])
   const [qtnOpts, setQtnOpts] = useState<QtnOption[]>([])
   const [kategoriOpts, setKategoriOpts] = useState<Array<{ value: string; label: string }>>([])
@@ -148,13 +147,11 @@ export default function TambahPoPage() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch<{ nomor: string }>('/api/v1/customer-po/next-number'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nomor: string; status: string; revisi?: number; customer?: { id: string; nama: string } }>>('/api/v1/quotation'),
       apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/kategori-barang'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([nomorRes, cRes, qRes, kRes, bRes]) => {
-      if (nomorRes.data?.nomor) setNomorAuto(nomorRes.data.nomor)
+    ]).then(([cRes, qRes, kRes, bRes]) => {
       setCustOpts((cRes.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       const approved = (qRes.data ?? []).filter((x: { status: string }) => x.status === 'approved' || x.status === 'proses_negosiasi')
       setQtnOpts(approved.map((x: { id: string; nomor: string; revisi?: number; customer?: { nama: string } }) => ({
@@ -299,11 +296,6 @@ export default function TambahPoPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Informasi PO</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label>Nomor PO (Otomatis)</Label>
-            <Input value={nomorAuto} disabled className="bg-muted" />
-          </div>
-
           <div>
             <Label>Quotation *</Label>
             <Select onValueChange={setSelectedQtnId} value={selectedQtnId} disabled={hasQuotation}>

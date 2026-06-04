@@ -54,55 +54,12 @@ export default function TambahRfqCustomerPage() {
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [uploadingFile, setUploadingFile] = useState(false)
   const [uploadingItemImage, setUploadingItemImage] = useState<string | null>(null)
-  const [nomorAuto, setNomorAuto] = useState('')
-  const [reserveId, setReserveId] = useState<string>('')
-  const [expiresAt, setExpiresAt] = useState<string>('')
-  const [expiringSoon, setExpiringSoon] = useState(false)
+  const [nomorDokumen, setNomorDokumen] = useState('')
   const [nomorChecking, setNomorChecking] = useState(false)
   const checkNomorRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const recordIdRef = useRef<string>(crypto.randomUUID())
+  const recordIdRef = { current: crypto.randomUUID() }
 
   const today = new Date().toISOString().split('T')[0]
-
-  // Fetch nomor reserve saat mount
-  useEffect(() => {
-    apiFetch<{ nomor: string; reserveId: string; expiresAt: string }>('/api/v1/rfq-customer/next-number')
-      .then(res => {
-        setNomorAuto(res.data.nomor)
-        setReserveId(res.data.reserveId)
-        setExpiresAt(res.data.expiresAt)
-      })
-      .catch(err => {
-        console.error('Failed to reserve number:', err)
-        toast.error('Gagal reserve nomor. Silakan refresh halaman.')
-      })
-  }, [])
-
-  // Countdown timer untuk expiry
-  useEffect(() => {
-    if (!expiresAt) return
-    
-    const checkExpiry = setInterval(() => {
-      const now = new Date()
-      const expiry = new Date(expiresAt)
-      const diff = expiry.getTime() - now.getTime()
-      
-      // Warning 5 menit sebelum expired
-      if (diff < 5 * 60 * 1000 && diff > 0) {
-        setExpiringSoon(true)
-        toast.warning('Nomor akan kadaluarsa segera. Silakan submit form.')
-      }
-      
-      // Handle expired
-      if (diff <= 0) {
-        setExpiringSoon(false)
-        toast.error('Nomor reservasi kadaluarsa. Silakan refresh halaman.')
-        // Optional: auto-refresh nomor baru
-      }
-    }, 10000) // Check setiap 10 detik
-    
-    return () => clearInterval(checkExpiry)
-  }, [expiresAt])
 
   const form = useForm<RfqFormValues>({
     resolver: zodResolver(rfqSchema),
@@ -128,6 +85,9 @@ export default function TambahRfqCustomerPage() {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
     }).catch(() => toast.error('Gagal memuat data referensi'))
+    apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=RFQC')
+      .then(res => setNomorDokumen(res.data.nomor))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -224,7 +184,6 @@ export default function TambahRfqCustomerPage() {
     try {
       const payload = {
         id: recordIdRef.current,
-        reserveId, // Include reserveId untuk validasi
         ...data,
         nomor_rfq_customer: data.nomor_rfq_customer || null,
         pic_customer_id: data.pic_customer_id || null,
@@ -270,6 +229,13 @@ export default function TambahRfqCustomerPage() {
               <CardTitle className="text-base">Informasi RFQ Customer</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 px-4 py-3">
+                <FileText className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Nomor Dokumen Internal: </span>
+                  <span className="font-mono font-semibold">{nomorDokumen || 'Memuat...'}</span>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={control} name="customer_id" render={({ field }) => (
                   <FormItem><FormLabel>Customer *</FormLabel>
@@ -285,25 +251,6 @@ export default function TambahRfqCustomerPage() {
                 )} />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormItem>
-                  <FormLabel>Nomor RFQ (Auto)</FormLabel>
-                  <div className="relative">
-                    <Input
-                      value={nomorAuto}
-                      placeholder="Memuat..."
-                      disabled
-                      className={`bg-muted ${expiringSoon ? 'border-warning text-warning font-medium' : ''}`}
-                    />
-                    {expiringSoon && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <span className="text-xs text-warning font-medium">⏳ Segera</span>
-                      </div>
-                    )}
-                  </div>
-                  {expiringSoon && (
-                    <p className="text-xs text-warning mt-1">Nomor akan kadaluarsa. Silakan submit form.</p>
-                  )}
-                </FormItem>
                 <FormField control={control} name="pic_customer_id" render={({ field }) => (
                   <FormItem><FormLabel>PIC Customer *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ''} disabled={!customerId}>

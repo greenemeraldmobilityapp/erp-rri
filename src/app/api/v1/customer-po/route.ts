@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 import { logAudit } from '@/lib/audit'
 import { createBarangFromRfqItem } from '@/lib/utils/barang-auto-create'
 
@@ -46,7 +46,21 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateDocumentNumber('CPO')
+  let nomor: string
+  if (parsed.data.quotation_id) {
+    const { data: parent } = await supabaseAdmin
+      .from('quotation')
+      .select('nomor')
+      .eq('id', parsed.data.quotation_id)
+      .maybeSingle()
+    if (parent?.nomor) {
+      nomor = formatChildNumber(parent.nomor, 'CPO')
+    } else {
+      nomor = await generateGlobalDocumentNumber('CPO')
+    }
+  } else {
+    nomor = await generateGlobalDocumentNumber('CPO')
+  }
   const now = new Date().toISOString()
 
   const { data: po, error: poError } = await supabaseAdmin.from('customer_po').insert({

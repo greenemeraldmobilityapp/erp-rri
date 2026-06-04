@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({
   barang_id: z.string().optional().nullable(),
@@ -22,7 +22,6 @@ const fileSchema = z.object({
 
 const schema = z.object({
   id: z.string().uuid().optional(), // client-generated UUID for direct storage path
-  reserveId: z.string().uuid().optional(), // reservation ID dari next-number endpoint
   customer_id: z.string().min(1, 'Customer harus dipilih'),
   tanggal: z.string().min(1, 'Tanggal harus diisi'),
   nomor_rfq_customer: z.string().optional().nullable(),
@@ -57,23 +56,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  // Validasi reservation atau fallback ke sistem lama
-  let nomor: string
-  if (parsed.data.reserveId) {
-    const { useReservedNumber } = await import('@/lib/utils/document-number-reservation')
-    const result = await useReservedNumber(parsed.data.reserveId, auth.user!.id)
-    
-    if (result.success && result.nomor) {
-      nomor = result.nomor
-    } else {
-      // Reservation expired/invalid — fallback generate new number
-      console.warn('Reservation failed, falling back to generateDocumentNumber:', result.message)
-      nomor = await generateDocumentNumber('RFQC')
-    }
-  } else {
-    // Backward compatibility: fallback ke sistem lama jika tidak ada reserveId
-    nomor = await generateDocumentNumber('RFQC')
-  }
+  const nomor = await generateGlobalDocumentNumber('RFQC')
 
   const now = new Date().toISOString()
   const recordId = parsed.data.id || crypto.randomUUID()
