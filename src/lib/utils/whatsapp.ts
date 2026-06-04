@@ -15,7 +15,7 @@ export async function sendWhatsapp(
 ): Promise<SendResult> {
   const apiKey = process.env.FONNTE_API_KEY
   if (!apiKey) {
-    await logWhatsapp(recipient, message, 'failed', userId)
+    await logWhatsapp(recipient, message, 'failed', userId, undefined, 'FONNTE_API_KEY not configured')
     return { success: false, error: 'FONNTE_API_KEY not configured' }
   }
 
@@ -31,16 +31,18 @@ export async function sendWhatsapp(
 
     const data = await res.json()
 
-    if (data.status) {
+    if (data.status === true) {
       await logWhatsapp(recipient, message, 'sent', userId, data.id)
       return { success: true, fonnteId: data.id }
     }
 
-    await logWhatsapp(recipient, message, 'failed', userId)
-    return { success: false, error: data.reason || 'Unknown error' }
+    const errorReason = data.reason || data.message || 'Unknown error from Fonnte'
+    await logWhatsapp(recipient, message, 'failed', userId, undefined, errorReason)
+    return { success: false, error: errorReason }
   } catch (err) {
-    await logWhatsapp(recipient, message, 'failed', userId)
-    return { success: false, error: err instanceof Error ? err.message : 'Network error' }
+    const errorReason = err instanceof Error ? err.message : 'Network error'
+    await logWhatsapp(recipient, message, 'failed', userId, undefined, errorReason)
+    return { success: false, error: errorReason }
   }
 }
 
@@ -49,7 +51,8 @@ async function logWhatsapp(
   message: string,
   status: string,
   userId?: string,
-  fonnteId?: string
+  fonnteId?: string,
+  errorReason?: string
 ) {
   try {
     await supabaseAdmin.from('whatsapp_log').insert({
@@ -58,6 +61,7 @@ async function logWhatsapp(
       recipient,
       message,
       status,
+      error_reason: errorReason || null,
       sent_at: status === 'sent' ? new Date().toISOString() : null,
     })
   } catch {
