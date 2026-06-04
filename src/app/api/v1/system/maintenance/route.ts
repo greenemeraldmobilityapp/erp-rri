@@ -51,7 +51,9 @@ export async function GET(request: NextRequest) {
     .single()
 
   return NextResponse.json({
-    maintenance_mode: data?.value === 'true',
+    data: {
+      maintenance_mode: data?.value === 'true',
+    },
   })
 }
 
@@ -75,7 +77,9 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    maintenance_mode: enabled,
-    message: enabled ? 'Mode maintenance diaktifkan' : 'Mode maintenance dinonaktifkan',
+    data: {
+      maintenance_mode: enabled,
+      message: enabled ? 'Mode maintenance diaktifkan' : 'Mode maintenance dinonaktifkan',
+    },
   })
 }

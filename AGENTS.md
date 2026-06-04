@@ -9,6 +9,11 @@
 - Database migrations: Use Drizzle Kit directly (e.g., `npx drizzle-kit generate`)
 - Generate OpenAPI docs: `npx next-openapi-gen generate`
 
+## Deployment Rules
+- **Agent DILARANG menjalankan `vercel deploy` tanpa konfirmasi eksplisit dari user** — deploy hanya dilakukan setelah user menyatakan setuju
+- Build di Vercel hanya stabil via CLI (`npx vercel deploy --prod`), bukan via git push auto-deploy
+- Agent cukup menjalankan `npm run lint` + `npm run build` untuk verifikasi — tidak perlu deploy sendiri
+
 ## Technology Stack
 - **Framework**: Next.js 15.5.18 (App Router)
 - **Language**: TypeScript
@@ -150,6 +155,7 @@ All API endpoints under `/api/v1/`:
 - **Client**: Frontend uses `apiFetch()` from `@/lib/api/client` which auto-attaches auth token
 - **Docs**: OpenAPI spec auto-generated via `next-openapi-gen` CLI; served via Scalar UI at `/api-docs`
 - **Hybrid Pattern**: Server components (list pages) use direct Supabase for speed; client components (forms) use API routes for safety
+- **Response Format WAJIB**: Semua API route handler HARUS membungkus response di `{ data: ... }`. Client menggunakan `apiFetch<T>()` yang mengharapkan `{ data: T }`. Jangan mengembalikan data langsung di top-level JSON.
 
 ## Workflow
 After completing any changes or implementing a feature, always update:
