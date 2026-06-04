@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAuth } from '@/lib/api/auth'
+import { verifyAuthWithRole } from '@/lib/api/role-guard'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { forbidden } from '@/lib/api/errors'
 
@@ -39,7 +39,7 @@ const ARCHIVE_TABLES = [
  *         $ref: '#/components/responses/Forbidden'
  */
 export async function GET(request: NextRequest) {
-  const auth = await verifyAuth(request)
+  const auth = await verifyAuthWithRole(request)
   if (auth.error) return auth.error
 
   const twelveMonthsAgo = new Date()
@@ -62,15 +62,17 @@ export async function GET(request: NextRequest) {
     .from('data_archive').select('id', { count: 'exact', head: true })
 
   return NextResponse.json({
-    tables: stats,
-    totalArchivable: Object.values(stats).reduce((a, b) => a + b.archivable, 0),
-    totalArchived: archivedCount ?? 0,
-    cutoffDate: twelveMonthsAgo.toISOString(),
+    data: {
+      tables: stats,
+      totalArchivable: Object.values(stats).reduce((a, b) => a + b.archivable, 0),
+      totalArchived: archivedCount ?? 0,
+      cutoffDate: twelveMonthsAgo.toISOString(),
+    },
   })
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyAuth(request)
+  const auth = await verifyAuthWithRole(request)
   if (auth.error) return auth.error
 
   if (auth.user?.role !== 'owner' && auth.user?.role !== 'admin') {
@@ -112,9 +114,11 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    archived: totalArchived,
-    errors: errors.length ? errors : undefined,
-    message: `${totalArchived} record berhasil diarsipkan`,
-    cutoffDate: cutoffDate.toISOString(),
+    data: {
+      archived: totalArchived,
+      errors: errors.length ? errors : undefined,
+      message: `${totalArchived} record berhasil diarsipkan`,
+      cutoffDate: cutoffDate.toISOString(),
+    },
   })
 }

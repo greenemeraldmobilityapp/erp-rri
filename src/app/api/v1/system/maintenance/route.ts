@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyAuth } from '@/lib/api/auth'
+import { verifyAuthWithRole } from '@/lib/api/role-guard'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { forbidden } from '@/lib/api/errors'
 
@@ -41,7 +41,7 @@ import { forbidden } from '@/lib/api/errors'
  *         $ref: '#/components/responses/Forbidden'
  */
 export async function GET(request: NextRequest) {
-  const auth = await verifyAuth(request)
+  const auth = await verifyAuthWithRole(request)
   if (auth.error) return auth.error
 
   const { data } = await supabaseAdmin
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyAuth(request)
+  const auth = await verifyAuthWithRole(request)
   if (auth.error) return auth.error
 
   if (auth.user?.role !== 'owner' && auth.user?.role !== 'admin') {
