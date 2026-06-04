@@ -16,7 +16,9 @@ interface HealthData {
     error: string | null
   }
   storage: {
+    connected: boolean
     total_files: number
+    provider: string
   }
   errors: {
     count_7d: number

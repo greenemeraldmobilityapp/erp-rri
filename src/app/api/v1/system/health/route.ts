@@ -51,21 +51,23 @@ export async function GET(request: NextRequest) {
   const errorRate = totalActions && totalActions > 0 ? ((recentErrors ?? 0) / totalActions * 100).toFixed(2) : '0'
 
   return NextResponse.json({
-    status: dbError ? 'degraded' : 'healthy',
-    database: {
-      connected: !dbError,
-      latency_ms: dbLatency,
-      error: dbError?.message ?? null,
+    data: {
+      status: dbError ? 'degraded' : 'healthy',
+      database: {
+        connected: !dbError,
+        latency_ms: dbLatency,
+        error: dbError?.message ?? null,
+      },
+      storage: {
+        connected: storageConnected,
+        total_files: storageFiles,
+        provider: 'supabase',
+      },
+      errors: {
+        count_7d: recentErrors ?? 0,
+        rate_pct: errorRate,
+      },
+      timestamp: new Date().toISOString(),
     },
-    storage: {
-      connected: storageConnected,
-      total_files: storageFiles,
-      provider: 'google_drive',
-    },
-    errors: {
-      count_7d: recentErrors ?? 0,
-      rate_pct: errorRate,
-    },
-    timestamp: new Date().toISOString(),
   })
 }
