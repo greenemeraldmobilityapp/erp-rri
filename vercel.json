@@ -1,9 +1,6 @@
 {
   "crons": [
-    {
-      "path": "/api/v1/cron/ar-reminder",
-      "schedule": "0 1 * * *"
-    },
+
     {
       "path": "/api/v1/cron/cleanup-reservations",
       "schedule": "0 */6 * * *"
