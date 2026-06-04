@@ -65,7 +65,7 @@ export function MasterDataTable<T extends { id: string }>({
     <div className="space-y-4">
       {searchFields && searchFields.length > 0 && (
         <div className="flex items-center gap-4">
-          <div className="relative max-w-sm flex-1">
+          <div className="relative max-w-sm flex-1" data-tour="barang-search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
@@ -81,7 +81,7 @@ export function MasterDataTable<T extends { id: string }>({
           )}
         </div>
       )}
-      <div className="bg-card rounded-lg border overflow-hidden">
+      <div className="bg-card rounded-lg border overflow-hidden" data-tour="barang-table">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

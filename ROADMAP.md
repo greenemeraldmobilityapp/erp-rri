@@ -479,6 +479,31 @@ Menu berikut di-sidebar di-*disable* (opacity 50%, tidak bisa diklik, muncul toa
 
 ---
 
+## ✅ Done — Per-Page Tour Mandiri (Onboarding)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| PT-1 | **Fix auto-start tour** — `requestAnimationFrame` di `handleWelcomeStart` agar welcome modal hilang dulu sebelum Joyride mulai | ✅ Done | `onboarding-provider.tsx` |
+| PT-2 | **Fix Joyride `callback` → `onEvent`** — prop `callback` tidak ada di react-joyride v3.1.0, ganti dengan `onEvent`. Juga pasang handler yang sebelumnya tidak terpakai. | ✅ Done | `onboarding-provider.tsx` |
+| PT-3 | **Buat komponen `PageTour` reusable** — wrapper Joyride untuk per-page tour. Fitur: auto-show pas first visit (localStorage), trigger button inline, skip/finish mark done. Style konsisten dengan global tour. | ✅ Done | `page-tour.tsx` |
+| PT-4 | **Tour steps Barang List** — 5 step: Data Barang, Pencarian, Tabel, Tambah Barang, Aksi Baris | ✅ Done | `tour-steps/barang-list.ts` |
+| PT-5 | **Tour steps Barang Form** — 8 step: Title, Tabs Input, Nama, Kode, Kategori, Harga, Foto, Simpan | ✅ Done | `tour-steps/barang-form.ts` |
+| PT-6 | **`data-tour` di MasterDataTable** — search bar & table wrapper | ✅ Done | `master-data-table.tsx` |
+| PT-7 | **`data-tour` + `PageTour` di barang list** — title, search, table, tambah button, actions | ✅ Done | `barang/page.tsx` |
+| PT-8 | **`data-tour` + `PageTour` di barang form** — title, tabs, 6 form fields, image, simpan | ✅ Done | `barang/tambah/page.tsx` |
+
+### Cara menambahkan tour ke halaman baru:
+1. Buat file `tour-steps/{page-name}.ts` — export array of `Step`
+2. Tambahkan `data-tour` attributes ke elemen DOM yang relevan
+3. Import `PageTour` + step array, render `<PageTour pageKey="..." steps={...} />` di PageHeader actions
+
+### File baru:
+- `src/components/onboarding/page-tour.tsx`
+- `src/components/onboarding/tour-steps/barang-list.ts`
+- `src/components/onboarding/tour-steps/barang-form.ts`
+
+---
+
 ## Catatan
 
 ### Flow Quotation Status

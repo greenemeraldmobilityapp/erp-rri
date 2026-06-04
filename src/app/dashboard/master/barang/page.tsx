@@ -15,6 +15,8 @@ import { TableSkeleton } from "@/components/ui/skeleton"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ExportButton } from "@/components/export-button"
+import { PageTour } from '@/components/onboarding/page-tour'
+import { barangListSteps } from '@/components/onboarding/tour-steps/barang-list'
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -98,7 +100,7 @@ export default function BarangPage() {
   }
 
   const actionButtons = (id: string, name: string) => (
-    <div className="flex items-center justify-end gap-1">
+    <div className="flex items-center justify-end gap-1" data-tour="barang-actions">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -181,7 +183,7 @@ export default function BarangPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8" data-tour="barang-title">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader
         title="Data Barang"
@@ -189,7 +191,8 @@ export default function BarangPage() {
         actions={
           <>
             <ExportButton table="barang" />
-            <Link href="/dashboard/master/barang/tambah">
+            <PageTour pageKey="barang-list" steps={barangListSteps} />
+            <Link href="/dashboard/master/barang/tambah" data-tour="btn-tambah-barang">
               <Button>Tambah Barang</Button>
             </Link>
           </>

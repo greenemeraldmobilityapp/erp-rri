@@ -23,6 +23,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Loader2, FileDown, Copy, Check, Plus, Upload, X } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { PageTour } from '@/components/onboarding/page-tour';
+import { barangFormSteps } from '@/components/onboarding/tour-steps/barang-form';
 
 const barangSchema = z.object({
   nama: z.string().min(2, { message: "Nama barang harus diisi" }),
@@ -253,19 +255,22 @@ export default function TambahBarangPage() {
   const formatCurrency = (val: number) => 'Rp ' + val.toLocaleString('id-ID');
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl" data-tour="barang-form-title">
       <PageHeader
         title="Tambah Barang"
         description="Input barang baru atau import dari data kontrak"
         actions={
-          <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>
-            Kembali
-          </Button>
+          <>
+            <PageTour pageKey="barang-form" steps={barangFormSteps} />
+            <Button variant="back" onClick={() => confirmLeave(() => router.push('/dashboard/master/barang'))}>
+              Kembali
+            </Button>
+          </>
         }
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-        <TabsList>
+        <TabsList data-tour="barang-form-tabs">
           <TabsTrigger value="manual">Input Manual</TabsTrigger>
           <TabsTrigger value="import">Import dari Kontrak</TabsTrigger>
         </TabsList>
@@ -274,6 +279,7 @@ export default function TambahBarangPage() {
           <div className="mx-auto max-w-xl">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div data-tour="field-nama">
                 <FormField
                   control={form.control}
                   name="nama"
@@ -287,6 +293,8 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                </div>
+                <div data-tour="field-kode">
                 <FormField
                   control={form.control}
                   name="kode"
@@ -300,6 +308,7 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                </div>
                 <FormField
                   control={form.control}
                   name="barcode"
@@ -313,6 +322,7 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                <div data-tour="field-kategori">
                 <FormField
                   control={form.control}
                   name="kategori_id"
@@ -350,6 +360,7 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -412,7 +423,7 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
-                <div className="space-y-3">
+                <div className="space-y-3" data-tour="field-image">
                   <FormLabel>Foto Barang</FormLabel>
                   {imagePreview ? (
                     <div className="relative inline-block rounded-lg border overflow-hidden">
@@ -455,7 +466,7 @@ export default function TambahBarangPage() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4" data-tour="field-harga">
                   <FormField
                     control={form.control}
                     name="harga_beli_default"
@@ -516,7 +527,9 @@ export default function TambahBarangPage() {
                     </FormItem>
                   )}
                 />
+                <div data-tour="btn-simpan">
                 <FormActions loading={loading} onCancel={() => confirmLeave(() => router.push('/dashboard/master/barang'))} />
+                </div>
               </form>
             </Form>
           </div>

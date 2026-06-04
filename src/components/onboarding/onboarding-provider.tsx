@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/db/client'
 import { tourSteps } from './tour-steps'
-import type { EventData } from 'react-joyride'
+import type { EventHandler } from 'react-joyride'
 import { Compass } from 'lucide-react'
 
 const Joyride = dynamic(() => import('react-joyride').then(m => ({ default: m.Joyride })), { ssr: false })
@@ -28,7 +28,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const handleWelcomeStart = async () => {
     setShowWelcome(false)
-    setRunTour(true)
+    requestAnimationFrame(() => setRunTour(true))
   }
 
   const handleWelcomeSkip = () => {
@@ -47,7 +47,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [])
 
-  const handleJoyrideEvent = useCallback(async (data: EventData) => {
+  const handleJoyrideEvent = useCallback<EventHandler>(async (data) => {
     if (data.status === 'finished' || data.status === 'skipped') {
       setRunTour(false)
       await markDone()
@@ -94,6 +94,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         steps={tourSteps}
         run={runTour}
         continuous
+        onEvent={handleJoyrideEvent}
         options={{
           showProgress: true,
           buttons: ['back', 'primary', 'skip'],
