@@ -52,7 +52,7 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | ORM | Drizzle ORM |
 | Auth | Supabase Auth |
 | PDF Generator | @react-pdf/renderer |
-| Background Jobs | Inngest / Trigger.dev |
+| Background Jobs | cron-job.org (free, 60 req/hour) + Vercel Serverless Functions |
 | Cache | Redis (Upstash) |
 | Notifikasi In-App | sonner |
 | Notifikasi WhatsApp | Fonnte (gratis 500 msg/hari) — sudah implementasi dengan 3 trigger: Quotation, DO Dikirim, PO Supplier |
@@ -558,14 +558,60 @@ Untuk storage public URLs: tetap `window.open(url)` langsung — tidak perlu aut
 
 ## 6. Scalability & Arsitektur
 
-### 6.1 Background Jobs
+### 6.1 Background Jobs & Cron
 Proses berat dijalankan di background agar tidak memblokir user:
 - AI Search Harga (Playwright scraping)
 - AI OCR Kontrak
 - Generate PDF dokumen
 - Export laporan Excel
 
-Teknologi: **Inngest** atau **Trigger.dev** — terintegrasi native dengan Next.js.
+Teknologi: **cron-job.org** (free tier, max 60 requests/hour) untuk penjadwalan. Vercel Serverless Functions untuk endpoint. Semua cron endpoint diamankan dengan `CRON_SECRET_TOKEN` (Bearer auth header).
+
+**Daftar Cron Jobs:**
+
+| Endpoint | Schedule | Fungsi | Recipient |
+|----------|----------|--------|-----------|
+| `/api/v1/cron/contract-expiry-reminder` | `0 6 * * *` (setiap hari jam 6 pagi) | Contract alerts + AR summary | Owner |
+| `/api/v1/cron/invoice-due-date-reminder` | `1 6 * * *` (setiap hari jam 6:01 pagi) | Invoice due date reminders (H-3, H-1, H, H+1...H+30) | Owner |
+| `/api/v1/cron/do-overdue-reminder` | `2 6 * * *` (setiap hari jam 6:02 pagi) | DO delivery reminder (H-7, H-3, H-1, H) | Owner |
+| `/api/v1/cron/approval-escalation` | `0 8,12,17 * * 1-5` (Senin-Jumat jam 8,12,17) | PR/PO escalation >24h | Owner |
+
+**WhatsApp Notifications:**
+- **Contract Alerts** (`/api/v1/cron/contract-expiry-reminder`): Summary kontrak expired &即将 expired dikirim ke owner WhatsApp
+- **Invoice Due Date Reminders** (`/api/v1/cron/invoice-due-date-reminder`): Reminder invoice jatuh tempo H-3, H-1, H, H+1, H+2, ... H+30 (stop setelah paid atau H+30)
+- **DO Overdue Reminder** (`/api/v1/cron/do-overdue-reminder`): DO delivery reminder H-7, H-3, H-1, H (hari pengiriman)
+- **Approval Escalation** (`/api/v1/cron/approval-escalation`): Escalation PR/PO pending >24 jam ke owner
+- **Format**: Semua message dalam Bahasa Indonesia dengan timezone WIB (Asia/Jakarta)
+
+**Setup Fonnte API:**
+1. Register akun di https://fonnte.com/
+2. Dapatkan API token dari dashboard Fonnte
+3. Set environment variable `FONNTE_API_KEY=<token>` di Vercel
+4. Test koneksi: `curl -X POST https://api.fonnte.com/send -H "Authorization: <token>" -H "Content-Type: application/json" -d '{"target":"628xxxxxxxxxx","message":"test"}'`
+**Note**: Format Authorization header tanpa prefix "Bearer"
+
+**Setup Site Settings:**
+```sql
+-- Set owner WhatsApp number (format: 628xxxxxxxxxx)
+INSERT INTO site_settings (key, value) 
+VALUES ('owner_whatsapp', '6285640884088')
+ON CONFLICT (key) DO UPDATE SET value = '6285640884088';
+
+-- Set escalation threshold in hours (default: 24)
+INSERT INTO site_settings (key, value) 
+VALUES ('escalation_hours', '24')
+ON CONFLICT (key) DO UPDATE SET value = '24';
+```
+
+**Setup:** Akun cron-job.org → Buat 5 cron jobs (1 per endpoint) → HTTP GET dengan header `Authorization: Bearer <CRON_SECRET_TOKEN>`. `CRON_SECRET_TOKEN` disimpan sebagai environment variable di Vercel.
+
+**Schedule Staggering** (untuk menghindari API rate limit, jeda 1 menit antar cron):
+- `0 6 * * *` → contract-expiry-reminder (start 06:00:00)
+- `1 6 * * *` → invoice-due-date-reminder (start 06:01:00)
+- `2 6 * * *` → do-overdue-reminder (start 06:02:00)
+- `0 8,12,17 * * 1-5` → approval-escalation (jam 8,12,17)
+
+**Monitoring Dashboard:** Riwayat notifikasi WhatsApp bisa dilihat di `/dashboard/notifikasi` — halaman client component dengan filter status, search penerima, pagination, dan expand pesan lengkap. Data disajikan via `GET /api/v1/whatsapp-log` (dengan `supabaseAdmin` + `verifyAuth`).
 
 ### 6.2 Caching dengan Redis (Upstash)
 Data yang sering diakses di-cache untuk performa optimal:
@@ -667,8 +713,8 @@ Sistem automation menghubungkan database events ke AI agents via 2 mekanisme:
 | QUOTATION_CREATED | Supabase Webhook (INSERT on `quotation`) | PRICE_RECOMMENDATION | Rekomendasi harga untuk quotation baru |
 | PR_SUBMITTED | Supabase Webhook (INSERT on `purchase_request`) | PR_ROUTING | Routing otomatis PR ke supplier |
 | GRN_CREATED | Supabase Webhook (INSERT on `grn`) | GRN_CHECK | QC otomatis barang masuk |
-| CONTRACT_NEARING_EXPIRY | Vercel Cron (daily) | CONTRACT_ALERTS | Notifikasi kontrak expired 30 hari |
-| AR_OVERDUE_30 | Vercel Cron (daily) | BULK_REMINDERS | Auto-reminder invoice overdue |
+| CONTRACT_NEARING_EXPIRY | cron-job.org (daily 06:00) | CONTRACT_ALERTS | Notifikasi kontrak expired 30 hari |
+| AR_OVERDUE_30 | cron-job.org (daily 06:00) | BULK_REMINDERS | Auto-reminder invoice overdue |
 
 #### Rate Limiting & Monitoring
 
@@ -693,7 +739,7 @@ Sistem automation menghubungkan database events ke AI agents via 2 mekanisme:
 | `/api/v1/ai/auto-suggest-barang` | GET | Auto-suggest barang by query + customer_id |
 | `/api/v1/ai/price-trend` | GET | Grafik tren harga per barang_id |
 | `/api/v1/ai/anomaly-detection` | GET | Deteksi anomaly transaksi |
-| `/api/v1/cron/automation` | GET | Cron trigger: contract alerts + AR reminders |
+| `/api/v1/cron/contract-expiry-reminder` | GET | Ex-automation: CONTRACT_NEARING_EXPIRY (kontrak expiring 30 hari) + AR_OVERDUE_30 trigger. Dipanggil via cron-job.org schedule `0 6 * * *`. Auth via `CRON_SECRET_TOKEN` Bearer header. |
 
 ### C. Pre-Sales
 
@@ -738,7 +784,7 @@ Modul ini menangani pembelian dari supplier — termasuk supplier marketplace Sh
 | **GRN (Goods Received Note)** | Tanda terima barang. Upload dokumen pendukung via Lampiran |
 | **Retur Pembelian** | Barang dikembalikan ke supplier karena cacat/tidak sesuai. Proses: Retur → DO Retur → Kirim ke supplier → Refund/Adjustment. Upload dokumen pendukung via Lampiran |
 | **Supplier Payment** ✅ | Pembayaran ke supplier (termasuk bukti transfer) — `supplier_payment` table + API + halaman `/dashboard/procurement/supplier-payment` |
-| **Approval Escalation** ✅ | Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke atasan via notifikasi — Cron endpoint `/api/v1/cron/approval-escalation` + audit_log |
+| **Approval Escalation** ✅ | Jika PR/PO tidak di-approve dalam 24 jam, auto-escalate ke manager via WhatsApp — cron-job.org schedule `0 8,12,17 * * 1-5` (jam 8,12,17 Senin-Jumat) via endpoint `/api/v1/cron/approval-escalation` + audit_log |
 
 **Model Inventory:**
 - **Default: Make-to-Order** — barang dibeli setelah PO Customer deal
@@ -968,7 +1014,7 @@ Notifikasi otomatis via WhatsApp API (Fonnte) untuk komunikasi dengan Customer &
 
 **Implementasi:**
 - **Utility:** `src/lib/utils/whatsapp.ts` — fungsi `sendWhatsapp(recipient, message, userId?)` yang memanggil Fonnte API (`POST https://api.fonnte.com/send`) dan mencatat ke tabel `whatsapp_log`.
-- **Cron Job:** `src/app/api/v1/cron/ar-reminder/route.ts` — endpoint yang dipanggil Vercel Cron setiap hari pukul 01:00 UTC (08:00 WIB). Logic: cek semua invoice aktif, hitung due date dari `tanggal + top` (TOP mulai dihitung setelah invoice hardcopy diterima customer — secara praktis dihitung dari tanggal invoice), kirim WA sesuai selisih hari.
+- **Cron Job:** `src/app/api/v1/cron/invoice-due-date-reminder/route.ts` — endpoint yang dipanggil cron-job.org setiap hari jam 6 pagi WIB. Logic: cek semua invoice aktif (status != paid), hitung due date dari `tanggal + top`, hitung total dari `invoice_item`, kirim WA sesuai selisih hari (H-3, H-1, H, H+1...H+30).
 - **Schedule:** `vercel.json` — `"0 1 * * *"` (setiap hari jam 1 AM UTC = 8 AM WIB).
 - **Log:** Semua pengiriman tercatat di tabel `whatsapp_log` untuk monitoring.
 - **Halaman:** `/dashboard/notifikasi` — riwayat notifikasi WhatsApp.

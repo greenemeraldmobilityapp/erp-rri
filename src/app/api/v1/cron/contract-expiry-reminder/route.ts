@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { handleAutomationTrigger } from '@/lib/ai/agents/DataAgent'
+import { checkContractAlerts, sendContractAlertNotifications } from '@/lib/ai/agents/DataAgent/tools/contractAlert'
+import { generateBulkReminders, sendBulkReminderNotifications } from '@/lib/ai/agents/DataAgent/tools/smartReminder'
 
 interface TriggerResult {
   trigger: string
@@ -67,6 +69,13 @@ export async function GET(request: Request) {
       results.push({ trigger: 'AR_OVERDUE_30', entity_count: overdueInvoices?.length ?? 0, results: triggerResults })
     }
   }
+
+  // Send WhatsApp notifications to owner
+  const alerts = await checkContractAlerts(30)
+  await sendContractAlertNotifications(alerts)
+
+  const reminders = await generateBulkReminders(30)
+  await sendBulkReminderNotifications(reminders)
 
   return NextResponse.json({
     run_at: new Date().toISOString(),

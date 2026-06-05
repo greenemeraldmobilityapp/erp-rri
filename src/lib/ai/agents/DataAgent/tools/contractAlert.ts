@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { sendWhatsapp, getOwnerWhatsapp } from '@/lib/utils/whatsapp'
+import { formatDateWIB } from '@/lib/utils/timezone'
 
 export interface ContractAlertResult {
   contract_id: string
@@ -20,16 +22,21 @@ export interface ContractAlertResult {
 }
 
 export async function checkContractAlerts(
-  daysThreshold: number = 30
+  daysThreshold: number = 30,
+  options?: { sendNotification?: boolean }
 ): Promise<ContractAlertResult[]> {
   const today = new Date()
   const thresholdDate = new Date(today)
   thresholdDate.setDate(thresholdDate.getDate() + daysThreshold)
 
+  console.log('checkContractAlerts: Checking contracts with threshold', daysThreshold, 'days')
+
   const { data: contracts } = await supabaseAdmin
     .from('kontrak')
-    .select('*, supplier!supplier_id(nama)')
+    .select('*, customer!customer_id(nama)')
     .eq('is_active', true)
+
+  console.log('checkContractAlerts: Found', contracts?.length ?? 0, 'active contracts')
 
   const alerts: ContractAlertResult[] = []
 
@@ -42,8 +49,8 @@ export async function checkContractAlerts(
     if (daysUntilExpiry < 0) {
       alerts.push({
         contract_id: kontrak.id,
-        contract_nomor: (kontrak as { nomor: string }).nomor,
-        supplier_nama: (kontrak.supplier as { nama: string }).nama,
+        contract_nomor: (kontrak as { nomor_kontrak: string }).nomor_kontrak,
+        supplier_nama: (kontrak.customer as { nama: string }).nama,
         items_count: 0,
         expiry_status: 'EXPIRED',
         days_until_expiry: daysUntilExpiry,
@@ -105,8 +112,8 @@ export async function checkContractAlerts(
 
       alerts.push({
         contract_id: kontrak.id,
-        contract_nomor: (kontrak as { nomor: string }).nomor,
-        supplier_nama: (kontrak.supplier as { nama: string }).nama,
+        contract_nomor: (kontrak as { nomor_kontrak: string }).nomor_kontrak,
+        supplier_nama: (kontrak.customer as { nama: string }).nama,
         items_count: affectedBarang.length,
         expiry_status: 'EXPIRING_SOON',
         days_until_expiry: daysUntilExpiry,
@@ -123,6 +130,57 @@ export async function checkContractAlerts(
     if (a.urgency === 'CRITICAL' && b.urgency !== 'CRITICAL') return -1
     return a.days_until_expiry - b.days_until_expiry
   })
+}
+
+export async function sendContractAlertNotifications(alerts: ContractAlertResult[]): Promise<void> {
+  if (alerts.length === 0) {
+    console.log('Contract alerts: No alerts to send')
+    return
+  }
+
+  const ownerHps = await getOwnerWhatsapp()
+  if (!ownerHps.length) {
+    console.log('Contract alerts: owner_whatsapp not configured in site_settings, skipping notification')
+    return
+  }
+
+  console.log('Contract alerts: Sending WhatsApp with', alerts.length, 'alerts')
+
+  const expired = alerts.filter(a => a.expiry_status === 'EXPIRED')
+  const expiringSoon = alerts.filter(a => a.expiry_status === 'EXPIRING_SOON')
+
+  const lines: string[] = [
+    '📋 Ringkasan Alert Kontrak RRI',
+    `Tanggal: ${formatDateWIB(new Date())}`,
+    '',
+    `⚠️ KADALUARSA: ${expired.length}`,
+    `⏰ Segera Berakhir: ${expiringSoon.length}`,
+    '',
+  ]
+
+  if (expired.length > 0) {
+    lines.push('--- KONTRAK KADALUARSA ---')
+    for (const a of expired.slice(0, 5)) {
+      lines.push(`• ${a.contract_nomor} (${a.supplier_nama}) - TERLAMBAT ${Math.abs(a.days_until_expiry)} hari`)
+    }
+    if (expired.length > 5) lines.push(`... dan ${expired.length - 5} lainnya`)
+    lines.push('')
+  }
+
+  if (expiringSoon.length > 0) {
+    lines.push('--- KONTRAK SEGERA BERAKHIR ---')
+    for (const a of expiringSoon.slice(0, 5)) {
+      lines.push(`• ${a.contract_nomor} (${a.supplier_nama}) - ${a.days_until_expiry} hari lagi`)
+    }
+    if (expiringSoon.length > 5) lines.push(`... dan ${expiringSoon.length - 5} lainnya`)
+  }
+
+  lines.push('')
+  lines.push('Mohon tinjau dan ambil tindakan yang diperlukan.')
+
+  for (const hp of ownerHps) {
+    await sendWhatsapp(hp, lines.join('\n'))
+  }
 }
 
 export async function getContractAlertSummary(): Promise<{

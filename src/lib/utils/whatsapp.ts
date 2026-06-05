@@ -23,7 +23,7 @@ export async function sendWhatsapp(
     const res = await fetch(FONNTE_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ target: recipient, message }),
@@ -43,6 +43,20 @@ export async function sendWhatsapp(
     const errorReason = err instanceof Error ? err.message : 'Network error'
     await logWhatsapp(recipient, message, 'failed', userId, undefined, errorReason)
     return { success: false, error: errorReason }
+  }
+}
+
+export async function getOwnerWhatsapp(): Promise<string[]> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'owner_whatsapp')
+      .single()
+    if (!data?.value) return []
+    return data.value.split(',').map((s: string) => s.trim()).filter(Boolean)
+  } catch {
+    return []
   }
 }
 

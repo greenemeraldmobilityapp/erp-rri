@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '@/lib/api/supabase-server'
+import { sendWhatsapp, getOwnerWhatsapp } from '@/lib/utils/whatsapp'
+import { formatDateWIB } from '@/lib/utils/timezone'
 
 export interface SmartReminderInput {
   invoice_id: string
@@ -130,7 +132,8 @@ RRI`
 }
 
 export async function generateBulkReminders(
-  overdueDaysThreshold: number = 7
+  overdueDaysThreshold: number = 7,
+  options?: { sendNotification?: boolean }
 ): Promise<SmartReminderResult[]> {
   const { data: overdueInvoices } = await supabaseAdmin
     .from('invoice')
@@ -164,4 +167,56 @@ export async function generateBulkReminders(
   }
 
   return reminders
+}
+
+export async function sendBulkReminderNotifications(reminders: SmartReminderResult[]): Promise<void> {
+  if (reminders.length === 0) {
+    console.log('Bulk reminders: No reminders to send')
+    return
+  }
+
+  const ownerHps = await getOwnerWhatsapp()
+  if (!ownerHps.length) {
+    console.log('Bulk reminders: owner_whatsapp not configured in site_settings, skipping notification')
+    return
+  }
+
+  console.log('Bulk reminders: Sending WhatsApp with', reminders.length, 'reminders')
+
+  const urgent = reminders.filter(r => r.priority === 'HIGH' || r.reminder_type === 'urgent' || r.reminder_type === 'final')
+  const normal = reminders.filter(r => r.priority !== 'HIGH' && r.reminder_type !== 'urgent' && r.reminder_type !== 'final')
+
+  const lines: string[] = [
+    '💰 Ringkasan Reminder Piutang RRI',
+    `Tanggal: ${formatDateWIB(new Date())}`,
+    '',
+    `Total Invoice Jatuh Tempo: ${reminders.length}`,
+    `⚠️ Mendesak: ${urgent.length}`,
+    `📋 Normal: ${normal.length}`,
+    '',
+  ]
+
+  if (urgent.length > 0) {
+    lines.push('--- MENDESAK (>30 hari overdue) ---')
+    for (const r of urgent.slice(0, 5)) {
+      lines.push(`• ${r.customer_name} - ${r.reminder_type.toUpperCase()} - Prioritas: ${r.priority}`)
+    }
+    if (urgent.length > 5) lines.push(`... dan ${urgent.length - 5} lainnya`)
+    lines.push('')
+  }
+
+  if (normal.length > 0) {
+    lines.push('--- NORMAL (<30 hari overdue) ---')
+    for (const r of normal.slice(0, 5)) {
+      lines.push(`• ${r.customer_name} - Prioritas: ${r.priority}`)
+    }
+    if (normal.length > 5) lines.push(`... dan ${normal.length - 5} lainnya`)
+  }
+
+  lines.push('')
+  lines.push('Mohon tinjau dan lakukan follow up dengan customer.')
+
+  for (const hp of ownerHps) {
+    await sendWhatsapp(hp, lines.join('\n'))
+  }
 }

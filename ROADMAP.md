@@ -523,4 +523,118 @@ draft ──→ sent ──→ proses_negosiasi ──→ approved ──→ clo
 | **proses_negosiasi** | **approved, rejected** |
 | approved | closed |
 | rejected | draft |
-| closed | (terminal) |
+| closed | (terminal)
+
+---
+
+## ✅ Done — Cron Migration: Vercel → cron-job.org
+
+**Alasan migrasi:** Vercel Hobby plan hanya mendukung 1 cron execution per hari, tidak support ekspresi `*/6` atau multiple runs per hari.
+
+**Solusi:** cron-job.org (free tier: 60 requests/hour) → replace Vercel built-in cron.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| CRON-1 | **Remove crons from vercel.json** — hapus semua cron config,只剩 `installCommand` | ✅ Done | `vercel.json` |
+| CRON-2 | **Add CRON_SECRET_TOKEN to Vercel** — via `npx vercel env add` CLI | ✅ Done | Vercel project settings |
+| CRON-3 | **Secure all cron endpoints** — cek `Authorization: Bearer <CRON_SECRET_TOKEN>` header di `/api/v1/cron/approval-escalation`, `/api/v1/cron/contract-expiry-reminder` (ex-automation) | ✅ Done | 2 route files |
+| CRON-4 | **Remove Vercel Cron trigger annotations** — hapus `export const dynamic = "force-static"` + comment "Vercel Cron" | ✅ Done | 3 route files |
+| CRON-5 | **Update PRD.md Background Jobs section** — dokumentasi cron-job.org + 3 endpoint schedules | ✅ Done | `PRD.md` |
+
+**Cron Endpoints & Schedules:**
+
+| Endpoint | Schedule (cron-job.org) | Fungsi |
+|----------|------------------------|--------|
+| `/api/v1/cron/contract-expiry-reminder` | `0 6 * * *` (daily 6 AM) | Ex-automation: contract alerts + AR summary |
+| `/api/v1/cron/invoice-due-date-reminder` | `1 6 * * *` (daily 6:01 AM) | Invoice due date reminders: H-3..H+30 |
+| `/api/v1/cron/do-overdue-reminder` | `2 6 * * *` (daily 6:02 AM) | DO delivery reminder: H-7, H-3, H-1, H |
+| `/api/v1/cron/approval-escalation` | `0 8,12,17 * * 1-5` (Mon-Fri 8AM/12PM/5PM) | WhatsApp escalation ke manager jika PR/PO pending >24 jam |
+
+**Setup cron-job.org:**
+1. Buat akun di cron-job.org
+2. Buat 4 cron jobs (1 per endpoint)
+3. HTTP Method: GET
+4. URL: `https://erp.rizkiridholahi.com/api/v1/cron/{name}`
+5. Header: `Authorization: Bearer <CRON_SECRET_TOKEN>`
+6. Schedule staggering:
+   - `0 6 * * *` → contract-expiry-reminder (06:00:00)
+   - `1 6 * * *` → invoice-due-date-reminder (06:01:00)
+   - `2 6 * * *` → do-overdue-reminder (06:02:00)
+   - `0 8,12,17 * * 1-5` → approval-escalation (08:00, 12:00, 17:00)
+
+## ✅ Done — WhatsApp Notifications for Cron Automation
+
+**Implementation:** WhatsApp alerts untuk Contract Expiring & AR Overdue dikirim ke owner.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| WA-1 | **Add `getOwnerWhatsapp()` helper** — ambil nomor dari `site_settings.key = 'owner_whatsapp'` | ✅ Done | `src/lib/utils/whatsapp.ts` |
+| WA-2 | **Add `sendContractAlertNotifications()`** — build summary message untuk expired +即将 expired contracts | ✅ Done | `src/lib/ai/agents/DataAgent/tools/contractAlert.ts` |
+| WA-3 | **Add `sendBulkReminderNotifications()`** — build summary message untuk AR overdue invoices | ✅ Done | `src/lib/ai/agents/DataAgent/tools/smartReminder.ts` |
+| WA-4 | **Update cron automation route** — call notification functions after processing triggers | ✅ Done | `src/app/api/v1/cron/contract-expiry-reminder/route.ts` |
+| WA-5 | **Add owner_whatsapp to site_settings** — set default owner number | ✅ Done | Database migration |
+| WA-6 | **Update PRD.md** — dokumentasi setup Fonnte API + site_settings | ✅ Done | `PRD.md` |
+
+**Message Format:**
+- Contract Alerts: `📋 Ringkasan Alert Kontrak RRI` dengan list expired &即将 expired (5 teratas)
+- AR Reminders: `💰 Ringkasan Reminder Piutang RRI` dengan list urgent & normal overdue (5 teratas)
+
+**Requirements:**
+- Valid Fonnte API token (`FONNTE_API_KEY` env var)
+- Owner WhatsApp number configured in `site_settings` (`key = 'owner_whatsapp'`)
+- Bahasa Indonesia + WIB timezone
+
+**Test Status:**
+- ✅ Endpoint berjalan dan merespons dengan benar
+- ✅ Fonnte API token valid (`bGCQZXbYeqfeYX9BbfB9`)
+- ✅ Database sudah ada `owner_whatsapp = 6285640884088`
+- ✅ WhatsApp terkirim dengan format Bahasa Indonesia + WIB timezone
+- ✅ Build successful tanpa error
+
+## 🔵 NEW — Cron Jobs Revision (Owner-Only Notifications)
+
+**Revision Summary:** Semua notifikasi WhatsApp cron jobs kini dikirim ke owner (bukan ke PIC customer atau manager).
+
+| # | Task | Status | Priority |
+|---|------|--------|----------|
+| CRON-REV-1 | **Update ar-reminder** — recipient dari PIC Customer → Owner | ❌ Cancelled (removed) | 🔴 High |
+| CRON-REV-2 | **Update ar-reminder schedule** — dari `0 7 * * *` → `0 6 * * *` | ❌ Cancelled (removed) | 🔴 High |
+| CRON-REV-3 | **Update approval-escalation** — recipient dari Manager → Owner | ⏳ Pending | 🔴 High |
+| CRON-REV-4 | **Create invoice-due-date-reminder** — endpoint baru untuk reminder H-3, H-1, H, H+1...H+30 | ✅ Done | 🔴 High |
+| CRON-REV-5 | **All implementations** — Bahasa Indonesia + WIB timezone (`formatDateWIB()`) | ⏳ Pending | 🔴 High |
+| CRON-REV-6 | **Update documentation** — PRD.md + ROADMAP.md dengan revision details | ✅ Done | 🟡 Medium |
+| CRON-REV-7 | **Migration site_settings** — add `escalation_hours` key | ⏳ Pending | 🟡 Medium |
+| CRON-REV-8 | **Rename `automation` → `contract-expiry-reminder`** — rename folder + update all references | ✅ Done | 🔴 High |
+| CRON-REV-9 | **Create `do-overdue-reminder`** — endpoint baru DO delivery reminder H-7, H-3, H-1, H | ✅ Done | 🔴 High |
+| CRON-REV-10 | **Delete `ar-reminder`** — digantikan invoice-due-date-reminder yang lebih lengkap (H-3, H-1, H, H+1..H+30) | ✅ Done | 🔴 High |
+
+**New Endpoint: `/api/v1/cron/invoice-due-date-reminder`**
+- **Target**: Invoice yang akan jatuh tempo (due date)
+- **Schedule**: H-3, H-1, H (due date), H+1, H+2, ... H+30 (stop setelah paid atau max H+30)
+- **Time**: `0 6 * * *` (setiap hari jam 6 pagi WIB)
+- **Recipient**: Owner WhatsApp
+- **Message Format**: Bahasa Indonesia dengan detail invoice, customer, total, dan jatuh tempo WIB
+
+**Site Settings Migration Required:**
+```sql
+-- escalation_hours (default: 24)
+INSERT INTO site_settings (key, value) 
+VALUES ('escalation_hours', '24')
+ON CONFLICT (key) DO UPDATE SET value = '24';
+```
+
+## ✅ Done — Notifikasi Page Enhancement (Dashboard Monitoring)
+
+**Perbaikan:** Halaman `/dashboard/notifikasi` diperbaiki dari server component dengan anon key menjadi client component dengan API route terautentikasi + fitur filtering dan pagination.
+
+| # | Task | Status | Priority |
+|---|------|--------|----------|
+| NP-1 | **Create API route `GET /api/v1/whatsapp-log`** — endpoint dengan `supabaseAdmin`, filter status + search recipient + pagination | ✅ Done | 🔴 High |
+| NP-2 | **Fix auth: server component → client component** — ganti `supabase` (anon key) dengan `apiFetch` via API route terautentikasi (verifyAuth) | ✅ Done | 🔴 High |
+| NP-3 | **Filter status** — Select dropdown untuk filter sent/delivered/failed | ✅ Done | 🟡 Medium |
+| NP-4 | **Search recipient** — Input text search by nomor HP (ILIKE) | ✅ Done | 🟡 Medium |
+| NP-5 | **Pagination** — page buttons (prev/next) + total page | ✅ Done | 🟡 Medium |
+| NP-6 | **Expand message dialog** — klik icon Eye untuk lihat pesan lengkap di modal | ✅ Done | 🟡 Medium |
+| NP-7 | **Show error_reason** — kolom Keterangan muncul jika ada log failed dengan error reason | ✅ Done | 🟡 Medium |
+| NP-8 | **Fix delivered label** — `delivered` → "Tersampaikan" (sebelumnya "Terkirim" sama dengan `sent`) | ✅ Done | 🟢 Low |
+| NP-9 | **sent_at priority** — tampilkan `sent_at` jika ada, fallback ke `created_at` | ✅ Done | 🟢 Low |
