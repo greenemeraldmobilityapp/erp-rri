@@ -73,6 +73,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const pdfData = {
     nomor: inv.nomor,
+    keteranganInvoice: inv.keterangan_invoice ?? null,
     customerNama: customer?.nama ?? '-',
     customerAlamat: customer?.alamat ?? null,
     picNama,

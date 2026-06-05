@@ -137,93 +137,95 @@ export default function TambahQuotationPage() {
   }, [selectedCustomerId, customerOptions, setValue])
 
   useEffect(() => {
+    let cancelled = false
+
     if (!selectedRfqId) {
       setRfqPicLabel('')
       setRfqItemLabels([])
       setIsRfqLoaded(false)
       apiFetch<{ nomor: string }>('/api/v1/system/nomor-baru?kode=SPH')
-        .then(res => setNomorDokumen(res.data.nomor))
+        .then(res => {
+          if (cancelled) return
+          setNomorDokumen(res.data.nomor)
+        })
         .catch(() => {})
-      return
-    }
+    } else {
+      interface RfqData {
+        customer_id: string
+        pic_customer_id: string | null
+        nomor: string
+        nomor_rfq_customer: string | null
+        pic_customer: { id: string; nama: string; jabatan: string } | null
+        items: Array<{
+          barang_id: string | null
+          nama_barang: string | null
+          jumlah: number
+          satuan: string | null
+          image_url: string | null
+          keterangan: string | null
+          barang: { id: string; nama: string; kode: string; satuan: string } | null
+        }>
+      }
 
-    let cancelled = false
+      apiFetch<RfqData>(`/api/v1/rfq-customer/${selectedRfqId}`)
+        .then((res) => {
+          if (cancelled) return
+          const rfq = res.data as RfqData
 
-    interface RfqData {
-      customer_id: string
-      pic_customer_id: string | null
-      nomor: string
-      nomor_rfq_customer: string | null
-      pic_customer: { id: string; nama: string; jabatan: string } | null
-      items: Array<{
-        barang_id: string | null
-        nama_barang: string | null
-        jumlah: number
-        satuan: string | null
-        image_url: string | null
-        keterangan: string | null
-        barang: { id: string; nama: string; kode: string; satuan: string } | null
-      }>
-    }
+          setValue('referensi', rfq.nomor_rfq_customer || rfq.nomor)
+          setValue('customer_id', rfq.customer_id)
 
-    apiFetch<RfqData>(`/api/v1/rfq-customer/${selectedRfqId}`)
-      .then((res) => {
-        if (cancelled) return
-        const rfq = res.data as RfqData
+          const cust = customerOptions.find(c => c.value === rfq.customer_id)
+          if (cust?.alamat) setValue('alamat', cust.alamat)
 
-        setValue('referensi', rfq.nomor_rfq_customer || rfq.nomor)
-        setValue('customer_id', rfq.customer_id)
-
-        const cust = customerOptions.find(c => c.value === rfq.customer_id)
-        if (cust?.alamat) setValue('alamat', cust.alamat)
-
-        if (rfq.pic_customer_id) {
-          setValue('pic_customer_id', rfq.pic_customer_id)
-        }
-        if (rfq.pic_customer) {
-          const label = `${rfq.pic_customer.nama}${rfq.pic_customer.jabatan ? ` (${rfq.pic_customer.jabatan})` : ''}`
-          setPicOptions([{ value: rfq.pic_customer.id, label }])
-          setRfqPicLabel(label)
-        }
-
-        const newItems = (rfq.items ?? []).map(item => ({
-          barang_id: item.barang_id || '',
-          specification: '',
-          justification: '',
-          image_url: item.image_url || '',
-          satuan: item.satuan || '',
-          jumlah: item.jumlah,
-          harga_satuan: 0,
-          diskon: 0,
-          keterangan: item.keterangan || '',
-        }))
-        if (cancelled) return
-        replace(newItems)
-
-        setRfqItemLabels(rfq.items.map(item =>
-          item.barang?.nama || item.nama_barang || ''
-        ))
-
-        if (rfq.nomor) {
-          const parts = rfq.nomor.split('-')
-          if (parts.length >= 5) {
-            setNomorDokumen(`RRI-SPH-${parts[2]}-${parts[3]}-${parts[4]}`)
+          if (rfq.pic_customer_id) {
+            setValue('pic_customer_id', rfq.pic_customer_id)
           }
-        }
+          if (rfq.pic_customer) {
+            const label = `${rfq.pic_customer.nama}${rfq.pic_customer.jabatan ? ` (${rfq.pic_customer.jabatan})` : ''}`
+            setPicOptions([{ value: rfq.pic_customer.id, label }])
+            setRfqPicLabel(label)
+          }
 
-        setIsRfqLoaded(true)
+          const newItems = (rfq.items ?? []).map(item => ({
+            barang_id: item.barang_id || '',
+            specification: '',
+            justification: '',
+            image_url: item.image_url || '',
+            satuan: item.satuan || '',
+            jumlah: item.jumlah,
+            harga_satuan: 0,
+            diskon: 0,
+            keterangan: item.keterangan || '',
+          }))
+          if (cancelled) return
+          replace(newItems)
 
-        newItems.forEach((item, i) => {
-          if (item.barang_id) {
-            const barang = barangData.find(b => b.value === item.barang_id)
-            if (barang) {
-              setValue(`items.${i}.specification`, barang.spesifikasi)
-              setValue(`items.${i}.justification`, barang.justification)
+          setRfqItemLabels(rfq.items.map(item =>
+            item.barang?.nama || item.nama_barang || ''
+          ))
+
+          if (rfq.nomor) {
+            const parts = rfq.nomor.split('-')
+            if (parts.length >= 5) {
+              setNomorDokumen(`RRI-SPH-${parts[2]}-${parts[3]}-${parts[4]}`)
             }
           }
+
+          setIsRfqLoaded(true)
+
+          newItems.forEach((item, i) => {
+            if (item.barang_id) {
+              const barang = barangData.find(b => b.value === item.barang_id)
+              if (barang) {
+                setValue(`items.${i}.specification`, barang.spesifikasi)
+                setValue(`items.${i}.justification`, barang.justification)
+              }
+            }
+          })
         })
-      })
-      .catch(() => toast.error('Gagal memuat data RFQ Customer'))
+        .catch(() => toast.error('Gagal memuat data RFQ Customer'))
+    }
 
     return () => { cancelled = true }
   }, [selectedRfqId, customerOptions, barangData, replace, setValue])

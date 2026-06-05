@@ -61,6 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (body.top) upd.top = body.top
   if (body.grn_customer_nomor !== undefined) upd.grn_customer_nomor = body.grn_customer_nomor
   if (body.nomor_tanda_terima !== undefined) upd.nomor_tanda_terima = body.nomor_tanda_terima
+  if (body.keterangan_invoice !== undefined) upd.keterangan_invoice = body.keterangan_invoice
   upd.updated_at = new Date().toISOString()
 
   const { data: oldInv } = await supabaseAdmin.from('invoice').select('status').eq('id', id).single()

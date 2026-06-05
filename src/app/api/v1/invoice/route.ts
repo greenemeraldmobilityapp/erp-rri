@@ -24,6 +24,7 @@ const schema = z.object({
   top: z.string().min(1, 'TOP harus diisi'),
   grn_customer_nomor: z.string().optional(),
   nomor_tanda_terima: z.string().optional(),
+  keterangan_invoice: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
 
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
     status: 'draft',
     grn_customer_nomor: parsed.data.grn_customer_nomor ?? null,
     nomor_tanda_terima: parsed.data.nomor_tanda_terima ?? null,
+    keterangan_invoice: parsed.data.keterangan_invoice ?? null,
     created_at: now, updated_at: now,
   }).select().single()
   if (invError) return internalError(invError)

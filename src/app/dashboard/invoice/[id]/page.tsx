@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send } from "lucide-react"
@@ -50,6 +51,7 @@ interface Invoice {
   pic_nama: string | null
   pic_jabatan: string | null
   grn_customer_nomor: string | null
+  keterangan_invoice: string | null
 }
 
 interface InvoiceItem {
@@ -80,6 +82,8 @@ export default function InvoiceDetailPage() {
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; metode: string; tanggal: string; keterangan: string | null }>>([])
   const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
   const [savingGrn, setSavingGrn] = useState(false)
+  const [keteranganInvoice, setKeteranganInvoice] = useState("")
+  const [savingKeterangan, setSavingKeterangan] = useState(false)
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
@@ -101,12 +105,29 @@ export default function InvoiceDetailPage() {
       setKwitansiList(kwtRes.data ?? [])
       setPayments(payRes.data ?? [])
       setGrnCustomerNomor(invData?.grn_customer_nomor ?? "")
+      setKeteranganInvoice(invData?.keterangan_invoice ?? "")
       setLoading(false)
     }).catch((err) => {
       setError(err.message)
       setLoading(false)
     })
   }, [id])
+
+  const handleSaveKeterangan = async () => {
+    if (!id) return
+    setSavingKeterangan(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ keterangan_invoice: keteranganInvoice || null }),
+      })
+      toast.success('Keterangan berhasil disimpan')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal simpan keterangan')
+    } finally {
+      setSavingKeterangan(false)
+    }
+  }
 
   const handleUpload = async (file: File) => {
     if (!id) return
@@ -528,6 +549,31 @@ export default function InvoiceDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-4 w-4" />Keterangan Invoice
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Input keterangan yang akan ditampilkan di PDF Invoice (di bawah tabel barang, di atas informasi pembayaran).
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Keterangan</label>
+              <Textarea
+                placeholder="Contoh:&#x0a;- Proses pengerjaan 20 hari setelah DP diterima&#x0a;- Pembayaran 2 Termin: DP 50% dan Pelunasan 50%&#x0a;- Barang bisa diambil setelah pembayaran pelunasan diselesaikan."
+                value={keteranganInvoice}
+                onChange={(e) => setKeteranganInvoice(e.target.value)}
+                rows={6}
+              />
+            </div>
+            <Button onClick={handleSaveKeterangan} disabled={savingKeterangan} size="sm">
+              {savingKeterangan ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Simpan Keterangan'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">

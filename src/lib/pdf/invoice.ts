@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
   tableHeaderCell: { fontSize: 9, fontWeight: 'bold', padding: 4, textAlign: 'center', borderRightWidth: 1, borderRightColor: '#000' },
   tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000' },
   tableTotalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#000' },
+  keteranganSection: { marginTop: 12, marginBottom: 12 },
+  keteranganTitle: { fontSize: 11, fontWeight: 'bold', marginBottom: 6 },
+  keteranganLine: { fontSize: 11, marginBottom: 2, marginLeft: 10 },
   paymentSection: { marginTop: 14, marginBottom: 12 },
   paymentText: { fontSize: 11, marginBottom: 6 },
   paymentRow: { flexDirection: 'row', marginBottom: 2 },
@@ -89,6 +92,7 @@ interface InvoiceData {
   refLabel: string
   grandTotal: number
   items: InvoiceItem[]
+  keteranganInvoice: string | null
   company: CompanyData
 }
 
@@ -232,6 +236,17 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
     ),
   )
 
+  const keteranganLines = data.keteranganInvoice
+    ? data.keteranganInvoice.split('\n').filter(Boolean)
+    : []
+
+  const keteranganSection = keteranganLines.length > 0 ? H(View, { style: styles.keteranganSection },
+    H(Text, { style: styles.keteranganTitle }, 'Keterangan:'),
+    ...keteranganLines.map((line, i) =>
+      H(Text, { key: i, style: styles.keteranganLine }, '\u2022 ' + line)
+    ),
+  ) : null
+
   const penutupSection = H(Text, { style: styles.penutupText }, 'Demikian permintaan pembayaran ini kami kirimkan untuk dapat dibayarkan, atas perhatian dan kerjasamanya kami ucapkan terima kasih.')
 
   const signatureSection = H(View, { style: styles.signatureSection },
@@ -287,6 +302,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
           ) : null,
         ),
 
+        isLastPage && keteranganSection ? keteranganSection : null,
         isLastPage ? paymentSection : null,
         isLastPage ? penutupSection : null,
         isLastPage ? signatureSection : null,

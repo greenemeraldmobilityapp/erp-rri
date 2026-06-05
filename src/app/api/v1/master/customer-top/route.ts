@@ -29,7 +29,7 @@
  *                 type: string
  *               top:
  *                 type: string
- *                 enum: [Net 14, Net 30, Net 60, Net 90, Cash, Custom]
+ *                 enum: [Net 14, Net 20, Net 30, Net 60, Net 90, Cash, Custom]
  *     responses:
  *       201:
  *         description: Customer TOP created
@@ -46,7 +46,7 @@ import { badRequest, internalError } from '@/lib/api/errors'
 
 const createSchema = z.object({
   customer_id: z.string().min(1, 'Customer harus dipilih'),
-  top: z.enum(['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']),
+  top: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']),
 })
 
 export async function GET(request: NextRequest) {

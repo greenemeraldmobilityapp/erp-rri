@@ -33,7 +33,7 @@
  *             properties:
  *               top:
  *                 type: string
- *                 enum: [Net 30, Net 60, Cash, Custom]
+ *                 enum: [Net 14, Net 20, Net 30, Net 60, Net 90, Cash, Custom]
  *     responses:
  *       200:
  *         description: Customer TOP updated
@@ -61,7 +61,7 @@ import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
 
 const updateSchema = z.object({
-  top: z.enum(['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']),
+  top: z.enum(['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']),
 })
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

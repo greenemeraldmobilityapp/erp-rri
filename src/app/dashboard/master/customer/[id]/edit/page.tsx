@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { ConfirmLeaveDialog } from '@/components/confirm-leave-dialog';
 
-const allTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
+const allTopOptions = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
 
 const customerSchema = z.object({
   nama: z.string().min(2, { message: "Nama customer harus diisi" }),

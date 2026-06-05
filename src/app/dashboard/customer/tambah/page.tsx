@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 
-const allTopOptions = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
+const allTopOptions = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const;
 
 const customerSchema = z.object({
   nama: z.string().min(2, { message: "Nama customer harus diisi" }),

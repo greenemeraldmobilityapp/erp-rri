@@ -54,7 +54,7 @@ interface KontrakWithDocs {
   documents: KontrakFile[]
 }
 
-const TOP_OPTIONS = ['Net 14', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const
+const TOP_OPTIONS = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom'] as const
 
 export default function DetailCustomerPage() {
   const router = useRouter()
