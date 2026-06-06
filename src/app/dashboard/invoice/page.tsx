@@ -35,6 +35,7 @@ export default async function InvoicePage() {
         <TableHead>DI Cust. Ref</TableHead>
         <TableHead>DI Ref</TableHead>
         <TableHead>DO Ref</TableHead>
+        <TableHead>GRN Cust</TableHead>
         <TableHead>Tgl</TableHead>
         <TableHead>TOP</TableHead>
         <TableHead>Status</TableHead>
@@ -50,6 +51,7 @@ export default async function InvoicePage() {
             <TableCell className="font-medium">{item.sales_order?.di?.nomor_di_customer ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.di?.nomor ?? '-'}</TableCell>
             <TableCell className="font-medium">{item.sales_order?.delivery_order?.[0]?.nomor ?? '-'}</TableCell>
+            <TableCell className="font-medium">{item.grn_customer_nomor ?? '-'}</TableCell>
             <TableCell className="font-medium">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell className="font-medium">{item.top}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>

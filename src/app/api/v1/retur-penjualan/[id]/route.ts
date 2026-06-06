@@ -47,7 +47,7 @@ import { formatChildNumber } from '@/lib/utils/document-number'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: retur, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode)').eq('id', id).single()
+  const { data: retur, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode), delivery_order!delivery_order_id(id, nomor), grn_customer!retur_penjualan_id(id, nomor, status)').eq('id', id).single()
   if (error) return internalError(error)
   if (!retur) return notFound('Retur tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('retur_penjualan_item').select('*, barang!barang_id(nama, kode, satuan)').eq('retur_penjualan_id', id)
@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (ie) return internalError(ie)
   }
 
-  // Auto-generate GRN Customer draft when retur penjualan is closed
+  // Auto-generate Retur Barang (GRN) draft when retur penjualan is closed
   if (body.status === 'closed') {
     // Idempotency check: skip if GRNC already exists for this retur
     const { data: existingGrn } = await supabaseAdmin.from('grn_customer').select('id').eq('retur_penjualan_id', id).maybeSingle()

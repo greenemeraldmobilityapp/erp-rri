@@ -42,7 +42,7 @@ const modulOptions = [
   'Delivery Slip',
   'Resi Pengiriman',
   'GRN',
-  'GRN Customer',
+  'Retur Barang (GRN)',
   'Invoice',
   'Kwitansi',
   'Tanda Terima',
@@ -78,7 +78,7 @@ const modulBadgeClasses: Record<string, string> = {
   
   // Inventory - Abu
   'GRN': 'bg-slate-500/10 text-slate-500 font-medium',
-  'GRN Customer': 'bg-zinc-500/10 text-zinc-500 font-medium',
+  'Retur Barang (GRN)': 'bg-zinc-500/10 text-zinc-500 font-medium',
   
   // Legal - Ungu
   'Kontrak': 'bg-violet-500/10 text-violet-500 font-medium',

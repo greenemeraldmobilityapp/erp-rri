@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { ArrowLeft, Undo2 } from "lucide-react"
+import { ArrowLeft, Undo2, FileText } from "lucide-react"
+import { DetailSkeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
@@ -23,6 +25,8 @@ interface ReturPenjualan {
   status: string
   keterangan: string | null
   customer: { nama: string; kode: string } | null
+  delivery_order?: { id: string; nomor: string } | null
+  grn_customer?: { id: string; nomor: string; status: string } | null
   items?: ReturPenjualanItem[]
 }
 
@@ -91,7 +95,7 @@ export default function ReturPenjualanDetailPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
+  if (loading) return <DetailSkeleton />
   if (error || !retur) return <div className="text-center py-20 text-muted-foreground">Retur tidak ditemukan</div>
 
   return (
@@ -119,6 +123,26 @@ export default function ReturPenjualanDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Customer</p>
               <p className="font-medium">{retur.customer?.nama} ({retur.customer?.kode})</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">DO Reference</p>
+              {retur.delivery_order ? (
+                <Link href={`/dashboard/delivery-order/${retur.delivery_order.id}`} className="font-medium text-primary hover:underline">
+                  {retur.delivery_order.nomor}
+                </Link>
+              ) : (
+                <p className="text-muted-foreground">-</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Retur Barang (GRN)</p>
+              {retur.grn_customer ? (
+                <Link href={`/dashboard/grn-customer/${retur.grn_customer.id}`} className="font-medium text-primary hover:underline">
+                  {retur.grn_customer.nomor}
+                </Link>
+              ) : (
+                <p className="text-muted-foreground">-</p>
+              )}
             </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>

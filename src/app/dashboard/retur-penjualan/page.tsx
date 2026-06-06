@@ -11,7 +11,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function ReturPenjualanPage() {
-  const { data, error } = await supabase.from('retur_penjualan').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('retur_penjualan').select('*, customer!customer_id(nama, kode), delivery_order!delivery_order_id(nomor)').order('created_at', { ascending: false })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -24,6 +24,7 @@ export default async function ReturPenjualanPage() {
       <div className="rounded-lg border bg-card"><Table><TableHeader><TableRow>
         <TableHead>Nomor</TableHead>
         <TableHead>Customer</TableHead>
+        <TableHead>DO</TableHead>
         <TableHead>Tanggal</TableHead>
         <TableHead>Status</TableHead>
         <TableHead className="text-right">Aksi</TableHead>
@@ -32,6 +33,7 @@ export default async function ReturPenjualanPage() {
           <TableRow key={item.id}>
             <TableCell className="font-medium"><Link href={`/dashboard/retur-penjualan/${item.id}`} className="hover:underline">{item.nomor}</Link></TableCell>
             <TableCell>{item.customer?.nama}</TableCell>
+            <TableCell className="text-muted-foreground">{item.delivery_order?.nomor ?? '-'}</TableCell>
             <TableCell className="text-muted-foreground">{new Date(item.tanggal).toLocaleDateString('id-ID')}</TableCell>
             <TableCell><Badge variant={s[item.status]?.v ?? 'outline'}>{s[item.status]?.label ?? item.status}</Badge></TableCell>
             <TableCell className="text-right"><Button variant="ghost" size="sm" asChild><Link href={`/dashboard/retur-penjualan/${item.id}/edit`}><Pencil className="h-4 w-4" /></Link></Button></TableCell>

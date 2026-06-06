@@ -638,3 +638,123 @@ ON CONFLICT (key) DO UPDATE SET value = '24';
 | NP-7 | **Show error_reason** — kolom Keterangan muncul jika ada log failed dengan error reason | ✅ Done | 🟡 Medium |
 | NP-8 | **Fix delivered label** — `delivered` → "Tersampaikan" (sebelumnya "Terkirim" sama dengan `sent`) | ✅ Done | 🟢 Low |
 | NP-9 | **sent_at priority** — tampilkan `sent_at` jika ada, fallback ke `created_at` | ✅ Done | 🟢 Low |
+
+---
+
+## ✅ Done — Improvement Plan: Retur Barang (GRN) & Retur Penjualan Integration
+
+### Overview
+Setelah rename "GRN Customer" → "Retur Barang (GRN)" dan memperbaiki flow auto-generate, berikut rencana perbaikan integrasi antara Retur Penjualan (commercial/accounting) dan Retur Barang/GRN (warehouse/operational).
+
+**Keputusan arsitektur:** GRN Customer TIDAK boleh auto-generate dari DO `dikirim` (barang keluar). GRN hanya dibuat dari:
+1. **Auto-generate** saat Retur Penjualan → `closed` (correct — barang kembali ke gudang)
+2. **Manual** via form tambah (untuk skenario retur tanpa retur penjualan formal)
+
+### Correct Flow
+```
+Customer retur barang
+  → User buat Retur Penjualan (manual, auto-populate dari DO)
+    → User close Retur Penjualan
+      → Auto-generate GRN Customer (draft, retur_penjualan_id set)
+        → Warehouse verifikasi barang, set GRN → completed
+          → Stock otomatis bertambah (via stok_mutasi)
+```
+
+### 🔴 Phase 1 — Core Fixes (Critical)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RP-1.0 | **Remove DO → GRN auto-generate** — hapus blok auto-generate GRN Customer dari DO `dikirim` (semantically wrong: barang keluar, bukan diterima) | ✅ Done | `delivery-order/[id]/route.ts:223-266` |
+| RP-1.1 | **Rename "GRN Customer" → "Retur Barang (GRN)"** — sidebar item label + list page title & description + tambah page title + detail page title + edit page title (12 files total) | ✅ Done | `sidebar-content.tsx`, `grn-customer/page.tsx`, `grn-customer/tambah/page.tsx`, `grn-customer/[id]/page.tsx`, `grn-customer/[id]/edit/page.tsx`, `invoice/[id]/page.tsx`, `dokumen/page.tsx`, `dokumen/route.ts`, `grn-customer/route.ts`, `retur-penjualan/route.ts`, docs |
+| RP-1.2 | **Add useEffect watching `delivery_order_id`** — saat DO dipilih, auto-fetch items from DO and populate the barang table | ✅ Done | `retur-penjualan/tambah/page.tsx` |
+| RP-1.3 | **Snapshot fields at creation** — copy `harga_satuan`, `diskon_persen`, `keterangan` from DO items as initial values | ✅ Done | `retur-penjualan/tambah/page.tsx` |
+| RP-1.4 | **handleBarangChange integration** — editable fields (jumlah, harga_satuan, diskon, subtotal, keterangan) | ✅ Done | `retur-penjualan/tambah/page.tsx` |
+| RP-1.5 | **Read-only items from DO** — baris dari DO read-only (kecuali jumlah retur) | ✅ Done | `retur-penjualan/tambah/page.tsx` |
+
+### 🟡 Phase 2 — Bidirectional Link Retur Penjualan ↔ Retur Barang/GRN (High)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RP-2.1 | **GRN tambah — tetap "Dari DO" (existing)** — manual GRN creation via DO selector | ✅ Done | `grn-customer/tambah/page.tsx` |
+| RP-2.2 | **Kolom `retur_penjualan_id` di GRN** — verify API POST manual juga set field | ✅ Done | `grn-customer.ts` + API routes |
+| RP-2.3 | **Detail page Retur Penjualan — tampilkan link GRN** — nomor + link ke detail GRN | ✅ Done | `retur-penjualan/[id]/page.tsx` |
+| RP-2.4 | **Detail page GRN — tampilkan link Retur Penjualan** — nomor + link ke detail retur | ✅ Done | `grn-customer/[id]/page.tsx` |
+
+### 🟢 Phase 3 — Document Numbering Consistency (Medium)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RP-3.1 | **GRN number from retur parent** — POST manual pakai `formatChildNumber` jika ada parent, fallback ke `generateGlobalDocumentNumber` | ✅ Done | `grn-customer/route.ts` |
+| RP-3.2 | **Retur number from DO parent** — retur penjualan already uses `formatChildNumber` if parent exists | ✅ Done | `retur-penjualan/route.ts` |
+
+### 🔵 Phase 4 — Auto-fill Invoice GRN Reference (Low — REVISED)
+
+**Revisi:** `grn_customer_nomor` di invoice = nomor GRN **dari customer** (eksternal reference), bukan nomor dokumen GRN internal sistem. Harus tetap manual input. Internal Retur Barang (GRN) link ditampilkan terpisah.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RP-4.1 | **Auto-fill `grn_customer_nomor` dari chain** — saat POST invoice, cari GRN via DO→Retur→GRN chain, set `grn_customer_nomor` otomatis | ✅ Done | `invoice/route.ts`, `invoice/[id]/route.ts` |
+| RP-4.2 | **Invoice detail — tampilkan internal GRN link** — tampilkan nomor Retur Barang (GRN) internal sebagai baris clickable link terpisah (read-only) | ✅ Done | `invoice/[id]/page.tsx` |
+| RP-4.3 | **Revert: restore manual input `grn_customer_nomor`** — `grn_customer_nomor` harus manual input (nomor GRN eksternal customer). Kembalikan input field + save button | ⏳ Pending | `invoice/[id]/page.tsx`, `invoice/route.ts`, `invoice/[id]/route.ts` |
+
+## 🔴 Gap Analysis — Retur Barang & Retur Penjualan Integration (H-1 s/d H-5)
+
+### Critical Gaps — DO Detail Page Missing Retur/GRN Reference
+
+#### H-1: DO Detail page — Retur Penjualan & GRN section
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| H-1.1 | **DO GET API — join retur_penjualan + grn_customer** — tambah subquery/join untuk fetch retur yang mereferensi DO ini + GRN terkait | ✅ Done | `delivery-order/[id]/route.ts` |
+| H-1.2 | **DO Detail page — Retur Penjualan section** — tampilkan tabel/list retur penjualan yang mereferensi DO ini, dengan nomor retur (clickable link), status, total, tanggal | ✅ Done | `delivery-order/[id]/page.tsx` |
+| H-1.3 | **DO Detail page — GRN Customer section** — tampilkan GRN yang terhubung via retur, dengan nomor GRN (clickable link), status, total barang | ✅ Done | `delivery-order/[id]/page.tsx` |
+
+#### H-2: Retur Penjualan Detail — DO Reference
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| H-2.1 | **Retur Penjualan GET API — join delivery_order(nomor)** — tambah join untuk mendapatkan nomor DO yang direferensi | ✅ Done | `retur-penjualan/[id]/route.ts` |
+| H-2.2 | **Retur Penjualan Detail — tampilkan DO reference sebagai clickable link** — ganti dari plain text `delivery_order_id` jadi link ke DO detail page | ✅ Done | `retur-penjualan/[id]/page.tsx` |
+
+#### H-3: GRN Customer Detail — DO Reference jadi Clickable Link
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| H-3.1 | **GRN GET API — tambah delivery_order join via retur** — join grn → retur_penjualan → delivery_order untuk dapat nomor DO | ✅ Done | `grn-customer/[id]/route.ts` |
+| H-3.2 | **GRN Detail — DO reference jadi link** — DO reference saat ini plain text; ubah jadi `<Link>` ke DO detail | ✅ Done | `grn-customer/[id]/page.tsx` |
+
+#### H-4: Revisi Phase 4 — Manual Input grn_customer_nomor + Internal GRN Link
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| H-4.1 | **Revert POST API auto-fill** — hapus logic yang auto-set `grn_customer_nomor` dari chain internal di POST invoice | ✅ Done | `invoice/route.ts` |
+| H-4.2 | **Revert GET API auto-fill** — hapus logic yang auto-fill `grn_customer_nomor` dari chain internal di GET invoice | ✅ Done | `invoice/[id]/route.ts` |
+| H-4.3 | **Restore manual input `grn_customer_nomor`** — kembalikan input field + save button di invoice detail page | ✅ Done | `invoice/[id]/page.tsx` |
+| H-4.4 | **Internal GRN link baris terpisah** — tampilkan baris "Retur Barang (GRN) Internal" dengan nomor GRN (clickable link) — auto-detected dari chain SO→DO→Retur→GRN | ✅ Done | `invoice/[id]/page.tsx` |
+
+#### H-5: GRN Customer List API — Missing Retur Join
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| H-5.1 | **GRN list GET — tambah retur_penjualan!retur_penjualan_id(nomor) join** — supaya list page bisa tampilkan nomor retur referensi | ✅ Done | `grn-customer/route.ts` |
+| H-5.2 | **GRN list page — kolom referensi retur** — tambah kolom "Ref. Retur" yang menampilkan nomor retur penjualan (clickable link) | ✅ Done | `grn-customer/page.tsx` |
+
+### 🟡 Medium Priority Gaps (M-1 s/d M-5)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| M-1 | **Retur Penjualan GET API — tambah `delivery_order!delivery_order_id(nomor)` join** untuk tampilkan DO reference di detail page (sekarang `delivery_order_id` UUID saja) | ✅ Done | `retur-penjualan/[id]/route.ts` |
+| M-2 | **Retur Penjualan list API — tambah `delivery_order!delivery_order_id(nomor)` join** untuk tampilkan DO reference di tabel list | ✅ Done | `retur-penjualan/route.ts` |
+| M-3 | **GRN Customer tambah page — retur_penjualan_id selector** — saat buat GRN manual, user bisa pilih retur penjualan (combobox filter) untuk auto-link, bukan cuma DO | ✅ Done | `grn-customer/tambah/page.tsx` |
+| M-4 | **GRN Customer completed — validasi gudang_id** — API PUT `completed` harus cek `gudang_id` tidak null, jika null skip atau warning | ✅ Done | `grn-customer/[id]/route.ts` |
+| M-5 | **all_documents view — GRN Customer & Retur Penjualan entries** — tambah virtual PDF entries untuk GRN Customer dan Retur Penjualan (migration baru) | ❌ Skipped (PDF internal belum dibutuhkan) | `migration file` |
+
+### 🟢 Low Priority / Enhancement (L-1 s/d L-5)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| L-1 | **Retur Penjualan list — kolom DO** — tampilkan nomor DO di tabel list retur penjualan | ✅ Done | `retur-penjualan/page.tsx` |
+| L-2 | **GRN Customer list — kolom DO** — tampilkan nomor DO di tabel list GRN (resolve via retur → DO chain) | ✅ Done | `grn-customer/page.tsx` |
+| L-3 | **Invoice list — kolom nomor GRN Customer** — tampilkan `grn_customer_nomor` di tabel list invoice | ✅ Done | `invoice/page.tsx` |
+| L-4 | **Stok mutasi entry — tambah source reference** — saat GRN completed → stok mutasi, catat nomor GRN + retur penjualan di deskripsi | ✅ Done | `grn-customer/[id]/route.ts` |
+| L-5 | **Loading states** — tambah loading skeleton di semua detail page retur, GRN, invoice chain | ✅ Done | `retur-penjualan/[id]/page.tsx`, `grn-customer/[id]/page.tsx`, `invoice/[id]/page.tsx`, `skeleton.tsx` |

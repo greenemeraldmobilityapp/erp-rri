@@ -14,6 +14,20 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!sj) return notFound('Delivery Order tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode)').eq('delivery_order_id', id).order('urutan')
 
+  const { data: returList } = await supabaseAdmin.from('retur_penjualan')
+    .select('id, nomor, status, total, tanggal')
+    .eq('delivery_order_id', id)
+    .order('created_at', { ascending: false })
+
+  let grnList: { id: string; nomor: string; status: string; retur_penjualan_id: string; created_at: string }[] | null = null
+  if (returList?.length) {
+    const { data: grnResult } = await supabaseAdmin.from('grn_customer')
+      .select('id, nomor, status, retur_penjualan_id, created_at')
+      .in('retur_penjualan_id', returList.map(r => r.id))
+      .order('created_at', { ascending: false })
+    grnList = grnResult
+  }
+
   let customerId: string | null = null
   if (sj.sales_order_id) {
     const { data: so } = await supabaseAdmin
@@ -38,7 +52,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  return NextResponse.json({ data: { ...sj, customer_id: customerId, items: items ?? [] } })
+  return NextResponse.json({ data: { ...sj, customer_id: customerId, items: items ?? [], retur_list: returList ?? [], grn_list: grnList ?? [] } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -220,50 +234,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
       }
 
-      // Auto-generate draft GRN Customer
-      const { data: existingGrnc } = await supabaseAdmin
-        .from('grn_customer')
-        .select('id')
-        .eq('delivery_order_id', id)
-        .maybeSingle()
-
-      if (!existingGrnc) {
-        const { data: doItems } = await supabaseAdmin
-          .from('delivery_order_item')
-          .select('barang_id, jumlah, keterangan, nama_barang, kode_barang, satuan, urutan')
-          .eq('delivery_order_id', id)
-
-        if (doItems && doItems.length > 0 && data.gudang_id) {
-          const nomorGrnc = formatChildNumber(data.nomor, 'GRNC')
-          const { data: grnc, error: grncErr } = await supabaseAdmin.from('grn_customer').insert({
-            nomor: nomorGrnc,
-            delivery_order_id: id,
-            customer_id: customerId,
-            gudang_id: data.gudang_id,
-            tanggal: now,
-            status: 'draft',
-            keterangan: `Auto-generated from Delivery Order ${data.nomor}`,
-            created_at: now,
-            updated_at: now,
-          }).select().single()
-
-          if (!grncErr && grnc) {
-            const grncItems = doItems.map((item: { barang_id: string; jumlah: number; keterangan?: string; nama_barang?: string | null; kode_barang?: string | null; satuan?: string | null; urutan?: number | null }) => ({
-              grn_customer_id: grnc.id,
-              barang_id: item.barang_id,
-              jumlah: item.jumlah,
-              nama_barang: item.nama_barang ?? null,
-              kode_barang: item.kode_barang ?? null,
-              satuan: item.satuan ?? null,
-              urutan: item.urutan ?? null,
-              keterangan: item.keterangan ?? null,
-              created_at: now,
-              updated_at: now,
-            }))
-            await supabaseAdmin.from('grn_customer_item').insert(grncItems)
-          }
-        }
-      }
     }
   }
 

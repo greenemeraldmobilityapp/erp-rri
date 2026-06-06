@@ -19,8 +19,16 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 
   let do_nomor: string | null = null
-  const { data: dos } = await supabaseAdmin.from('delivery_order').select('nomor').eq('sales_order_id', inv.sales_order_id)
-  if (dos && dos.length > 0) do_nomor = dos[0].nomor
+  let internal_grn: { id: string; nomor: string } | null = null
+  const { data: dos } = await supabaseAdmin.from('delivery_order').select('id, nomor').eq('sales_order_id', inv.sales_order_id)
+  if (dos && dos.length > 0) {
+    do_nomor = dos[0].nomor
+    const { data: returList } = await supabaseAdmin.from('retur_penjualan').select('id').in('delivery_order_id', dos.map(d => d.id))
+    if (returList?.length) {
+      const { data: grnList } = await supabaseAdmin.from('grn_customer').select('id, nomor').in('retur_penjualan_id', returList.map(r => r.id)).order('created_at', { ascending: false }).limit(1)
+      if (grnList?.length) internal_grn = grnList[0]
+    }
+  }
 
   type SalesOrderWithPIC = {
   nomor: string
@@ -47,7 +55,7 @@ const cpo_cust_ref = soPIC?.customer_po?.nomor_po_customer ?? null
 
   const { data: schedule } = await supabaseAdmin.from('invoice_payment_schedule').select('*').eq('invoice_id', id).order('urutan')
 
-  return NextResponse.json({ data: { ...inv, items: items ?? [], schedule: schedule ?? [], kontrak_nomor, do_nomor, cpo_ref, cpo_cust_ref, pic_nama, pic_jabatan } })
+  return NextResponse.json({ data: { ...inv, items: items ?? [], schedule: schedule ?? [], kontrak_nomor, do_nomor, cpo_ref, cpo_cust_ref, pic_nama, pic_jabatan, internal_grn } })
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

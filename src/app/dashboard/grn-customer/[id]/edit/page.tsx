@@ -21,7 +21,7 @@ export default function EditGrnCustomerPage() {
   }
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
   return (
-    <div className="max-w-xl space-y-6"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/grn-customer"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Edit GRN Customer</h1></div></div>
+    <div className="max-w-xl space-y-6"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/grn-customer"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Edit Retur Barang (GRN)</h1></div></div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"><Card><CardContent className="space-y-4 pt-6">
         {doRef && <div className="space-y-1"><label className="text-sm font-medium">DO Reference</label><p className="text-sm text-muted-foreground border rounded-md px-3 py-2 bg-muted/30">{doRef}</p></div>}
         <div className="space-y-2"><label className="text-sm font-medium">Status</label>

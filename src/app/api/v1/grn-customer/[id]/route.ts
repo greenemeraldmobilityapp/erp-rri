@@ -6,7 +6,7 @@ import { badRequest, notFound, internalError } from '@/lib/api/errors'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(_request); if (auth.error) return auth.error
   const { id } = await params
-  const { data: grn, error } = await supabaseAdmin.from('grn_customer').select('*, customer!customer_id(nama, kode), gudang!gudang_id(nama), delivery_order!delivery_order_id(nomor)').eq('id', id).single()
+  const { data: grn, error } = await supabaseAdmin.from('grn_customer').select('*, customer!customer_id(nama, kode), gudang!gudang_id(nama), delivery_order!delivery_order_id(nomor), retur_penjualan!retur_penjualan_id(nomor)').eq('id', id).single()
   if (error) return internalError(error)
   if (!grn) return notFound('GRN tidak ditemukan')
   const { data: items } = await supabaseAdmin.from('grn_customer_item').select('*, barang!barang_id(nama, kode, satuan)').eq('grn_customer_id', id).order('urutan')
@@ -40,9 +40,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   // Auto-create stok_mutasi when status becomes completed
   if (body.status === 'completed' && data.status !== 'completed') {
+    if (!data.gudang_id) return badRequest('Gudang harus diisi sebelum menyelesaikan Retur Barang (GRN)')
     const { data: itemsData } = await supabaseAdmin.from('grn_customer_item').select('*, barang!barang_id(nama)').eq('grn_customer_id', id)
+    let returNomor = ''
+    if (data.retur_penjualan_id) {
+      const { data: retur } = await supabaseAdmin.from('retur_penjualan').select('nomor').eq('id', data.retur_penjualan_id).maybeSingle()
+      if (retur) returNomor = retur.nomor
+    }
     const gudangId = data.gudang_id
-    if (itemsData && gudangId) {
+    if (itemsData) {
       for (const item of itemsData) {
         const { data: existingStok } = await supabaseAdmin.from('stok').select('id, jumlah').eq('barang_id', item.barang_id).eq('gudang_id', gudangId).maybeSingle()
         const saldoSebelum = existingStok?.jumlah ?? 0
@@ -52,7 +58,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           barang_id: item.barang_id, gudang_id: gudangId, tipe: 'masuk', jumlah: item.jumlah,
           saldo_sebelum: saldoSebelum, saldo_sesudah: saldoSesudah,
           ref_jenis: 'grn_customer', ref_id: id,
-          keterangan: `GRN Customer ${data.nomor} - ${item.barang?.nama ?? ''}`,
+          keterangan: `Retur Barang (GRN) ${data.nomor}${returNomor ? ` (Retur: ${returNomor})` : ''} - ${item.barang?.nama ?? ''}`,
           created_at: new Date().toISOString(),
         })
 

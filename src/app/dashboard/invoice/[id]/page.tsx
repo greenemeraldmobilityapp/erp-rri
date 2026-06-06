@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { ArrowLeft, FileText, Pencil, FileSpreadsheet, Wallet, Loader2, Send } from "lucide-react"
+import { InvoiceDetailSkeleton } from "@/components/ui/skeleton"
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions"
 import { TandaTerimaPdfActions } from "@/components/tanda-terima-pdf-actions"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
@@ -51,6 +52,7 @@ interface Invoice {
   pic_nama: string | null
   pic_jabatan: string | null
   grn_customer_nomor: string | null
+  internal_grn?: { id: string; nomor: string } | null
   keterangan_invoice: string | null
   schedule: PaymentSchedule[]
 }
@@ -97,9 +99,26 @@ export default function InvoiceDetailPage() {
   const [generatingSchedule, setGeneratingSchedule] = useState(false)
   const [customerHasPaymentTerm, setCustomerHasPaymentTerm] = useState<boolean | null>(null)
   const [grnCustomerNomor, setGrnCustomerNomor] = useState("")
-  const [savingGrn, setSavingGrn] = useState(false)
+  const [savingGrnNomor, setSavingGrnNomor] = useState(false)
+
   const [keteranganInvoice, setKeteranganInvoice] = useState("")
   const [savingKeterangan, setSavingKeterangan] = useState(false)
+
+  const handleSaveGrnNomor = async () => {
+    if (!id) return
+    setSavingGrnNomor(true)
+    try {
+      await apiFetch(`/api/v1/invoice/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ grn_customer_nomor: grnCustomerNomor || null }),
+      })
+      toast.success('Nomor GRN Customer berhasil disimpan')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal simpan nomor GRN')
+    } finally {
+      setSavingGrnNomor(false)
+    }
+  }
   const [payAmount, setPayAmount] = useState("")
   const [payMetode, setPayMetode] = useState("transfer")
   const [payTanggal, setPayTanggal] = useState("")
@@ -242,22 +261,6 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  const handleSaveGrnNomor = async () => {
-    if (!id) return
-    setSavingGrn(true)
-    try {
-      await apiFetch(`/api/v1/invoice/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ grn_customer_nomor: grnCustomerNomor || null }),
-      })
-      toast.success('Nomor GRN Customer disimpan')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Gagal simpan')
-    } finally {
-      setSavingGrn(false)
-    }
-  }
-
   const handleSendInvoice = async () => {
     if (!id) return
     setStatusLoading(true)
@@ -276,7 +279,7 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
+  if (loading) return <InvoiceDetailSkeleton />
   if (error || !inv) return <div className="text-center py-20 text-muted-foreground">Invoice tidak ditemukan</div>
 
   const currentIdx = paySteps.indexOf(inv.status)
@@ -605,22 +608,28 @@ export default function InvoiceDetailPage() {
       <Card>
         <CardContent className="pt-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileText className="h-4 w-4" />GRN Customer
+            <FileText className="h-4 w-4" />Retur Barang (GRN)
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Input nomor GRN dari customer dan upload dokumen GRN.
-          </p>
           <div className="space-y-4">
+            {inv.internal_grn && (
+              <div>
+                <label className="text-sm text-muted-foreground block mb-1">Retur Barang (GRN) Internal (Sistem)</label>
+                <a href={`/dashboard/grn-customer/${inv.internal_grn.id}`} className="text-primary hover:underline font-medium">
+                  {inv.internal_grn.nomor}
+                </a>
+              </div>
+            )}
             <div>
-              <label className="text-sm text-muted-foreground block mb-1">Nomor GRN Customer</label>
+              <label className="text-sm text-muted-foreground block mb-1">Nomor GRN Customer (Eksternal)</label>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Input nomor GRN dari customer"
                   value={grnCustomerNomor}
                   onChange={(e) => setGrnCustomerNomor(e.target.value)}
+                  placeholder="Input nomor GRN dari customer"
+                  className="max-w-sm"
                 />
-                <Button onClick={handleSaveGrnNomor} disabled={savingGrn} size="sm">
-                  {savingGrn ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Simpan'}
+                <Button onClick={handleSaveGrnNomor} disabled={savingGrnNomor} size="sm">
+                  {savingGrnNomor ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Simpan'}
                 </Button>
               </div>
             </div>

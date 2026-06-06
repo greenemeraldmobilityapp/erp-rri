@@ -16,7 +16,7 @@ const modulTableMap: Record<string, string> = {
   'Retur Penjualan': 'retur_penjualan_document',
   'Retur Pembelian': 'retur_pembelian_document',
   'GRN': 'grn_document',
-  'GRN Customer': 'grn_customer_document',
+  'Retur Barang (GRN)': 'grn_customer_document',
   'Kontrak': 'kontrak_file',
   'Sales Order': 'sales_order_document',
 }

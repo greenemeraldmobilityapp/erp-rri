@@ -11,6 +11,12 @@ interface DoItemData { barang_id: string; jumlah: number; urutan?: number; nama_
 
 interface DoDetail { id: string; nomor: string; customer_id: string | null; gudang_id: string | null; items?: DoItemData[] }
 
+interface ReturOption { id: string; nomor: string; status: string; customer_id: string | null; delivery_order_id: string | null; customer: { nama: string; kode: string } | null; delivery_order: { nomor: string } | null }
+
+interface ReturItemData { barang_id: string; jumlah: number; nama_barang?: string | null; kode_barang?: string | null; satuan?: string | null; keterangan?: string | null; barang?: { nama: string; kode: string; satuan: string } | null }
+
+interface ReturDetail { id: string; nomor: string; customer_id: string | null; delivery_order_id: string | null; items?: ReturItemData[] }
+
 interface BarangData { id: string; nama: string; kode: string; satuan: string }
 
 const itemSchema = z.object({
@@ -33,6 +39,8 @@ export default function TambahGrnCustomerPage() {
   const [barangMap, setBarangMap] = useState<Record<string, BarangData>>({})
   const [doOpts, setDoOpts] = useState<Array<{ value: string; label: string }>>([])
   const [doLoading, setDoLoading] = useState(false)
+  const [returOpts, setReturOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [returLoading, setReturLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1 }] } })
@@ -40,6 +48,7 @@ export default function TambahGrnCustomerPage() {
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
   const selectedDoId = watch('delivery_order_id')
+  const selectedReturId = watch('retur_penjualan_id')
 
   useEffect(() => {
     Promise.all([
@@ -47,7 +56,8 @@ export default function TambahGrnCustomerPage() {
       apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/gudang'),
       apiFetch<BarangData[]>('/api/v1/master/barang'),
       apiFetch<DoOption[]>('/api/v1/delivery-order'),
-    ]).then(([c, g, b, doRes]) => {
+      apiFetch<ReturOption[]>('/api/v1/retur-penjualan'),
+    ]).then(([c, g, b, doRes, returRes]) => {
       setCustomerOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       setGudangOpts((g.data ?? []).map(x => ({ value: x.id, label: x.nama })))
       const bList = b.data ?? []
@@ -56,6 +66,9 @@ export default function TambahGrnCustomerPage() {
       bList.forEach(x => { bMap[x.id] = x })
       setBarangMap(bMap)
       setDoOpts((doRes.data ?? []).map(x => ({ value: x.id, label: `${x.nomor} (SO: ${x.sales_order?.nomor ?? '-'})` })))
+      setReturOpts((returRes.data ?? [])
+        .filter((r: ReturOption) => r.status === 'closed')
+        .map((r: ReturOption) => ({ value: r.id, label: `${r.nomor} - ${r.customer?.nama ?? '-'} (DO: ${r.delivery_order?.nomor ?? '-'})` })))
     }).catch(() => toast.error('Gagal'))
   }, [])
 
@@ -89,6 +102,36 @@ export default function TambahGrnCustomerPage() {
       .finally(() => setDoLoading(false))
   }, [selectedDoId, setValue, append, remove])
 
+  useEffect(() => {
+    if (!selectedReturId) return
+    setReturLoading(true)
+    setValue('delivery_order_id', '')
+    apiFetch<ReturDetail>(`/api/v1/retur-penjualan/${selectedReturId}`)
+      .then(res => {
+        const d = res.data
+        if (d) {
+          setValue('customer_id', d.customer_id ?? '')
+          if (d.delivery_order_id) setValue('delivery_order_id', d.delivery_order_id)
+          if (d.items && d.items.length > 0) {
+            remove()
+            d.items.forEach(item => {
+              const b = barangMap[item.barang_id]
+              append({
+                barang_id: item.barang_id,
+                jumlah: item.jumlah,
+                nama_barang: item.nama_barang ?? item.barang?.nama ?? b?.nama ?? '',
+                kode_barang: item.kode_barang ?? item.barang?.kode ?? b?.kode ?? '',
+                satuan: item.satuan ?? item.barang?.satuan ?? b?.satuan ?? '',
+                keterangan: item.keterangan ?? '',
+              })
+            })
+          }
+        }
+      })
+      .catch(() => toast.error('Gagal memuat data Retur'))
+      .finally(() => setReturLoading(false))
+  }, [selectedReturId, setValue, append, remove])
+
   const handleBarangChange = (i: number, barangId: string) => {
     setValue(`items.${i}.barang_id`, barangId)
     const b = barangMap[barangId]
@@ -104,17 +147,27 @@ export default function TambahGrnCustomerPage() {
   }
 
   const onSubmit = async (data: FV) => {
-    setSubmitting(true); try { await apiFetch('/api/v1/grn-customer', { method: 'POST', body: JSON.stringify(data) }); toast.success('GRN Customer berhasil!'); router.push('/dashboard/grn-customer') }
+    setSubmitting(true); try {       await apiFetch('/api/v1/grn-customer', { method: 'POST', body: JSON.stringify(data) }); toast.success('Retur Barang (GRN) berhasil!'); router.push('/dashboard/grn-customer') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
   }
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/grn-customer"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Tambah GRN Customer</h1></div></div>
+      <div className="flex items-center gap-4"><Button variant="ghost" size="icon" asChild><Link href="/dashboard/grn-customer"><ArrowLeft className="h-5 w-5" /></Link></Button><div><h1 className="text-3xl font-heading font-bold">Tambah Retur Barang (GRN)</h1></div></div>
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Card><CardHeader><CardTitle className="text-base">Informasi</CardTitle></CardHeader><CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              <FormField control={control} name="retur_penjualan_id" render={({ field }) => (
+                <FormItem><FormLabel>Ref. Retur Penjualan</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Pilih Retur..." /></SelectTrigger></FormControl>
+                    <SelectContent>{returOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <FormMessage />
+                  {returLoading && <p className="text-xs text-muted-foreground mt-1">Memuat data Retur...</p>}
+                </FormItem>
+              )} />
               <FormField control={control} name="delivery_order_id" render={({ field }) => (
                 <FormItem><FormLabel>Nomor DO</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -178,7 +231,7 @@ export default function TambahGrnCustomerPage() {
               </div>
             ))}</CardContent></Card>
           <div className="flex justify-end gap-3"><Button type="button" variant="cancel"><Link href="/dashboard/grn-customer">Batal</Link></Button>
-            <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan GRN'}</Button></div>
+            <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{submitting ? '...' : 'Simpan Retur Barang'}</Button></div>
         </form>
       </Form>
     </div>

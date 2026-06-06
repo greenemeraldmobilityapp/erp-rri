@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { ArrowLeft, ClipboardList } from "lucide-react"
+import { ArrowLeft, ClipboardList, Undo2 } from "lucide-react"
+import { DetailSkeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
 import { CompactFileUpload, type DocumentFile } from "@/components/compact-file-upload"
 import { toast } from "sonner"
 
@@ -28,6 +30,7 @@ interface GrnCustomer {
   customer: { nama: string; kode: string } | null
   gudang: { nama: string } | null
   delivery_order: { nomor: string } | null
+  retur_penjualan: { nomor: string } | null
   items?: GrnCustomerItem[]
 }
 
@@ -94,14 +97,14 @@ export default function GrnCustomerDetailPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-20 text-muted-foreground">Memuat...</div>
-  if (error || !grn) return <div className="text-center py-20 text-muted-foreground">GRN tidak ditemukan</div>
+  if (loading) return <DetailSkeleton />
+  if (error || !grn) return <div className="text-center py-20 text-muted-foreground">Retur Barang tidak ditemukan</div>
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/grn-customer")}><ArrowLeft className="h-5 w-5" /></Button>
-        <div><h1 className="text-3xl font-heading font-bold">Detail GRN Customer</h1><p className="text-muted-foreground mt-1">{grn.nomor}</p></div>
+        <div><h1 className="text-3xl font-heading font-bold">Detail Retur Barang (GRN)</h1><p className="text-muted-foreground mt-1">{grn.nomor}</p></div>
       </div>
 
       <Card>
@@ -129,7 +132,23 @@ export default function GrnCustomerDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">DO Reference</p>
-              <p className="font-medium">{grn.delivery_order?.nomor ?? (grn.delivery_order_id ? "-" : "-")}</p>
+              {grn.delivery_order ? (
+                <Link href={`/dashboard/delivery-order/${grn.delivery_order_id}`} className="font-medium text-primary hover:underline">
+                  {grn.delivery_order.nomor}
+                </Link>
+              ) : (
+                <p className="text-muted-foreground">-</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Retur Penjualan</p>
+              {grn.retur_penjualan ? (
+                <Link href={`/dashboard/retur-penjualan/${grn.retur_penjualan_id}`} className="font-medium text-primary hover:underline">
+                  {grn.retur_penjualan.nomor}
+                </Link>
+              ) : (
+                <p className="text-muted-foreground">-</p>
+              )}
             </div>
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Keterangan</p>

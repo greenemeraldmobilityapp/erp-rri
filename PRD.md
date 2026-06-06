@@ -767,7 +767,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | **Sales Order (SO)** | Order penjualan internal (berdasarkan Customer PO atau DI). Auto-generate saat PO/DI deal. Nomor: copy dari parent (CPO/DI) via `formatChildNumber(parentNumber, 'SO')` → `RRI-SO-YY-MM-NNNNN`. Meneruskan `waktu_pengiriman` (hari) dari Customer PO. **Status workflow:** `draft → confirmed → processed → delivered` (cancelled hanya dari draft). **Detail page:** menampilkan customer info (nama, PO/PIC/TOP), estimasi kirim, items dengan harga satuan, tab dokumen upload. **Edit page:** dynamic items row (add/remove), update harga & keterangan. **Document upload:** `sales_order_document` table + API, UI di detail page |
 | **Delivery Order (DO)** | Surat jalan untuk pengiriman barang. Nomor: copy dari SO parent via `formatChildNumber(parentNumber, 'SJ')` → `RRI-SJ-YY-MM-NNNNN`. Auto-generate draft saat SO siap kirim. Meneruskan `waktu_pengiriman` (hari) dari Sales Order. **Status workflow:** `draft → awaiting_pickup → dikirim → selesai` (atau `ditolak`). **Scan verification:** Staff gudang scan barcode/checklist items → status otomatis `awaiting_pickup`. **Delivery confirmation:** Staff upload 2 foto (barang diterima customer + surat jalan ditandatangani) wajib sebelum status berubah ke `dikirim` atau `ditolak`. Upload foto via endpoint `POST /api/v1/delivery-order/{id}/delivery-photo`. Saat status `dikirim`, auto-generate draft Invoice + draft Kwitansi (barengan) + jurnal penjualan. |
 | **Tracking Pengiriman** | Status pengiriman barang. Begitu DO status "Dikirim", auto-generate draft Invoice + draft Kwitansi |
-| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Proses: Retur → GRN Retur → Stok masuk → Invoice Adjustment / Refund. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi |
+| **Retur Penjualan** | Barang dikembalikan oleh customer karena cacat/rusak/tidak sesuai. Dokumen: Nota Retur. Upload bukti retur via Lampiran. Memiliki kolom `waktu_pengiriman` untuk referensi. **Flow:** User buat Retur Penjualan manual (auto-populate item dari DO). Setelah disetujui (status → `closed`), auto-generate Retur Barang (GRN) draft. Warehouse verifikasi barang, set GRN → `completed` → stok otomatis bertambah via stok_mutasi. Auto-buat jurnal penjualan. |
 | **Barcode / QR Code** | Setiap DO bisa di-scan pakai HP gudang |
 
 ### E. Procurement / Pembelian
@@ -987,6 +987,7 @@ Nomor dokumen digenerate otomatis — tidak perlu input manual. Menggunakan **si
 - Tanda Terima (dari INV) → `formatChildNumber(parentNumber, 'TT')`
 - GRN (dari DO) → `formatChildNumber(parentNumber, 'GRN')`
 - Retur Penjualan (dari DO) → `formatChildNumber(parentNumber, 'RTJ')`
+- GRN Customer / Retur Barang (dari Retur Penjualan) → `formatChildNumber(parentNumber, 'GRNC')`
 - Retur Pembelian (dari PO) → `formatChildNumber(parentNumber, 'RP')`
 
 **Utility functions** di `src/lib/utils/document-number.ts`:
@@ -1182,15 +1183,14 @@ END
 ```
 Customer kirim barang retur (cacat/tidak sesuai)
   ↓
-Gudang terima retur → GRN Retur
+User buat RETUR PENJUALAN (manual — auto-populate dari DO)
   ↓
-Cek kondisi barang:
-  ├── Ganti barang baru → buat DO Replacement → kirim ke customer
-  └── Refund → buat Nota Retur → adjust Invoice / Refund
+Retur Penjualan → "closed" (disetujui)
+  → Auto-generate RETUR BARANG (GRN) draft
+  → Auto-buat Jurnal Retur (debit Revenue, credit AR)
   ↓
-Stok masuk kembali (jika barang masih layak)
-  ↓
-Finance: Buat Jurnal Retur
+Warehouse verifikasi barang fisik, set GRN → "completed"
+  → Stok otomatis bertambah (stok_mutasi tipe 'masuk')
   ↓
 END
 ```
@@ -1527,8 +1527,12 @@ sales_order_document     → dokumen lampiran SO
 delivery_order           → surat jalan (field: waktu_pengiriman INTEGER — dari Sales Order)
 delivery_order_item      → item dalam do
 
-grn                      → goods received note (dari customer)
+grn                      → goods received note (dari supplier)
 grn_item                 → item dalam grn
+
+grn_customer             → retur barang (GRN) — penerimaan barang retur dari customer
+grn_customer_item        → item dalam grn customer
+                          (auto-generated saat retur penjualan → closed, atau manual via form tambah)
 
 retur_penjualan          → retur dari customer (field: waktu_pengiriman INTEGER)
 retur_penjualan_item     → item retur

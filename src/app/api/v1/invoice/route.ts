@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
   } else {
     nomor = await generateGlobalDocumentNumber('INV')
   }
+
   const now = new Date().toISOString()
 
   const { data: inv, error: invError } = await supabaseAdmin.from('invoice').insert({

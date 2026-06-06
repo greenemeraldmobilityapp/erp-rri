@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Camera } from 'lucide-react'
+import { ArrowLeft, Truck, AlertTriangle, CheckCircle2, Camera, Undo2, ClipboardList } from 'lucide-react'
 import { DOScanPanel } from '@/components/do-scan-panel'
 import { DoDocuments } from '@/components/do-documents'
 import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
@@ -14,6 +14,14 @@ import { DoDeliverySlip } from '@/components/do-delivery-slip'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },
+}
+
+const returStatusMap: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' }> = {
+  draft: { label: 'Draft', v: 'secondary' }, processed: { label: 'Diproses', v: 'warning' }, closed: { label: 'Selesai', v: 'success' },
+}
+
+const grnStatusMap: Record<string, { label: string; v: 'secondary' | 'success' | 'outline' }> = {
+  draft: { label: 'Draft', v: 'secondary' }, completed: { label: 'Selesai', v: 'success' },
 }
 
 type SalesOrderWithPIC = {
@@ -29,6 +37,20 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
   const { data: doDoc, error } = await supabase.from('delivery_order').select('*, sales_order!sales_order_id(nomor, customer_po!customer_po_id(nomor, customer_pic!pic_customer_id(nama, jabatan)), di(customer_pic(nama, jabatan))), kendaraan!kendaraan_id(nama, no_polisi), gudang!gudang_id(nama)').eq('id', id).single()
   if (error || !doDoc) return <div className="text-center py-20 text-muted-foreground">DO tidak ditemukan</div>
   const { data: items } = await supabase.from('delivery_order_item').select('*, barang!barang_id(nama, kode, satuan, barcode, image_url)').eq('delivery_order_id', id)
+
+  const { data: returList } = await supabase.from('retur_penjualan')
+    .select('id, nomor, status, total, tanggal')
+    .eq('delivery_order_id', id)
+    .order('created_at', { ascending: false })
+
+  let grnList: Array<{ id: string; nomor: string; status: string; retur_penjualan_id: string }> = []
+  if (returList?.length) {
+    const { data: grnResult } = await supabase.from('grn_customer')
+      .select('id, nomor, status, retur_penjualan_id')
+      .in('retur_penjualan_id', returList.map(r => r.id))
+      .order('created_at', { ascending: false })
+    grnList = grnResult ?? []
+  }
 
   const dueDate = doDoc.waktu_pengiriman
     ? (() => {
@@ -198,6 +220,74 @@ export default async function DeliveryOrderDetailPage({ params }: { params: Prom
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!!returList?.length && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Undo2 className="h-4 w-4" />Retur Penjualan</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nomor Retur</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {returList.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <Link href={`/dashboard/retur-penjualan/${r.id}`} className="text-primary hover:underline font-medium">
+                        {r.nomor}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{new Date(r.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</TableCell>
+                    <TableCell className="text-right font-medium">{Number(r.total).toLocaleString('id-ID')}</TableCell>
+                    <TableCell>
+                      <Badge variant={returStatusMap[r.status]?.v ?? 'outline'}>
+                        {returStatusMap[r.status]?.label ?? r.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {!!grnList.length && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><ClipboardList className="h-4 w-4" />Retur Barang (GRN) Customer</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nomor GRN</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {grnList.map((g) => (
+                  <TableRow key={g.id}>
+                    <TableCell>
+                      <Link href={`/dashboard/grn-customer/${g.id}`} className="text-primary hover:underline font-medium">
+                        {g.nomor}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={grnStatusMap[g.status]?.v ?? 'outline'}>
+                        {grnStatusMap[g.status]?.label ?? g.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

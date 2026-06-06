@@ -6,23 +6,93 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react'; import { toast } from 'sonner'
 
-const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), keterangan: z.string().optional() })
+interface DoItemData { barang_id: string; jumlah: number; urutan?: number; nama_barang?: string | null; kode_barang?: string | null; satuan?: string | null; keterangan: string | null; barang?: { nama: string; kode: string; satuan: string } | null }
+
+interface DoDetail { id: string; nomor: string; customer_id: string | null; items?: DoItemData[] }
+
+interface BarangData { id: string; nama: string; kode: string; satuan: string }
+
+const itemSchema = z.object({
+  barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(),
+  nama_barang: z.string().optional(), kode_barang: z.string().optional(), satuan: z.string().optional(),
+  keterangan: z.string().optional(),
+})
 const schema = z.object({ customer_id: z.string().min(1), delivery_order_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
 type FV = z.input<typeof schema>
 
 export default function TambahReturPenjualanPage() {
-  const router = useRouter(); const [doOpts, setDoOpts] = useState<Array<{ value: string; label: string }>>([]); const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([]); const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([]); const [submitting, setSubmitting] = useState(false)
+  const router = useRouter()
+  const [doOpts, setDoOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([])
+  const [barangMap, setBarangMap] = useState<Record<string, BarangData>>({})
+  const [doLoading, setDoLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const today = new Date().toISOString().split('T')[0]
   const form = useForm<FV>({ resolver: zodResolver(schema), defaultValues: { tanggal: today, items: [{ barang_id: '', jumlah: 1 }] } })
-  const { register, handleSubmit, control } = form
+  const { register, handleSubmit, control, setValue } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
+
+  const selectedDoId = form.watch('delivery_order_id')
+
   useEffect(() => {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/delivery-order'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([d, c, b]) => { setDoOpts((d.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
+      apiFetch<BarangData[]>('/api/v1/master/barang'),
+    ]).then(([d, c, b]) => {
+      setDoOpts((d.data ?? []).map(x => ({ value: x.id, label: x.nomor })))
+      setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
+      const bList = b.data ?? []
+      setBarangOpts(bList.map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
+      const bMap: Record<string, BarangData> = {}
+      bList.forEach(x => { bMap[x.id] = x })
+      setBarangMap(bMap)
+    }).catch(() => toast.error('Gagal'))
   }, [])
+
+  useEffect(() => {
+    if (!selectedDoId) return
+    setDoLoading(true)
+    apiFetch<DoDetail>(`/api/v1/delivery-order/${selectedDoId}`)
+      .then(res => {
+        const d = res.data
+        if (d) {
+          setValue('customer_id', d.customer_id ?? '')
+          if (d.items && d.items.length > 0) {
+            remove()
+            d.items.forEach(item => {
+              const b = barangMap[item.barang_id]
+              append({
+                barang_id: item.barang_id,
+                jumlah: item.jumlah,
+                nama_barang: item.nama_barang ?? item.barang?.nama ?? b?.nama ?? '',
+                kode_barang: item.kode_barang ?? item.barang?.kode ?? b?.kode ?? '',
+                satuan: item.satuan ?? item.barang?.satuan ?? b?.satuan ?? '',
+                keterangan: item.keterangan ?? '',
+              })
+            })
+          }
+        }
+      })
+      .catch(() => toast.error('Gagal memuat data DO'))
+      .finally(() => setDoLoading(false))
+  }, [selectedDoId, setValue, append, remove, barangMap])
+
+  const handleBarangChange = (i: number, barangId: string) => {
+    setValue(`items.${i}.barang_id`, barangId)
+    const b = barangMap[barangId]
+    if (b) {
+      setValue(`items.${i}.nama_barang`, b.nama)
+      setValue(`items.${i}.kode_barang`, b.kode)
+      setValue(`items.${i}.satuan`, b.satuan)
+    } else {
+      setValue(`items.${i}.nama_barang`, '')
+      setValue(`items.${i}.kode_barang`, '')
+      setValue(`items.${i}.satuan`, '')
+    }
+  }
+
   const onSubmit = async (data: FV) => {
     setSubmitting(true); try { await apiFetch('/api/v1/retur-penjualan', { method: 'POST', body: JSON.stringify(data) }); toast.success('Retur berhasil!'); router.push('/dashboard/retur-penjualan') }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Terjadi kesalahan') } finally { setSubmitting(false) }
@@ -55,6 +125,7 @@ export default function TambahReturPenjualanPage() {
                   <SelectContent>{doOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <FormMessage />
+                {doLoading && <p className="text-xs text-muted-foreground mt-1">Memuat data DO...</p>}
               </FormItem>
             )} />
             <FormField control={control} name="keterangan" render={({ field }) => (
@@ -62,13 +133,13 @@ export default function TambahReturPenjualanPage() {
             )} />
           </CardContent></Card>
           <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base">Item Retur</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1 })}><Plus className="h-4 w-4 mr-1" />Tambah</Button></CardHeader>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, keterangan: '' })}><Plus className="h-4 w-4 mr-1" />Tambah</Button></CardHeader>
             <CardContent className="space-y-4">{fields.map((f, i) => (
               <div key={f.id} className="p-4 border rounded-lg space-y-3"><div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Item #{i+1}</span>{fields.length > 1 && <Button type="button" variant="ghost" size="sm" onClick={() => remove(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}</div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <FormField control={control} name={`items.${i}.barang_id`} render={({ field }) => (
                     <FormItem><FormLabel>Barang *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={(v) => handleBarangChange(i, v)} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl>
                         <SelectContent>{barangOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                       </Select>
@@ -76,6 +147,11 @@ export default function TambahReturPenjualanPage() {
                     </FormItem>
                   )} />
                   <div className="space-y-2"><label className="text-xs font-medium">Jumlah *</label><Input type="number" min="1" {...register(`items.${i}.jumlah`)} /></div>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="space-y-2"><label className="text-xs font-medium">Nama</label><Input readOnly {...register(`items.${i}.nama_barang`)} /></div>
+                  <div className="space-y-2"><label className="text-xs font-medium">Kode</label><Input readOnly {...register(`items.${i}.kode_barang`)} /></div>
+                  <div className="space-y-2"><label className="text-xs font-medium">Satuan</label><Input readOnly {...register(`items.${i}.satuan`)} /></div>
                   <div className="space-y-2"><label className="text-xs font-medium">Keterangan</label><Input {...register(`items.${i}.keterangan`)} /></div>
                 </div>
               </div>

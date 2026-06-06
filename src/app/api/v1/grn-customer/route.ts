@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateGlobalDocumentNumber } from '@/lib/utils/document-number'
+import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 
 const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), nama_barang: z.string().optional(), kode_barang: z.string().optional(), satuan: z.string().optional(), urutan: z.number().int().optional(), keterangan: z.string().optional() })
 const schema = z.object({ retur_penjualan_id: z.string().optional(), delivery_order_id: z.string().optional(), customer_id: z.string().optional(), gudang_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
@@ -11,7 +11,7 @@ const schema = z.object({ retur_penjualan_id: z.string().optional(), delivery_or
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('grn_customer').select('*, customer!customer_id(nama, kode), gudang!gudang_id(nama), delivery_order!delivery_order_id(nomor)').order('created_at', { ascending: false })
+  const { data, error } = await supabaseAdmin.from('grn_customer').select('*, customer!customer_id(nama, kode), gudang!gudang_id(nama), delivery_order!delivery_order_id(nomor), retur_penjualan!retur_penjualan_id(nomor)').order('created_at', { ascending: false })
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
@@ -24,7 +24,16 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-  const nomor = await generateGlobalDocumentNumber('GRNC')
+  let nomor: string
+  if (parsed.data.retur_penjualan_id) {
+    const { data: parent } = await supabaseAdmin.from('retur_penjualan').select('nomor').eq('id', parsed.data.retur_penjualan_id).maybeSingle()
+    nomor = parent?.nomor ? formatChildNumber(parent.nomor, 'GRNC') : await generateGlobalDocumentNumber('GRNC')
+  } else if (parsed.data.delivery_order_id) {
+    const { data: parent } = await supabaseAdmin.from('delivery_order').select('nomor').eq('id', parsed.data.delivery_order_id).maybeSingle()
+    nomor = parent?.nomor ? formatChildNumber(parent.nomor, 'GRNC') : await generateGlobalDocumentNumber('GRNC')
+  } else {
+    nomor = await generateGlobalDocumentNumber('GRNC')
+  }
   const now = new Date().toISOString()
 
   const { data: grn, error: grnError } = await supabaseAdmin.from('grn_customer').insert({

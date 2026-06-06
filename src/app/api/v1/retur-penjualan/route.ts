@@ -30,14 +30,14 @@ import { badRequest, internalError } from '@/lib/api/errors'
 import { generateGlobalDocumentNumber, formatChildNumber } from '@/lib/utils/document-number'
 import { generateReturPenjualanJournal } from '@/lib/auto-jurnal'
 
-const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), keterangan: z.string().optional() })
+const itemSchema = z.object({ barang_id: z.string().min(1), jumlah: z.coerce.number().int().positive(), nama_barang: z.string().optional(), kode_barang: z.string().optional(), satuan: z.string().optional(), keterangan: z.string().optional() })
 const schema = z.object({ customer_id: z.string().min(1), delivery_order_id: z.string().optional(), tanggal: z.string().min(1), keterangan: z.string().optional(), items: z.array(itemSchema).min(1) })
 
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data, error } = await supabaseAdmin.from('retur_penjualan').select('*, customer!customer_id(nama, kode), delivery_order!delivery_order_id(nomor)').order('created_at', { ascending: false })
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
     const b = barangMap.get(i.barang_id)
     return {
       retur_penjualan_id: retur.id, barang_id: i.barang_id, jumlah: i.jumlah,
-      nama_barang: b?.nama ?? null, kode_barang: b?.kode ?? null, satuan: b?.satuan ?? null,
+      nama_barang: i.nama_barang || (b?.nama ?? null),
+      kode_barang: i.kode_barang || (b?.kode ?? null),
+      satuan: i.satuan || (b?.satuan ?? null),
       keterangan: i.keterangan ?? null, created_at: now, updated_at: now,
     }
   })
