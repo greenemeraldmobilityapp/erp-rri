@@ -13,8 +13,10 @@ export const customerPo = pgTable("customer_po", {
   termsOfPayment: text("terms_of_payment"),
   paymentTermId: text("payment_term_id"),
   waktuPengiriman: integer("waktu_pengiriman"),
- picCustomerId: text("pic_customer_id"),
- isActive: boolean("is_active").notNull().default(true),
- createdAt: timestamp("created_at").notNull().defaultNow(),
+picCustomerId: text("pic_customer_id"),
+  isActive: boolean("is_active").notNull().default(true),
+  namaPenandatangan: text("nama_penandatangan"),
+  jabatanPenandatangan: text("jabatan_penandatangan"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

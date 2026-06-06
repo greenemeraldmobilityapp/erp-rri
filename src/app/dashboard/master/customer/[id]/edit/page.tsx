@@ -129,7 +129,7 @@ export default function EditCustomerPage() {
           alamat: data.alamat,
           kontak: data.kontak,
           terms_of_payment: data.selectedTops[0] ?? '',
-          payment_term_id: data.paymentTermId || null,
+          payment_term_id: data.paymentTermId || undefined,
           is_active: data.isActive,
           customer_tops: data.selectedTops,
         }),

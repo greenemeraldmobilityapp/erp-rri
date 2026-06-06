@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 5.4
+**Versi:** 5.5
 **Status:** Draft
 **Tanggal:** 1 Juni 2026
 
@@ -676,6 +676,7 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 | **Kontrak Kunden** | Kontrak harga tetap dengan customer (fixed price list). Import item barang via paste JSON dari Gemini AI (ekstraksi manual PDF) → preview → edit → confirm → auto-create barang master + kontrak items. Barang import terikat ke kontrak (`kontrak_id` FK) — jika kontrak dihapus, barang ikut terhapus (ON DELETE CASCADE). Field: nomor kontrak, nama kontrak, customer, tanggal mulai/selesai/tanda tangan, penandatangan RRI & Customer (nama + jabatan), catatan. Upload 3 jenis dokumen: Kontrak PDF, RFQ dari Customer, Delivery Instruction (DI). Free-text items dengan kode_barang, nama_barang, satuan (tidak wajib linked ke master barang). |
 | **Harga Barang** | Histori harga beli dari supplier dan harga jual ke customer |
 | **Bulk Import Excel** ✅ | Import master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import`, API `POST /api/v1/tools/bulk-import`, sidebar Master Data group |
+| **Import dari PO Customer** ✅ | Mengimpor data Purchase Order (PO) dari customer yang **tidak dibuat melalui ERP** — yaitu PO yang terjadi di luar sistem (via email, PDF, atau dokumen fisik) sebelum ERP ini ada. Bertujuan mencatat seluruh history transaksi agar semua data tersimpan di ERP. Workflow: pilih customer → copy prompt Gemini → paste JSON hasil ekstraksi → preview → import. Auto-create: master barang, customer (jika belum ada), PIC customer (jika belum ada). Buat record Customer PO (status `confirmed`) + Customer PO Items. Nomor PO RRI: `RRI-CPO-EXT-YY-MM-NNNN` (counter terpisah dari CPO regular). Prompt per customer disimpan di tabel `customer_prompt` — admin mengisi via Supabase Table Editor. Mendukung field: nama_customer, nomor_po_customer, tanggal_po, PIC (nama + jabatan), penandatangan PO (nama + jabatan), items (nama_barang, satuan, qty, harga_satuan). PDF upload disimpan ke `dokumen/customer-po/{id}/`. Akses via tab "Import dari PO" di halaman `/dashboard/master/barang/tambah`. |
 
 ### B. AI Agent Module
 

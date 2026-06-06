@@ -28,6 +28,8 @@ interface CustomerPo {
   waktu_pengiriman: number | null
   pic_customer_id: string | null
   customer_pic: { nama: string; jabatan: string | null; no_hp: string | null } | null
+  nama_penandatangan: string | null
+  jabatan_penandatangan: string | null
   customer: { nama: string; kode: string } | null
   sales_order: { id: string; nomor: string; status: string } | null
   items: Array<{
@@ -202,6 +204,11 @@ export default function CustomerPoDetailPage() {
               <p className="text-sm text-muted-foreground">PIC Customer</p>
               <p className="font-medium">{po.customer_pic?.nama ?? "-"}</p>
               {po.customer_pic?.jabatan && <p className="text-xs text-muted-foreground">{po.customer_pic.jabatan}</p>}
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Penandatangan PO</p>
+              <p className="font-medium">{po.nama_penandatangan ?? "-"}</p>
+              {po.jabatan_penandatangan && <p className="text-xs text-muted-foreground">{po.jabatan_penandatangan}</p>}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Batas Kirim Barang</p>

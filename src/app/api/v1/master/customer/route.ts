@@ -10,7 +10,7 @@ const schema = z.object({
   alamat: z.string().optional(),
   kontak: z.string().optional(),
   terms_of_payment: z.string().optional(),
-  payment_term_id: z.string().optional(),
+  payment_term_id: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
   customer_tops: z.array(z.string()).optional(),
 })

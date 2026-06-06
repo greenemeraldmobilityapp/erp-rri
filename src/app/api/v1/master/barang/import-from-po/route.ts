@@ -26,6 +26,8 @@ const poJsonSchema = z.object({
   time_for_delivery_hari: z.number().optional().default(0),
   durasi_payment_hari: z.number().optional().default(0),
   catatan: z.string().optional().default(''),
+  nama_penandatangan: z.string().optional().default('-'),
+  jabatan_penandatangan: z.string().optional().default('-'),
   items: z.array(importItemSchema).min(1, 'Minimal 1 item'),
 })
 
@@ -184,6 +186,8 @@ export async function POST(request: NextRequest) {
       waktu_pengiriman: data.time_for_delivery_hari > 0 ? data.time_for_delivery_hari : null,
       pic_customer_id: picCustomerId,
       is_active: true,
+      nama_penandatangan: data.nama_penandatangan !== '-' ? data.nama_penandatangan : null,
+      jabatan_penandatangan: data.jabatan_penandatangan !== '-' ? data.jabatan_penandatangan : null,
     })
 
   if (poError) {

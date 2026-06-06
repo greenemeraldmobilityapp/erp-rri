@@ -207,6 +207,9 @@ DI diterbitkan (draft)
 | PO-11 | **Fix: `apiFetch` → `apiFetchFormData`** — FormData import kirim Content-Type application/json (salah), ganti dengan `apiFetchFormData` yang tidak set Content-Type agar browser set multipart boundary | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
 | PO-12 | **Fix: status 'linked' untuk barang existing dgn harga beda** — ganti 'skipped' misleading jadi 'linked' di response API | ✅ Done | `src/app/api/v1/master/barang/import-from-po/route.ts` |
 | PO-13 | **Fix: tampilkan `nomor_quotation_rri` di detail PO** — tambah field ke interface + grid display di halaman detail customer PO | ✅ Done | `src/app/dashboard/customer-po/[id]/page.tsx` |
+| PO-14 | **Add `nama_penandatangan` + `jabatan_penandatangan` ke `customer_po`** — migration + drizzle schema + API insert + Zod validation | ✅ Done | `0043_add_signatory_fields_to_customer_po.sql`, `customer-po.ts`, `import-from-po/route.ts` |
+| PO-15 | **Update prompt BJS & MKP** — BJS: PIC/Jabatan dari header, Penandatangan dari signature block. MKP: PIC & Penandatangan dari signature block (duplikat) | ✅ Done | Supabase `customer_prompt` (BJS + MKP) |
+| PO-16 | **Display Penandatangan PO di detail page** — section baru "Penandatangan PO" di bawah PIC Customer di halaman detail customer PO | ✅ Done | `src/app/dashboard/customer-po/[id]/page.tsx` |
 
 ---
 
