@@ -818,3 +818,17 @@ Customer retur barang
 - `15 items/page` — ROWS_PER_PAGE = 15 (adjustable after preview)
 - Multi-page support (auto new page when items exceed ROWS_PER_PAGE)
 - Font size 10pt/9pt, double border line (2px + 0.5px), company logo from `site_settings`
+
+## 🟡 Import dari DI — Master Barang Enhancement
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| DI-1 | **Planning & Design** — Final plan documented | ✅ Done | `.opencode/plans/import-dari-di.md` |
+| DI-2 | **DB Migration — `customer_prompt_di` table** — CREATE TABLE untuk simpan prompt DI per customer | ✅ Done | `0045_customer_prompt_di.sql` |
+| DI-3 | **DB Migration — Tambah kolom ke `di`** — `nama_penandatangan`, `jabatan_penandatangan`, `revisi_ke`, `nomor_kontrak_customer` | ✅ Done | `0045_customer_prompt_di.sql` |
+| DI-4 | **Drizzle Schema `customer-prompt-di.ts`** — schema TypeScript untuk `customer_prompt_di` | ✅ Done | `src/lib/db/schema/customer-prompt-di.ts` |
+| DI-5 | **Update Drizzle Schema `di.ts`** — tambah field baru (penandatangan, revisi, nomor_kontrak) | ✅ Done | `src/lib/db/schema/di.ts` |
+| DI-6 | **API: GET customer/[id]/prompt-di** — fetch prompt DI per customer | ✅ Done | `src/app/api/v1/master/customer/[id]/prompt-di/route.ts` |
+| DI-7 | **API: POST import-from-di** — validasi JSON, auto-match kontrak, auto-create barang, create DI+items, upload PDF | ✅ Done | `src/app/api/v1/master/barang/import-from-di/route.ts` |
+| DI-8 | **Frontend Tab "Import dari DI"** — dropdown customer, prompt, upload PDF, paste JSON, preview, import | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
+| DI-9 | **Seed data prompt DI BJS** — isi `customer_prompt_di` untuk customer BJS | ⏳ Pending | Supabase Table Editor |

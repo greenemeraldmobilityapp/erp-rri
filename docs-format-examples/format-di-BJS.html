@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BJS-25-0004-HRGA-12</title>
+    <style>
+        body {
+            background-color: #e5e7eb;
+            margin: 0;
+            padding: 20px 0;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .page {
+            background-color: #fff;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto 20px auto;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header-layout {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .header-left, .header-right {
+            width: 48%;
+        }
+
+        .header-right table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-right td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .title-section {
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .title-section h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .address-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .address-box {
+            width: 48%;
+        }
+
+        .ref-section {
+            margin-bottom: 15px;
+        }
+
+        .ref-section table td {
+            padding: 2px 0;
+        }
+
+        .table-bordered {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #000;
+            padding: 5px 6px;
+        }
+
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .totals-table {
+            width: 350px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 4px;
+        }
+
+        .terms-section {
+            margin-bottom: 30px;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 50px;
+        }
+
+        .signature-box {
+            width: 45%;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .signature-table td {
+            padding: 4px 0;
+            vertical-align: top;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+        }
+
+        .footer-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        @media print {
+            body { 
+                background-color: #fff; 
+                padding: 0; 
+            }
+            .page { 
+                box-shadow: none; 
+                margin: 0; 
+                width: 100%; 
+                height: 100%; 
+                padding: 15mm; 
+                page-break-after: always;
+            }
+            .footer { 
+                bottom: 15mm; 
+                left: 15mm; 
+                right: 15mm; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1 -->
+    <div class="page">
+        
+        <!-- Header -->
+        <div class="header-layout">
+            <div class="header-left">
+                PT. Bhumi Jepara Service<br>
+                PLTU Tanjung Jati B Unit 5&6<br>
+                Desa Tubanan, Kecamatan Kembang<br>
+                Jepara 59458
+            </div>
+            <div class="header-right">
+                <table>
+                    <tr>
+                        <td style="width: 35%;">DI Number</td>
+                        <td style="width: 5%;">:</td>
+                        <td>C-BJS-25-0004-HRGA-12</td>
+                    </tr>
+                    <tr>
+                        <td>DI Date</td>
+                        <td>:</td>
+                        <td>21 October 2025</td>
+                    </tr>
+                    <tr>
+                        <td>DI Revision</td>
+                        <td>:</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>Department</td>
+                        <td>:</td>
+                        <td>Procurement & Coordination</td>
+                    </tr>
+                    <tr>
+                        <td>PIC</td>
+                        <td>:</td>
+                        <td>MUHAMMAD FAUZI</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="title-section">
+            <h2>Bhumi Jepara Service</h2>
+            <h2>Delivery Instruction (DI)</h2>
+        </div>
+
+        <!-- Vendor & Ship To -->
+        <div class="address-section">
+            <div class="address-box">
+                Vendor:<br><br>
+                Rizqi Ridho Ilahi, PT<br>
+                Gang Jonggring Saloka No 1 Jerukwangi Bangsri<br>
+                Jepara, Jawa Tengah 59458
+            </div>
+            <div class="address-box">
+                Ship To:<br><br>
+                PT. Bhumi Jepara Service<br>
+                PLTU Tanjung Jati B Unit 5&6<br>
+                Desa Tubanan, Kecamatan Kembang<br>
+                Jepara 59458
+            </div>
+        </div>
+
+        <!-- References -->
+        <div class="ref-section">
+            <table style="width: 60%; border: none; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 50%;">Reference Contract Number</td>
+                    <td>C-BJS-25-0004-HRGA</td>
+                </tr>
+                <tr>
+                    <td>Requestor</td>
+                    <td>HRGA</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Line Items -->
+        <table class="table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 4%;">No</th>
+                    <th style="width: 40%; text-align: left;">Description</th>
+                    <th style="width: 10%;">Unit</th>
+                    <th style="width: 6%;">QTY</th>
+                    <th colspan="2" style="width: 20%;">Unit Price</th>
+                    <th colspan="2" style="width: 20%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;">1</td>
+                    <td>PTR006_Jahe Wangi (10pcs/rtg)</td>
+                    <td style="text-align: center;">PACK</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="border-right: none; width: 5%;">IDR</td>
+                    <td style="border-left: none; text-align: right;">14,000</td>
+                    <td style="border-right: none; width: 5%;">IDR</td>
+                    <td style="border-left: none; text-align: right;">70,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">2</td>
+                    <td>SNT010 Soklin Lantai 4L</td>
+                    <td style="text-align: center;">JERRY CAN</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">59,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">295,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">3</td>
+                    <td>SNT018_Baygon Insectisida Spray 600 ml</td>
+                    <td style="text-align: center;">CAN</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">39,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">195,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">4</td>
+                    <td>SNT022_Kapur Barus Swallow/ Dahlia 5 Balls</td>
+                    <td style="text-align: center;">PACK</td>
+                    <td style="text-align: center;">10</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">22,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">220,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">5</td>
+                    <td>SNT024_Dahlia Air Freshener Aerosol 200ml</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">15</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">19,500</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">292,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">6</td>
+                    <td>SNT025_Dahlia Air Freshness 75gr Hanging for Room (Teh Keraton)</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">20</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">13,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">260,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">7</td>
+                    <td>SNT031_Rinso Molto Liquid Detergen Anti Noda 750ml</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">15</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">19,800</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">297,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">8</td>
+                    <td>SNT032_Yuri Dishwasher Ligent Jerigen 3,7L</td>
+                    <td style="text-align: center;">JERRY CAN</td>
+                    <td style="text-align: center;">5</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">95,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">475,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">9</td>
+                    <td>SNT033_Hand Soap Refill SOS 4L</td>
+                    <td style="text-align: center;">JERRY CAN</td>
+                    <td style="text-align: center;">8</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">85,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">680,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">10</td>
+                    <td>SNT034_Downy Softener pouch 600ml</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">25</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">26,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">650,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">11</td>
+                    <td>SNT039_Tissue Pengesat Tessa (Tessa Hand Towell 2ply 150's)</td>
+                    <td style="text-align: center;">PACK</td>
+                    <td style="text-align: center;">30</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">22,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">660,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">12</td>
+                    <td>SNT042 Bebek Toilet Cleaner 450ml (bottle)</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">25</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">22,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">550,000</td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">13</td>
+                    <td>SNT044_Vixal 780 ml</td>
+                    <td style="text-align: center;">PCS</td>
+                    <td style="text-align: center;">15</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">21,000</td>
+                    <td style="border-right: none;">IDR</td>
+                    <td style="border-left: none; text-align: right;">315,000</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td style="text-align: right; padding-right: 20px;">Sub Total</td>
+                    <td style="width: 10%;">IDR</td>
+                    <td style="text-align: right; width: 30%;">4,959,500</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right; padding-right: 20px;">Grand Total</td>
+                    <td>IDR</td>
+                    <td style="text-align: right;">4,959,500</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer Page 1 -->
+        <div class="footer">
+            <div class="footer-flex">
+                <div>
+                    DI Number: C-BJS-25-0004-HRGA-12
+                </div>
+                <div>1/2</div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- PAGE 2 -->
+    <div class="page">
+        
+        <!-- Header Page 2 -->
+        <div style="margin-bottom: 30px;">
+            PT. Bhumi Jepara Service<br>
+            PLTU Tanjung Jati B Unit 5&6<br>
+            Desa Tubanan, Kecamatan Kembang<br>
+            Jepara 59458<br><br>
+            Bhumi Jepara Service<br>
+            Delivery Instruction (DI)
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-section">
+            <div style="margin-bottom: 5px;">Terms and Conditions</div>
+            <table class="table-bordered">
+                <tr>
+                    <td style="width: 30%;">TIME FOR DELIVERY</td>
+                    <td>14 days after issuance of DI</td>
+                </tr>
+                <tr>
+                    <td>DELIVERY</td>
+                    <td>DDP Warehouse PLTU Tanjung Jati B Unit 5&6</td>
+                </tr>
+                <tr>
+                    <td>PAYMENT</td>
+                    <td>TTR 30 calendar days after goods and original invoice are received</td>
+                </tr>
+                <tr>
+                    <td>VAT</td>
+                    <td>Not Applicable</td>
+                </tr>
+                <tr>
+                    <td>OTHERS</td>
+                    <td>Other terms and conditions shall be referred to contract C-BJS-25-0004-HRGA and its amendments</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            Note:
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <!-- Authorized By Box -->
+            <div class="signature-box">
+                <div style="margin-bottom: 15px;">
+                    PT. Bhumi Jepara Service<br>
+                    Authorized by<br>
+                </div>
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 30%;">Position</td>
+                        <td style="width: 5%;">:</td>
+                        <td>HRGA Manager</td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>:</td>
+                        <td>22 Oktober 2025</td>
+                    </tr>
+                </table>
+                <div style="margin-top: 40px;">
+                    CHANDRA ADITYA
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Page 2 -->
+        <div class="footer">
+            <div class="footer-flex">
+                <div>
+                    DI Number: C-BJS-25-0004-HRGA-12
+                </div>
+                <div>2/2</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

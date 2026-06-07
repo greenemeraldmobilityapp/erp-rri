@@ -15,6 +15,10 @@ export const di = pgTable("di", {
  status: text("status").notNull().default("draft"),
  keterangan: text("keterangan"),
  isActive: boolean("is_active").notNull().default(true),
+ namaPenandatangan: text("nama_penandatangan"),
+ jabatanPenandatangan: text("jabatan_penandatangan"),
+ revisiKe: integer("revisi_ke").default(0),
+ nomorKontrakCustomer: text("nomor_kontrak_customer"),
  createdAt: timestamp("created_at").notNull().defaultNow(),
  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

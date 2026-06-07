@@ -256,7 +256,22 @@ export async function POST(request: NextRequest) {
       try {
         const buffer = Buffer.from(await pdfFile.arrayBuffer())
         const filePath = `dokumen/customer-po/${poId}/${pdfFile.name}`
-        await storageService.upload(buffer, filePath, pdfFile.type)
+        const uploadResult = await storageService.upload(buffer, filePath, pdfFile.type)
+
+        const { error: docError } = await supabaseAdmin
+          .from('customer_po_document')
+          .insert({
+            id: crypto.randomUUID(),
+            customer_po_id: poId,
+            file_name: pdfFile.name,
+            file_url: uploadResult.webViewLink,
+            drive_file_id: uploadResult.fileId,
+          })
+
+        if (docError) {
+          await storageService.delete(uploadResult.fileId).catch(() => {})
+          errors.push({ nama_barang: 'system', error: 'Gagal menyimpan dokumen: ' + docError.message })
+        }
       } catch {
         errors.push({ nama_barang: 'system', error: 'Gagal upload file PDF' })
       }
