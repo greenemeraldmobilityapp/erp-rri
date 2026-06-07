@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, internalError } from '@/lib/api/errors'
-import { generateAutoKode, generateCustomerAutoKode } from '@/lib/utils/barang-auto-create'
+import { generateAutoKode, generateCustomerAutoKode, getDefaultKategoriId } from '@/lib/utils/barang-auto-create'
 import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { storageService } from '@/lib/storage'
 
@@ -116,7 +116,21 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Step 3: Generate document number
+  // Step 3: Check for duplicate nomor_po_customer (case-insensitive, non-cancelled)
+  const { data: existingPo } = await supabaseAdmin
+    .from('customer_po')
+    .select('id, nomor')
+    .ilike('nomor_po_customer', data.nomor_po_customer)
+    .neq('status', 'cancelled')
+    .maybeSingle()
+
+  if (existingPo) {
+    return badRequest(
+      `PO dengan nomor "${data.nomor_po_customer}" sudah pernah diimport sebelumnya (${existingPo.nomor}). Silakan gunakan nomor PO yang berbeda, atau hubungi admin jika ini adalah revisi.`
+    )
+  }
+
+  // Step 4: Generate document number
   let nomorPo: string
   try {
     nomorPo = await generateDocumentNumber('CPO-EXT', tahun, bulan)
@@ -124,7 +138,10 @@ export async function POST(request: NextRequest) {
     return internalError('Gagal generate nomor PO: ' + (err instanceof Error ? err.message : 'unknown'))
   }
 
-  // Step 4: Loop items — create barang
+  // Step 5: Get default kategori_id before looping items
+  const defaultKategoriId = await getDefaultKategoriId()
+
+  // Step 6: Loop items — create barang
   for (const item of data.items) {
     try {
       const { data: existingBarang } = await supabaseAdmin
@@ -133,44 +150,49 @@ export async function POST(request: NextRequest) {
         .ilike('nama', item.nama_barang)
         .maybeSingle()
 
-      if (existingBarang && existingBarang.harga_jual_default === item.harga_satuan) {
-        imported.push({ nama_barang: item.nama_barang, barangId: existingBarang.id, status: 'skipped' })
+      if (existingBarang) {
+        const existingHarga = Number(existingBarang.harga_jual_default)
+        if (existingHarga === item.harga_satuan) {
+          imported.push({ nama_barang: item.nama_barang, barangId: existingBarang.id, status: 'skipped' })
+          continue
+        }
+        // Nama sama tapi harga beda — link existing barang
+        imported.push({ nama_barang: item.nama_barang, barangId: existingBarang.id, status: 'linked' })
         continue
       }
 
-      let barangId: string
-      if (existingBarang && existingBarang.harga_jual_default !== item.harga_satuan) {
-        barangId = existingBarang.id
-      } else {
-        const kode = await generateAutoKode()
-        const { data: newBarang, error: barangError } = await supabaseAdmin
-          .from('barang')
-          .insert({
-            nama: item.nama_barang,
-            kode,
-            satuan: item.satuan,
-            harga_jual_default: item.harga_satuan,
-            stok_minimum: 0,
-            is_active: true,
-          })
-          .select('id')
-          .single()
+      // Barang belum ada — create baru
+      const kode = await generateAutoKode()
+      const { data: newBarang, error: barangError } = await supabaseAdmin
+        .from('barang')
+        .insert({
+          nama: item.nama_barang,
+          kode,
+          satuan: item.satuan,
+          kategori_id: defaultKategoriId,
+          harga_jual_default: item.harga_satuan,
+          stok_minimum: 0,
+          is_active: true,
+        })
+        .select('id')
+        .single()
 
-        if (barangError || !newBarang) {
-          errors.push({ nama_barang: item.nama_barang, error: barangError?.message || 'Gagal membuat barang' })
-          continue
-        }
-        barangId = newBarang.id
+      if (barangError || !newBarang) {
+        errors.push({ nama_barang: item.nama_barang, error: barangError?.message || 'Gagal membuat barang' })
+        continue
       }
-
-      const linkStatus = existingBarang && existingBarang.harga_jual_default !== item.harga_satuan ? 'linked' : 'skipped'
-      imported.push({ nama_barang: item.nama_barang, barangId, status: existingBarang ? linkStatus : 'created' })
+      imported.push({ nama_barang: item.nama_barang, barangId: newBarang.id, status: 'created' })
     } catch (err) {
       errors.push({ nama_barang: item.nama_barang, error: err instanceof Error ? err.message : 'Unknown error' })
     }
   }
 
-  // Step 5: Create customer_po
+  // Edge case: imported array still empty despite no errors thrown — shouldn't happen but guard it
+  if (imported.length === 0 && errors.length === 0 && data.items.length > 0) {
+    errors.push({ nama_barang: 'system', error: `Tidak ada item yang berhasil diproses dari ${data.items.length} item. Semua item gagal di tahap query/insert barang.` })
+  }
+
+  // Step 7: Create customer_po
   const poId = crypto.randomUUID()
   const { error: poError } = await supabaseAdmin
     .from('customer_po')
@@ -180,6 +202,7 @@ export async function POST(request: NextRequest) {
       customer_id: customerId,
       nomor_po_customer: data.nomor_po_customer,
       nomor_quotation_rri: data.nomor_quotation_rri,
+      nomor_pr_customer: data.nomor_pr_customer !== '-' ? data.nomor_pr_customer : null,
       tanggal: tanggalPo.toISOString(),
       status: 'confirmed',
       terms_of_payment: data.durasi_payment_hari > 0 ? `${data.durasi_payment_hari} hari` : null,
@@ -194,7 +217,7 @@ export async function POST(request: NextRequest) {
     return internalError('Gagal membuat PO: ' + poError.message)
   }
 
-  // Step 6: Create customer_po_item for imported barang
+  // Step 8: Create customer_po_item for imported barang
   const poItems: Array<{
     customer_po_id: string
     barang_id: string
@@ -223,7 +246,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Step 7: Upload PDF file if provided
+  // Step 9: Upload PDF file if provided
   const pdfFile = formData.get('pdfFile') as File | null
   if (pdfFile) {
     const maxSize = 10 * 1024 * 1024

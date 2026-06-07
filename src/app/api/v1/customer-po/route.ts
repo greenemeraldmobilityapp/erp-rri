@@ -27,13 +27,15 @@ const schema = z.object({
   waktu_pengiriman: z.coerce.number().int().positive().optional(),
   pic_customer_id: z.string().optional(),
   kategori_baru_id: z.string().optional(),
+  nama_penandatangan: z.string().optional().nullable(),
+  jabatan_penandatangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1),
 })
 
 export async function GET(request: NextRequest) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
-  const { data, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data, error } = await supabaseAdmin.from('customer_po').select('*, customer!customer_id(nama, kode)').order('tanggal', { ascending: false }).order('created_at', { ascending: false })
   if (error) return internalError(error)
   return NextResponse.json({ data: data ?? [] })
 }
@@ -69,6 +71,8 @@ export async function POST(request: NextRequest) {
     terms_of_payment: parsed.data.terms_of_payment ?? null,
     waktu_pengiriman: parsed.data.waktu_pengiriman ?? null,
     pic_customer_id: parsed.data.pic_customer_id ?? null,
+    nama_penandatangan: parsed.data.nama_penandatangan ?? null,
+    jabatan_penandatangan: parsed.data.jabatan_penandatangan ?? null,
     created_at: now, updated_at: now,
   }).select().single()
   if (poError) return internalError(poError)

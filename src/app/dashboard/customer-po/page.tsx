@@ -11,7 +11,7 @@ const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' 
 }
 
 export default async function CustomerPoPage() {
-  const { data, error } = await supabase.from('customer_po').select('*, customer!customer_id(nama, kode)').order('created_at', { ascending: false })
+  const { data, error } = await supabase.from('customer_po').select('*, customer!customer_id(nama, kode)').order('tanggal', { ascending: false }).order('created_at', { ascending: false })
   const { data: soData } = await supabase.from('sales_order').select('customer_po_id, nomor, status')
   const soByPoId = new Map(soData?.map(s => [s.customer_po_id, s]) ?? [])
   return (

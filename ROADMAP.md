@@ -210,6 +210,7 @@ DI diterbitkan (draft)
 | PO-14 | **Add `nama_penandatangan` + `jabatan_penandatangan` ke `customer_po`** — migration + drizzle schema + API insert + Zod validation | ✅ Done | `0043_add_signatory_fields_to_customer_po.sql`, `customer-po.ts`, `import-from-po/route.ts` |
 | PO-15 | **Update prompt BJS & MKP** — BJS: PIC/Jabatan dari header, Penandatangan dari signature block. MKP: PIC & Penandatangan dari signature block (duplikat) | ✅ Done | Supabase `customer_prompt` (BJS + MKP) |
 | PO-16 | **Display Penandatangan PO di detail page** — section baru "Penandatangan PO" di bawah PIC Customer di halaman detail customer PO | ✅ Done | `src/app/dashboard/customer-po/[id]/page.tsx` |
+| PO-17 | **Fix missing fields + duplicate prevention** — tambah `nomor_pr_customer` (migration 0044 + schema + API insert + detail page), fix `nama_penandatangan`/`jabatan_penandatangan` tidak tersimpan (sudah ada di API insert sejak PO-14), duplicate check `nomor_po_customer` (case-insensitive, non-cancelled) + UNIQUE INDEX di migration 0044 | ✅ Done | `0044_add_nomor_pr_customer_and_unique_index.sql`, `customer-po.ts`, `import-from-po/route.ts`, `customer-po/[id]/page.tsx` |
 
 ---
 

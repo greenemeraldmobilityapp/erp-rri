@@ -57,7 +57,7 @@ export async function createBarangFromRfqItem(
   return data as { id: string; nama: string; kode: string }
 }
 
-async function getDefaultKategoriId(): Promise<string> {
+export async function getDefaultKategoriId(): Promise<string> {
   const { data } = await supabaseAdmin
     .from('kategori_barang')
     .select('id')

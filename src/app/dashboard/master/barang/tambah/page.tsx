@@ -171,7 +171,12 @@ export default function TambahBarangPage() {
     setPoLoadingPrompt(true);
     try {
       const { data } = await apiFetch<{ prompt_template: string }>(`/api/v1/master/customer/${customerId}/prompt`);
-      setPoPrompt(data?.prompt_template ?? '');
+      if (!data?.prompt_template) {
+        toast.error('Prompt untuk customer ini belum tersedia. Hubungi admin untuk menambahkan prompt di Supabase.');
+        setPoLoadingPrompt(false);
+        return;
+      }
+      setPoPrompt(data.prompt_template ?? '');
     } catch {
       toast.error('Gagal memuat prompt customer');
     } finally {
@@ -386,6 +391,10 @@ export default function TambahBarangPage() {
   };
 
   const handlePoImport = async () => {
+    if (!poPdfFile) {
+      toast.error('Upload file PDF PO terlebih dahulu sebelum mengimport');
+      return;
+    }
     if (!poParsedData) {
       toast.error('Preview data terlebih dahulu');
       return;
@@ -423,6 +432,10 @@ export default function TambahBarangPage() {
           id: result.imported_count > 0 ? toastId : undefined,
         });
         setTimeout(() => router.push('/dashboard/master/barang'), 1500);
+      } else if (result.errors && result.errors.length > 0) {
+        // Errors occurred but nothing imported/skipped — show first error detail
+        const firstError = result.errors.find(e => e.nama_barang !== 'system');
+        toast.error(firstError ? `${firstError.nama_barang}: ${firstError.error}` : 'Import gagal - cek detail di console', { id: toastId, duration: 8000 });
       } else {
         toast.error('Tidak ada barang yang diimport', { id: toastId });
       }
@@ -878,7 +891,7 @@ export default function TambahBarangPage() {
                 )}
               </div>
 
-              {selectedPoCustomerId && (
+              {selectedPoCustomerId && poPrompt && (
                 <>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -909,7 +922,7 @@ export default function TambahBarangPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Upload File PDF PO</label>
+                    <label className="text-sm font-medium">Upload File PDF PO <span className="text-destructive">*</span></label>
                     <div
                       className="flex items-center gap-3 rounded-lg border-2 border-dashed p-4 transition-colors cursor-pointer bg-muted/30 hover:bg-muted/50"
                       onClick={() => document.getElementById('po-pdf-input')?.click()}

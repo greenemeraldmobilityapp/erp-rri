@@ -9,6 +9,7 @@ export const customerPo = pgTable("customer_po", {
  tanggal: timestamp("tanggal").notNull(),
   nomorPoCustomer: text("nomor_po_customer"),
   nomorQuotationRri: text("nomor_quotation_rri"),
+  nomorPrCustomer: text("nomor_pr_customer"),
  status: text("status").notNull().default("draft"),
   termsOfPayment: text("terms_of_payment"),
   paymentTermId: text("payment_term_id"),

@@ -24,6 +24,7 @@ interface CustomerPo {
   status: string
   nomor_po_customer: string | null
   nomor_quotation_rri: string | null
+  nomor_pr_customer: string | null
   terms_of_payment: string | null
   waktu_pengiriman: number | null
   pic_customer_id: string | null
@@ -195,6 +196,10 @@ export default function CustomerPoDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">No. Quotation RRI</p>
               <p className="font-medium">{po.nomor_quotation_rri ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">No. PR Customer</p>
+              <p className="font-medium">{po.nomor_pr_customer ?? "-"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Terms of Payment</p>
