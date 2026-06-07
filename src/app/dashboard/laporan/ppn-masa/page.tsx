@@ -5,6 +5,7 @@ import { formatDateTime } from '@/lib/utils/date'
 import { ExportPdfButton } from '@/components/export-pdf-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+export const dynamic = 'force-dynamic'
 
 function rupiah(v: number) {
   return `Rp ${v.toLocaleString('id-ID')}`

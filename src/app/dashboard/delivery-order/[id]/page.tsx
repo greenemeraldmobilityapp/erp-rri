@@ -10,6 +10,7 @@ import { DOPhotoConfirmation } from '@/components/do-delivery-confirmation'
 import { DOKendaraanGudangSelect } from '@/components/do-kendaraan-gudang-select'
 import { DOHeaderActions } from '@/components/do-header-actions'
 import { DoDeliverySlip } from '@/components/do-delivery-slip'
+export const dynamic = 'force-dynamic'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, awaiting_pickup: { label: 'Siap Kirim', v: 'warning' }, dikirim: { label: 'Dikirim', v: 'success' }, selesai: { label: 'Selesai', v: 'outline' }, ditolak: { label: 'Ditolak', v: 'destructive' },

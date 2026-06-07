@@ -20,6 +20,7 @@ import { AgingChart } from '@/components/aging-chart'
 import { StockCategoryChart } from '@/components/stock-category-chart'
 import { LowStockChart } from '@/components/low-stock-chart'
 import { RevenueMixChart } from '@/components/revenue-mix-chart'
+export const dynamic = 'force-dynamic'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

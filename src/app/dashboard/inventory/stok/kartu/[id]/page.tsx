@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ArrowLeft, Package, ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
+export const dynamic = 'force-dynamic'
 
 const tipeStyle: Record<string, 'success' | 'destructive' | 'warning' | 'outline'> = { masuk: 'success', keluar: 'destructive', opname: 'warning' }
 const tipeLabel: Record<string, string> = { masuk: 'Masuk', keluar: 'Keluar', opname: 'Opname' }

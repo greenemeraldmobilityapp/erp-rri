@@ -1,6 +1,7 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { supabase } from '@/lib/db/client'
 import { formatDateTime } from '@/lib/utils/date'
+export const dynamic = 'force-dynamic'
 
 export default async function AuditLogPage() {
   const { data, error } = await supabase.from('audit_log').select('*, users!user_id(email)').order('created_at', { ascending: false }).limit(100)

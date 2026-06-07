@@ -1297,6 +1297,18 @@ export default function TambahBarangPage() {
                     </TableBody>
                   </Table>
                 </div>
+
+                <div className="flex justify-end border-t pt-4 mt-4">
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">GRAND TOTAL</p>
+                    <p className="text-2xl font-bold">
+                      {formatCurrency(poParsedData.items.reduce((s, i) => s + i.qty * i.harga_satuan, 0))}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {poParsedData.items.length} item
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -1519,6 +1531,18 @@ export default function TambahBarangPage() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+
+                <div className="flex justify-end border-t pt-4 mt-4">
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">GRAND TOTAL</p>
+                    <p className="text-2xl font-bold">
+                      {formatCurrency(diParsedData.items.reduce((s, i) => s + i.qty * i.harga_satuan, 0))}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {diParsedData.items.length} item
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

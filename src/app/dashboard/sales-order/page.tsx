@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Eye } from 'lucide-react'
 import { ExportButton } from "@/components/export-button"
+export const dynamic = 'force-dynamic'
 
 const s: Record<string, { label: string; v: 'secondary' | 'warning' | 'success' | 'outline' | 'destructive' }> = {
   draft: { label: 'Draft', v: 'secondary' }, confirmed: { label: 'Dikonfirmasi', v: 'warning' }, processed: { label: 'Diproses', v: 'success' }, delivered: { label: 'Dikirim', v: 'outline' }, cancelled: { label: 'Dibatalkan', v: 'destructive' },

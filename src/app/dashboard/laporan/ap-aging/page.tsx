@@ -5,6 +5,7 @@ import { AgingChart } from '@/components/aging-chart'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+export const dynamic = 'force-dynamic'
 
 const STATUS_MAP: Record<string, { label: string; variant: 'warning' | 'success' | 'destructive' }> = {
   sent: { label: 'Dikirim', variant: 'warning' },

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/db/client'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Plus, Pencil, Eye } from 'lucide-react'
+export const dynamic = 'force-dynamic'
 
 export default async function GudangPage() {
   const { data, error } = await supabase.from('gudang').select('*').order('nama')
