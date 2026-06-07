@@ -329,7 +329,7 @@ export default function TambahBarangPage() {
   const handlePreview = () => {
     const trimmed = jsonInput.trim();
     if (!trimmed) {
-      toast.error('Tempel JSON dari Gemini AI terlebih dahulu');
+      toast.error('Tempel JSON dari Chat GPT AI terlebih dahulu');
       return;
     }
     try {
@@ -449,7 +449,7 @@ export default function TambahBarangPage() {
   const handlePoPreview = () => {
     const trimmed = poJsonInput.trim();
     if (!trimmed) {
-      toast.error('Tempel JSON dari Gemini AI terlebih dahulu');
+      toast.error('Tempel JSON dari Chat GPT AI terlebih dahulu');
       return;
     }
     try {
@@ -553,7 +553,7 @@ export default function TambahBarangPage() {
   const handleDiPreview = () => {
     const trimmed = diJsonInput.trim();
     if (!trimmed) {
-      toast.error('Tempel JSON dari Gemini AI terlebih dahulu');
+      toast.error('Tempel JSON dari Chat GPT AI terlebih dahulu');
       return;
     }
     try {
@@ -998,7 +998,7 @@ export default function TambahBarangPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Prompt untuk Gemini AI</label>
+                  <label className="text-sm font-medium">Prompt untuk Chat GPT AI</label>
                   <Button variant="outline" size="sm" onClick={handleCopyPrompt}>
                     {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
                     {copied ? 'Tersalin' : 'Salin Prompt'}
@@ -1014,12 +1014,12 @@ export default function TambahBarangPage() {
                   <FileDown className="absolute top-2 right-2 h-4 w-4 text-muted-foreground" />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  1. Upload PDF kontrak ke chat Gemini AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
+                  1. Upload PDF kontrak ke chat Chat GPT AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tempel JSON dari Gemini AI</label>
+                <label className="text-sm font-medium">Tempel JSON dari Chat GPT AI</label>
                 <Textarea
                   value={jsonInput}
                   onChange={(e) => setJsonInput(e.target.value)}
@@ -1108,7 +1108,7 @@ export default function TambahBarangPage() {
                 <>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">Prompt untuk Gemini AI</label>
+                      <label className="text-sm font-medium">Prompt untuk Chat GPT AI</label>
                       <Button variant="outline" size="sm" onClick={handlePoCopyPrompt} disabled={!poPrompt || poLoadingPrompt}>
                         {poCopied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
                         {poCopied ? 'Tersalin' : 'Salin Prompt'}
@@ -1130,7 +1130,7 @@ export default function TambahBarangPage() {
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      1. Upload PDF PO ke chat Gemini AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
+                      1. Upload PDF PO ke chat Chat GPT AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
                     </p>
                   </div>
 
@@ -1181,7 +1181,7 @@ export default function TambahBarangPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Tempel JSON dari Gemini AI</label>
+                    <label className="text-sm font-medium">Tempel JSON dari Chat GPT AI</label>
                     <Textarea
                       value={poJsonInput}
                       onChange={(e) => setPoJsonInput(e.target.value)}
@@ -1341,7 +1341,7 @@ export default function TambahBarangPage() {
                 <>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">Prompt untuk Gemini AI</label>
+                      <label className="text-sm font-medium">Prompt untuk Chat GPT AI</label>
                       <Button variant="outline" size="sm" onClick={handleDiCopyPrompt} disabled={!diPrompt || diLoadingPrompt}>
                         {diCopied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
                         {diCopied ? 'Tersalin' : 'Salin Prompt'}
@@ -1363,7 +1363,7 @@ export default function TambahBarangPage() {
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      1. Upload PDF DI ke chat Gemini AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
+                      1. Upload PDF DI ke chat Chat GPT AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
                     </p>
                   </div>
 
@@ -1414,7 +1414,7 @@ export default function TambahBarangPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Tempel JSON dari Gemini AI</label>
+                    <label className="text-sm font-medium">Tempel JSON dari Chat GPT AI</label>
                     <Textarea
                       value={diJsonInput}
                       onChange={(e) => setDiJsonInput(e.target.value)}

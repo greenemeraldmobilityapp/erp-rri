@@ -75,18 +75,17 @@ export async function POST(request: NextRequest) {
 
   if (!customer) return badRequest('Customer tidak ditemukan')
 
-  // Step 2: Auto-match kontrak by nomor + customer_id + date range
+  // Step 2: Auto-match kontrak by nomor + customer_id (without date range — for late DI import)
   const { data: matchedKontrak } = await supabaseAdmin
     .from('kontrak')
-    .select('id, nomor_kontrak, customer_id, tanggal_mulai, tanggal_berakhir')
+    .select('id, nomor_kontrak, customer_id')
     .eq('customer_id', customerId)
     .ilike('nomor_kontrak', data.nomor_kontrak)
-    .lte('tanggal_mulai', tanggalDi.toISOString())
-    .gte('tanggal_berakhir', tanggalDi.toISOString())
+    .order('tanggal_selesai', { ascending: false })
     .maybeSingle()
 
   if (!matchedKontrak) {
-    return badRequest(`Kontrak dengan nomor "${data.nomor_kontrak}" tidak ditemukan untuk customer ini pada tanggal ${data.tanggal_di}. Pastikan nomor kontrak dan tanggal DI sesuai dengan kontrak yang masih berlaku.`)
+    return badRequest(`Kontrak dengan nomor "${data.nomor_kontrak}" tidak ditemukan untuk customer ini. Pastikan nomor kontrak sesuai.`)
   }
 
   // Step 3: Auto-match / create PIC

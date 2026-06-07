@@ -248,7 +248,7 @@ export default function EditDiPage() {
   const handlePreviewAndAdd = () => {
     const trimmed = jsonInput.trim()
     if (!trimmed) {
-      toast.error('Tempel JSON dari Gemini AI terlebih dahulu')
+      toast.error('Tempel JSON dari Chat GPT AI terlebih dahulu')
       return
     }
     let cleaned = trimmed
@@ -269,7 +269,7 @@ export default function EditDiPage() {
         ctx = cleaned.substring(start, pos + 20)
       }
       toast.error(
-        `Format JSON tidak valid dari Gemini AI.\n` +
+        `Format JSON tidak valid dari Chat GPT AI.\n` +
         `Kemungkinan: nama barang mengandung tanda petik tak ter-escape.\n` +
         `Contoh: "nama":""Swallow"... → perbaiki jadi "nama":"\\"Swallow\\"...` +
         (ctx ? `\nKontek: ...${ctx}...` : ''),
@@ -567,7 +567,7 @@ export default function EditDiPage() {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Opsi 1: Import JSON dari Gemini AI</h3>
+              <h3 className="text-sm font-semibold">Opsi 1: Import JSON dari Chat GPT AI</h3>
               <Button variant="outline" size="sm" onClick={handleCopyPrompt} disabled={!kontrakId}>
                 {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
                 {copied ? 'Tersalin' : 'Salin Prompt'}
@@ -585,11 +585,11 @@ export default function EditDiPage() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              1. Upload PDF DI (Delivery Instruction) ke chat Gemini AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
+              1. Upload PDF DI (Delivery Instruction) ke chat Chat GPT AI. 2. Kirim prompt di atas. 3. Copy JSON hasil ekstraksi.
             </p>
 
             <div className="space-y-2">
-              <Label>Tempel JSON dari Gemini AI</Label>
+              <Label>Tempel JSON dari Chat GPT AI</Label>
               <Textarea
                 value={jsonInput}
                 onChange={e => setJsonInput(e.target.value)}
