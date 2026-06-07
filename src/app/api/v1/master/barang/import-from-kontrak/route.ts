@@ -91,9 +91,10 @@ export async function POST(request: NextRequest) {
             barang_id: existingBarang.id,
             kode_barang: item.kode,
             nama_barang: item.nama,
+            nama_kontrak: kontrak.nama,
             satuan: item.satuan,
             harga_satuan: item.harga,
-            ppn_include: true,
+            ppn_include: false,
           })
           .select()
           .single()
@@ -132,9 +133,10 @@ export async function POST(request: NextRequest) {
             barang_id: newBarang.id,
             kode_barang: item.kode,
             nama_barang: item.nama,
+            nama_kontrak: kontrak.nama,
             satuan: item.satuan,
             harga_satuan: item.harga,
-            ppn_include: true,
+            ppn_include: false,
           })
           .select()
           .single()

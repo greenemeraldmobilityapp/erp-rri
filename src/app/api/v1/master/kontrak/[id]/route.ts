@@ -74,13 +74,46 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         barang_id: item.barang_id ?? null,
         kode_barang: item.kode_barang,
         nama_barang: item.nama_barang,
+        nama_kontrak: data.nama,
         satuan: item.satuan,
         harga_satuan: item.harga_satuan,
+        ppn_include: false,
         created_at: now,
         updated_at: now,
       }))
       const { error: itemsError } = await supabaseAdmin.from('kontrak_item').insert(rows)
       if (itemsError) return internalError(itemsError)
+
+      for (const row of rows) {
+        if (!row.barang_id || !data.tanggal_mulai) continue
+        const { data: existingKontrakItems } = await supabaseAdmin
+          .from('kontrak_item')
+          .select('kontrak_id')
+          .eq('barang_id', row.barang_id)
+          .neq('kontrak_id', id)
+
+        let shouldUpdate = true
+        if (existingKontrakItems && existingKontrakItems.length > 0) {
+          const existingKontrakIds = existingKontrakItems.map(k => k.kontrak_id)
+          const { data: latestLinkedKontrak } = await supabaseAdmin
+            .from('kontrak')
+            .select('tanggal_mulai')
+            .in('id', existingKontrakIds)
+            .order('tanggal_mulai', { ascending: false })
+            .limit(1)
+            .single()
+
+          if (latestLinkedKontrak?.tanggal_mulai) {
+            shouldUpdate = new Date(data.tanggal_mulai) >= new Date(latestLinkedKontrak.tanggal_mulai)
+          }
+        }
+
+        if (shouldUpdate) {
+          await supabaseAdmin.from('barang')
+            .update({ harga_jual_default: row.harga_satuan })
+            .eq('id', row.barang_id)
+        }
+      }
     }
   }
 

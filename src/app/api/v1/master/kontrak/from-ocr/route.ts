@@ -92,7 +92,8 @@ export async function POST(request: NextRequest) {
       nama_barang: item.nama || null,
       satuan: item.uom || null,
       harga_satuan: item.harga,
-      ppn_include: true,
+      nama_kontrak: nama,
+      ppn_include: false,
     }
 
     const { error: itemError } = await supabaseAdmin.from('kontrak_item').insert(itemPayload)
