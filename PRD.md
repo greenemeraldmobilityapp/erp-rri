@@ -1,6 +1,6 @@
 # PRD: ERP PT. RIZKI RIDHO ILAHI
 
-**Versi:** 5.5
+**Versi:** 5.6
 **Status:** Draft
 **Tanggal:** 1 Juni 2026
 
@@ -677,6 +677,7 @@ Modul ini menyimpan seluruh data referensi yang digunakan oleh modul lainnya.
 | **Harga Barang** | Histori harga beli dari supplier dan harga jual ke customer |
 | **Bulk Import Excel** ✅ | Import master data barang, supplier, customer via upload file Excel — Halaman `/dashboard/tools/bulk-import`, API `POST /api/v1/tools/bulk-import`, sidebar Master Data group |
 | **Import dari PO Customer** ✅ | Mengimpor data Purchase Order (PO) dari customer yang **tidak dibuat melalui ERP** — yaitu PO yang terjadi di luar sistem (via email, PDF, atau dokumen fisik) sebelum ERP ini ada. Workflow: pilih customer → copy prompt Gemini → paste JSON hasil ekstraksi → preview → import. Auto-create: master barang, customer (jika belum ada), PIC customer (jika belum ada). Buat record Customer PO (status `confirmed`) + Customer PO Items. Nomor PO RRI: `RRI-CPO-EXT-YY-MM-NNNN`. Prompt per customer di tabel `customer_prompt`. Mendukung field: nama_customer, nomor_po_customer, nomor_pr_customer, tanggal_po, PIC (nama + jabatan), penandatangan PO (nama + jabatan), nomor_quotation_rri, items. Duplicate prevention: validasi API `nomor_po_customer` + UNIQUE INDEX di level DB (case-insensitive, non-cancelled). PDF upload ke `dokumen/customer-po/{id}/`. |
+| **Import dari DI** ✅ | Mengimpor data Delivery Instruction (DI) dari customer yang **tidak dibuat melalui ERP** — DI yang terjadi di luar sistem (via PDF/dokumen fisik) sebelum ERP ini ada. Khusus customer BJS (PT. Bhumi Jepara Service) untuk fase pertama. Workflow: pilih customer → copy prompt Gemini DI → upload PDF DI (wajib) → paste JSON hasil ekstraksi → preview → import. Auto-create: master barang (jika belum ada), PIC customer (jika belum ada). Buat record DI (status `confirmed`) + DI Items + upload PDF ke storage. Kontrak matching: cocokkan `nomor_kontrak` + `customer_id` + date range (`tanggal_mulai ≤ tanggal_di ≤ tanggal_berakhir`). Item processing: cari `kontrak_item` dulu (by matched kontrak_id + kode) → jika nama sama (reuse barang), jika nama beda (create barang baru), jika tidak ada di kontrak_item → cari master barang by kode → create baru jika tidak ditemukan. Nomor DI RRI: `RRI-DI-EXT-YY-MM-NNNN` (counter `DI-EXT` terpisah dari DI reguler). Prompt DI per customer di tabel `customer_prompt_di` (tabel baru, tidak ganggu `customer_prompt` existing). PDF upload ke `dokumen/di/{diId}/{file}`. |
 
 ### B. AI Agent Module
 
@@ -759,7 +760,7 @@ Modul ini menangani proses sebelum terjadinya penjualan, dengan tracking per PIC
 | Sub-Modul | Deskripsi |
 |---|---|
 | **Kontrak Customer** | Kontrak fixed price list. Upload PDF → AI OCR → simpan harga kontrak. Assign PIC Customer. Upload dokumen fisik kontrak via Lampiran |
-| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. **Entry point parent** — nomor dari global counter via `generateGlobalDocumentNumber('DI')` → `RRI-DI-YY-MM-NNNNN`. Assign PIC Customer. Upload dokumen pendukung via Lampiran. **Input Item Barang:** 2 opsi — (1) Import JSON dari Gemini AI: paste JSON array hasil ekstraksi PDF kontrak (+ kode + jumlah + nama) → auto-match harga_satuan dari kontrak. (2) Input Manual: ketik kode barang + jumlah → auto-lookup dari kontrak. Tidak ada tabel Select 137 item — hanya tabel item yang sudah ditambahkan (editable qty & harga_satuan). **Harga cross-check:** setiap item menyimpan `harga_satuan_kontrak` (client-side) — jika user mengubah `harga_satuan` sehingga berbeda dengan kontrak, tampil visual warning (amber bg + icon AlertTriangle + teks "≠ kontrak: Rp X"). Saat submit, jika ada perbedaan harga, muncul modal konfirmasi berisi tabel selisih harga — user bisa "Kembali Edit" atau "Lanjutkan Simpan". |
+| **DI (Delivery Instruction)** | Instruksi pengiriman dari customer berdasarkan kontrak. **Entry point parent** — nomor dari global counter via `generateGlobalDocumentNumber('DI')` → `RRI-DI-YY-MM-NNNNN`. Assign PIC Customer. Upload dokumen pendukung via Lampiran. **Input Item Barang:** 2 opsi — (1) Import JSON dari Gemini AI: paste JSON array hasil ekstraksi PDF kontrak (+ kode + jumlah + nama) → auto-match harga_satuan dari kontrak. (2) Input Manual: ketik kode barang + jumlah → auto-lookup dari kontrak. Tidak ada tabel Select 137 item — hanya tabel item yang sudah ditambahkan (editable qty & harga_satuan). **Harga cross-check:** setiap item menyimpan `harga_satuan_kontrak` (client-side) — jika user mengubah `harga_satuan` sehingga berbeda dengan kontrak, tampil visual warning (amber bg + icon AlertTriangle + teks "≠ kontrak: Rp X"). Saat submit, jika ada perbedaan harga, muncul modal konfirmasi berisi tabel selisih harga — user bisa "Kembali Edit" atau "Lanjutkan Simpan". **Import dari DI (External):** Tab ke-4 di halaman Master Barang → Tambah. Workflow: pilih customer → copy prompt Gemini DI → upload PDF DI (wajib) → paste JSON → preview → import. Auto-create master barang + PIC + DI (confirmed) + DI Items + upload PDF. Nomor: `RRI-DI-EXT-YY-MM-NNNN`. Prompt per customer di tabel `customer_prompt_di` (terpisah dari `customer_prompt`). Khusus BJS untuk fase pertama. |
 
 ### D. Sales Order & Pengiriman
 
@@ -977,6 +978,7 @@ Nomor dokumen digenerate otomatis — tidak perlu input manual. Menggunakan **si
 **Parent entry points (global counter):**
 - RFQ Customer → `generateGlobalDocumentNumber('RFQC')`
 - DI → `generateGlobalDocumentNumber('DI')`
+- Import DI (external) → `generateDocumentNumber('DI-EXT', tahun, bulan)` — counter terpisah dari DI reguler
 
 **Child documents (copy nomor dari parent + format prefix):**
 - Quotation (dari RFQC) → `formatChildNumber(parentNumber, 'SPH')` → `RRI-SPH-26-05-00001`
@@ -1574,6 +1576,9 @@ absensi                  → kehadiran
 penggajian               → data gaji
 
 document_counter         → counter nomor dokumen per tahun
+
+customer_prompt           → prompt template AI untuk Import dari PO per customer
+customer_prompt_di        → prompt template AI untuk Import dari DI per customer
 
 ai_search_history        → riwayat pencarian AI
 ai_search_result         → hasil scraping (nama, harga, toko, link, marketplace)

@@ -3,7 +3,7 @@
 
 -- 1. Create customer_prompt_di table
 CREATE TABLE IF NOT EXISTS customer_prompt_di (
-  customer_id UUID PRIMARY KEY REFERENCES customer(id) ON DELETE CASCADE,
+  customer_id TEXT PRIMARY KEY REFERENCES customer(id) ON DELETE CASCADE,
   prompt_template TEXT NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

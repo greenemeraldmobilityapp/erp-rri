@@ -831,4 +831,4 @@ Customer retur barang
 | DI-6 | **API: GET customer/[id]/prompt-di** — fetch prompt DI per customer | ✅ Done | `src/app/api/v1/master/customer/[id]/prompt-di/route.ts` |
 | DI-7 | **API: POST import-from-di** — validasi JSON, auto-match kontrak, auto-create barang, create DI+items, upload PDF | ✅ Done | `src/app/api/v1/master/barang/import-from-di/route.ts` |
 | DI-8 | **Frontend Tab "Import dari DI"** — dropdown customer, prompt, upload PDF, paste JSON, preview, import | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
-| DI-9 | **Seed data prompt DI BJS** — isi `customer_prompt_di` untuk customer BJS | ⏳ Pending | Supabase Table Editor |
+| DI-9 | **Seed data prompt DI BJS** — isi `customer_prompt_di` untuk customer BJS | ✅ Done | Supabase — BJS aktif |
