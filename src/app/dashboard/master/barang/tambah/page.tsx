@@ -454,21 +454,42 @@ export default function TambahBarangPage() {
     }
     try {
       const parsed = JSON.parse(trimmed);
+
+      // Determine customer for validation rules
+      const selectedCust = poCustomerOptions.find(c => c.value === selectedPoCustomerId);
+      const custNama = selectedCust?.label ?? '';
+      const isMkp = custNama.includes('MITRA KARYA PRIMA');
+      const isBjs = custNama.includes('Bhumi') || custNama.includes('BUMI') || custNama.includes('JEPARA');
+
+      // Base required fields for all customers
       if (!parsed.nama_customer) throw new Error('Field "nama_customer" wajib diisi');
+      if (!parsed.nama_pic) throw new Error('Field "nama_pic" wajib diisi');
+      if (!parsed.jabatan_pic) throw new Error('Field "jabatan_pic" wajib diisi');
       if (!parsed.nomor_po_customer) throw new Error('Field "nomor_po_customer" wajib diisi');
       if (!parsed.tanggal_po) throw new Error('Field "tanggal_po" wajib diisi');
+
+      // Customer-specific required fields
+      if (isBjs) {
+        if (!parsed.nomor_pr_customer || parsed.nomor_pr_customer === '-') throw new Error('Field "nomor_pr_customer" wajib diisi untuk BJS');
+        if (typeof parsed.time_for_delivery_hari !== 'number' || parsed.time_for_delivery_hari <= 0) throw new Error('Field "time_for_delivery_hari" wajib > 0 (number) untuk BJS');
+        if (typeof parsed.durasi_payment_hari !== 'number' || parsed.durasi_payment_hari <= 0) throw new Error('Field "durasi_payment_hari" wajib > 0 (number) untuk BJS');
+        if (!parsed.nama_penandatangan) throw new Error('Field "nama_penandatangan" wajib diisi untuk BJS');
+        if (!parsed.jabatan_penandatangan) throw new Error('Field "jabatan_penandatangan" wajib diisi untuk BJS');
+      }
+
+      if (isMkp) {
+        if (!parsed.catatan) throw new Error('Field "catatan" wajib diisi untuk MKP');
+        if (!parsed.nama_penandatangan) throw new Error('Field "nama_penandatangan" wajib diisi untuk MKP');
+        if (!parsed.jabatan_penandatangan) throw new Error('Field "jabatan_penandatangan" wajib diisi untuk MKP');
+      }
+
       if (!Array.isArray(parsed.items) || parsed.items.length === 0) {
         throw new Error('Field "items" harus berupa array dengan minimal 1 item');
       }
-      parsed.items.forEach((item: Record<string, unknown>, i: number) => {
-        if (!item.nama_barang || !item.satuan || typeof item.qty !== 'number' || typeof item.harga_satuan !== 'number') {
-          throw new Error(`Item ke-${i + 1}: field nama_barang, satuan (string), qty, harga_satuan (number) wajib diisi`);
-        }
-      });
       const data: PoImportJson = {
         nama_customer: String(parsed.nama_customer),
-        nama_pic: String(parsed.nama_pic ?? '-'),
-        jabatan_pic: String(parsed.jabatan_pic ?? '-'),
+        nama_pic: String(parsed.nama_pic),
+        jabatan_pic: String(parsed.jabatan_pic),
         nomor_po_customer: String(parsed.nomor_po_customer),
         nomor_pr_customer: String(parsed.nomor_pr_customer ?? '-'),
         nomor_quotation_rri: String(parsed.nomor_quotation_rri ?? '-'),
@@ -480,10 +501,10 @@ export default function TambahBarangPage() {
         nama_penandatangan: String(parsed.nama_penandatangan ?? '-'),
         jabatan_penandatangan: String(parsed.jabatan_penandatangan ?? '-'),
         items: parsed.items.map((item: Record<string, unknown>) => ({
-          nama_barang: String(item.nama_barang),
-          satuan: String(item.satuan),
-          qty: Number(item.qty),
-          harga_satuan: Number(item.harga_satuan),
+          nama_barang: String(item.nama_barang ?? ''),
+          satuan: String(item.satuan ?? '-'),
+          qty: typeof item.qty === 'number' ? item.qty : 0,
+          harga_satuan: typeof item.harga_satuan === 'number' ? item.harga_satuan : 0,
         })),
       };
       setPoParsedData(data);

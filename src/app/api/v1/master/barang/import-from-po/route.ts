@@ -8,20 +8,20 @@ import { generateDocumentNumber } from '@/lib/utils/document-number'
 import { storageService } from '@/lib/storage'
 
 const importItemSchema = z.object({
-  nama_barang: z.string().min(1, 'Nama barang harus diisi'),
-  satuan: z.string().min(1, 'Satuan harus diisi'),
-  qty: z.number().positive('Qty harus > 0'),
-  harga_satuan: z.number().nonnegative('Harga satuan harus >= 0'),
+  nama_barang: z.string().default(''),
+  satuan: z.string().default('-'),
+  qty: z.number().default(0),
+  harga_satuan: z.number().default(0),
 })
 
 const poJsonSchema = z.object({
-  nama_customer: z.string().min(1, 'Nama customer harus diisi'),
-  nama_pic: z.string().optional().default('-'),
-  jabatan_pic: z.string().optional().default('-'),
-  nomor_po_customer: z.string().min(1, 'Nomor PO customer harus diisi'),
+  nama_customer: z.string().default(''),
+  nama_pic: z.string().default(''),
+  jabatan_pic: z.string().default(''),
+  nomor_po_customer: z.string().default(''),
   nomor_pr_customer: z.string().optional().default('-'),
   nomor_quotation_rri: z.string().optional().default('-'),
-  tanggal_po: z.string().min(1, 'Tanggal PO harus diisi').refine(v => !isNaN(Date.parse(v)), 'Format tanggal tidak valid (YYYY-MM-DD)'),
+  tanggal_po: z.string().default(''),
   revisi_ke: z.number().optional().default(0),
   time_for_delivery_hari: z.number().optional().default(0),
   durasi_payment_hari: z.number().optional().default(0),
@@ -55,6 +55,17 @@ export async function POST(request: NextRequest) {
 
   const data = parsed.data
 
+  // Base required field validation (applies to all customers)
+  const baseMissing: string[] = []
+  if (!data.nama_customer) baseMissing.push('nama_customer')
+  if (!data.nama_pic) baseMissing.push('nama_pic')
+  if (!data.jabatan_pic) baseMissing.push('jabatan_pic')
+  if (!data.nomor_po_customer) baseMissing.push('nomor_po_customer')
+  if (!data.tanggal_po || isNaN(Date.parse(data.tanggal_po))) baseMissing.push('tanggal_po (YYYY-MM-DD)')
+  if (baseMissing.length > 0) {
+    return badRequest(`Field wajib: ${baseMissing.join(', ')}`)
+  }
+
   const tanggalPo = new Date(data.tanggal_po)
   const tahun = tanggalPo.getFullYear()
   const bulan = tanggalPo.getMonth() + 1
@@ -65,13 +76,31 @@ export async function POST(request: NextRequest) {
   // Step 1: Auto-match / create customer by nama_customer
   const { data: existingCustomer } = await supabaseAdmin
     .from('customer')
-    .select('id, nama')
+    .select('id, nama, kode')
     .ilike('nama', data.nama_customer)
     .maybeSingle()
 
   let customerId: string
   if (existingCustomer) {
     customerId = existingCustomer.id
+    // Customer-specific field validation
+    const kode = existingCustomer.kode
+    const custMissing: string[] = []
+    if (kode === 'BJS') {
+      if (!data.nomor_pr_customer || data.nomor_pr_customer === '-') custMissing.push('nomor_pr_customer')
+      if (typeof data.time_for_delivery_hari !== 'number' || data.time_for_delivery_hari <= 0) custMissing.push('time_for_delivery_hari (>0)')
+      if (typeof data.durasi_payment_hari !== 'number' || data.durasi_payment_hari <= 0) custMissing.push('durasi_payment_hari (>0)')
+      if (!data.nama_penandatangan || data.nama_penandatangan === '-') custMissing.push('nama_penandatangan')
+      if (!data.jabatan_penandatangan || data.jabatan_penandatangan === '-') custMissing.push('jabatan_penandatangan')
+    }
+    if (kode === 'MKP') {
+      if (!data.catatan) custMissing.push('catatan')
+      if (!data.nama_penandatangan || data.nama_penandatangan === '-') custMissing.push('nama_penandatangan')
+      if (!data.jabatan_penandatangan || data.jabatan_penandatangan === '-') custMissing.push('jabatan_penandatangan')
+    }
+    if (custMissing.length > 0) {
+      return badRequest(`Field wajib untuk ${existingCustomer.nama}: ${custMissing.join(', ')}`)
+    }
   } else {
     const customerKode = await generateCustomerAutoKode()
     const { data: newCustomer, error: customerError } = await supabaseAdmin
