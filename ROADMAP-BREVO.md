@@ -139,12 +139,12 @@ Halaman email client di dalam ERP layaknya Gmail/Outlook web.
 
 | # | Task | Status | File | Design Alignment |
 |---|------|--------|------|-----------------|
-| MC-1 | **Sidebar menu** — tambah "Mail Center" di grup System, icon `Mail` (Lucide) | ✅ Done | `sidebar-content.tsx` | Icon: `mr-3 h-4 w-4` rule §5; Active: `bg-primary text-primary-foreground` §3.17 |
+| MC-1 | **Sidebar menu** — tambah "Mail Center" sebagai standalone link antara Dashboard dan Master Data, icon `Mail` (Lucide) | ✅ Done | `sidebar-content.tsx` | Icon: `mr-3 h-4 w-4` rule §5; Active: `bg-primary text-primary-foreground` §3.17 |
 | MC-2 | **Migration `email_log`** — tambah columns: `message_id`, `opened_at`, `clicked_at`, `delivered_at`, `bounce_type`, `inbound`, `from_email`, `from_name`, `cc`, `has_attachments`, `parent_id` (thread) | ✅ Done | `email-log.ts` + migration | 12 kolom baru via `drizzle/0050_add_email_log_columns.sql`, applied via Supabase API |
 | MC-3 | **Inbox page** — `/dashboard/email/inbox` — split pane: sidebar folder + email list + detail. Unread dot, status badge, Skeleton loading | ✅ Done | `src/app/dashboard/email/inbox/page.tsx` | Subscribe `inbound=true`, order by `created_at` DESC |
 | MC-4 | **Sent page** — `/dashboard/email/sent` — filter by status= sent/delivered/opened/clicked/bounced/failed | ✅ Done | `src/app/dashboard/email/sent/page.tsx` | Badge variant status; `in` filter |
 | MC-5 | **Compose Sheet** — Sheet `side="right" sm:max-w-2xl` — form To, Subject, Body, Send/Save Draft/Discard, Zod validasi, react-hook-form | ✅ Done | `src/components/email/email-compose-sheet.tsx` | Sheet §3.11; Form §3.10; Button default gradient §3.1 |
-| MC-6 | **Compose API** — `POST /api/v1/email/send` — kirim via SMTP existing, simpan ke `email_log`, auth via token, validasi Zod | ✅ Done | `src/app/api/v1/email/send/route.ts` | Response `{ data: ... }`; fallback to SMTP (Brevo belum install) |
+| MC-6 | **Compose API** — `POST /api/v1/email/send` — kirim via Brevo API, simpan ke `email_log`, auth via token, validasi Zod | ✅ Done | `src/app/api/v1/email/send/route.ts` | Response `{ data: ... }`; uses Brevo transactional API |
 | MC-7 | **Email detail page** — `/dashboard/email/[id]` — From/To/CC/Date, HTML body render, tracking timeline (Sent→Delivered→Opened→Clicked), Reply/Reply All/Forward/Delete actions | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` | Lexend heading; Status timeline; Badge status; Card shadow §3.7 |
 | MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done | `src/app/dashboard/email/draft/page.tsx` | Skeleton loading; Empty state §14.2 |
 | MC-9 | **Templates page** — `/dashboard/email/templates` — Card grid, Create Sheet with Tabs (Edit/Preview), Edit, Delete | ✅ Done | `src/app/dashboard/email/templates/page.tsx` | Card §3.7; Sheet §3.11; Tabs §3.12 |
@@ -315,28 +315,20 @@ src/app/api/v1/email/
 │   └── route.ts               # POST /api/v1/email/send (Phase 5)
 ├── webhook/
 │   └── route.ts               # POST /api/v1/email/webhook (Phase 2)
-├── inbox/
-│   └── route.ts               # GET /api/v1/email/inbox (Phase 5)
 ├── sync-contacts/
 │   └── route.ts               # POST /api/v1/email/sync-contacts (Phase 3)
 ├── templates/
 │   └── route.ts               # GET /api/v1/email/templates (Phase 3)
 ├── campaigns/
 │   └── route.ts               # GET /api/v1/email/campaigns (Phase 3)
-├── stats/
-│   └── route.ts               # GET /api/v1/email/stats (Phase 3)
-└── [id]/
-    └── route.ts               # GET /api/v1/email/[id] (Phase 5)
+└── stats/
+    └── route.ts               # GET /api/v1/email/stats (Phase 3)
 
 src/components/email/
 ├── email-sidebar.tsx          # Folder navigator (Inbox, Sent, Draft, etc.)
-├── email-list.tsx             # Email list Table component
-├── email-detail.tsx           # Email detail panel (right pane)
-├── email-compose-sheet.tsx    # Compose email Sheet (reusable)
-├── email-row.tsx              # Single row in email list
-├── email-status-badge.tsx     # Status badge (Delivered/Bounced/Pending)
-├── email-tracking-timeline.tsx # Vertical timeline for delivery tracking
-└── email-empty-state.tsx      # Empty state komponen
+├── email-list.tsx             # Email list component (shared by inbox/sent/draft)
+└── email-compose-sheet.tsx    # Compose email Sheet (reusable)
+# Detail panel, status badge, tracking timeline are inlined in page components
 
 src/app/dashboard/email/
 ├── layout.tsx                 # Layout split-pane: sidebar + main content
@@ -456,7 +448,7 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [ ] Webhook: block IP unauthorized
 
 ### Mail Center UI — General
-- [ ] Sidebar menu — "Mail Center" muncul di sidebar grup System dengan icon Mail
+- [x] Sidebar menu — "Mail Center" muncul sebagai standalone link dengan icon Mail, antara Dashboard dan Master Data
 - [ ] Layout split pane — sidebar folder + email list + detail bekerja di desktop
 - [ ] Mobile responsive — Tabs untuk navigasi folder, Sheet untuk detail
 - [ ] CSS variables — tidak ada hardcoded color, semua pakai token DESGIN_SYSTEM.md

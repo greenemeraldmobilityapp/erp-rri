@@ -8,7 +8,7 @@ import { id as idLocale } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ArrowLeft, Reply, ReplyAll, Forward, Trash2, Paperclip, CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import { ArrowLeft, Reply, ReplyAll, Forward, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 
 interface EmailDetail {
   id: string
@@ -39,6 +39,41 @@ const statusConfig: Record<string, { label: string; icon: React.ReactNode; color
   failed: { label: "Failed", icon: <AlertCircle className="h-3 w-3" />, color: "text-destructive" },
 }
 
+function mapEmailDetail(row: Record<string, unknown>): EmailDetail {
+  return {
+    id: row.id as string,
+    fromEmail: row.from_email as string | null | undefined,
+    fromNama: row.from_nama as string | null | undefined,
+    toEmail: row.to_email as string,
+    toNama: row.to_nama as string | null | undefined,
+    cc: row.cc as string | null | undefined,
+    subject: row.subject as string,
+    body: row.body as string | null | undefined,
+    status: row.status as string,
+    errorMessage: row.error_message as string | null | undefined,
+    hasAttachments: row.has_attachments as boolean | null | undefined,
+    createdAt: row.created_at as string,
+    deliveredAt: row.delivered_at as string | null | undefined,
+    openedAt: row.opened_at as string | null | undefined,
+    clickedAt: row.clicked_at as string | null | undefined,
+    inbound: row.inbound as boolean | null | undefined,
+  }
+}
+
+function formatDateTime(dateStr: string | null | undefined) {
+  if (!dateStr) return ""
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ""
+  return format(date, "dd MMM yyyy, HH:mm", { locale: idLocale })
+}
+
+function formatTrackingTime(dateStr: string | null | undefined) {
+  if (!dateStr) return ""
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ""
+  return format(date, "dd MMM HH:mm", { locale: idLocale })
+}
+
 export default function EmailDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -54,7 +89,7 @@ export default function EmailDetailPage() {
       .single()
       .then(({ data, error }) => {
         if (!error && data) {
-          setEmail(data as EmailDetail)
+          setEmail(mapEmailDetail(data))
         }
         setLoading(false)
       })
@@ -143,7 +178,7 @@ export default function EmailDetailPage() {
             )}
             <span className="text-muted-foreground font-medium">Date:</span>
             <span className="text-muted-foreground">
-              {format(new Date(email.createdAt), "dd MMM yyyy, HH:mm", { locale: idLocale })}
+              {formatDateTime(email.createdAt)}
             </span>
           </div>
         </div>
@@ -167,7 +202,7 @@ export default function EmailDetailPage() {
                       <span className="font-medium text-foreground">{cfg?.label || event.status}</span>
                     </div>
                     <span className="text-muted-foreground text-xs">
-                      {event.time ? format(new Date(event.time), "dd MMM HH:mm", { locale: idLocale }) : ""}
+                      {formatTrackingTime(event.time)}
                     </span>
                   </div>
                 )

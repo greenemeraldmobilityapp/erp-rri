@@ -25,6 +25,25 @@ export interface EmailItem {
   inbound?: boolean | null
 }
 
+export function mapEmailLogRow(row: Record<string, unknown>): EmailItem {
+  return {
+    id: row.id as string,
+    fromEmail: row.from_email as string | null | undefined,
+    fromNama: row.from_nama as string | null | undefined,
+    toEmail: row.to_email as string,
+    toNama: row.to_nama as string | null | undefined,
+    subject: row.subject as string,
+    body: row.body as string | null | undefined,
+    status: row.status as string,
+    hasAttachments: row.has_attachments as boolean | null | undefined,
+    createdAt: row.created_at as string,
+    deliveredAt: row.delivered_at as string | null | undefined,
+    openedAt: row.opened_at as string | null | undefined,
+    clickedAt: row.clicked_at as string | null | undefined,
+    inbound: row.inbound as boolean | null | undefined,
+  }
+}
+
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   sent: "default",
   delivered: "default",
@@ -34,8 +53,10 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
   bounced: "destructive",
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return ""
   const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ""
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))

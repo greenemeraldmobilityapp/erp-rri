@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/db/client"
-import { EmailList, EmailItem } from "@/components/email/email-list"
+import { EmailList, EmailItem, mapEmailLogRow } from "@/components/email/email-list"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function SentPage() {
@@ -18,7 +18,7 @@ export default function SentPage() {
       .limit(50)
       .then(({ data, error }) => {
         if (!error && data) {
-          setEmails(data as EmailItem[])
+          setEmails(data.map(mapEmailLogRow))
         }
         setLoading(false)
       })

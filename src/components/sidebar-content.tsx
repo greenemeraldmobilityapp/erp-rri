@@ -42,6 +42,7 @@ function isGroup(item: MenuItem): item is MenuGroup {
 
 const menuItems: MenuItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/dashboard/email/inbox', label: 'Mail Center', icon: Mail },
   { label: 'Master Data', icon: FolderTree, children: [
     { href: '/dashboard/master/barang', label: 'Barang', icon: Package },
     { href: '/dashboard/master/kategori-barang', label: 'Kategori Barang', icon: FolderTree },
@@ -121,7 +122,6 @@ const menuItems: MenuItem[] = [
     { href: '/dashboard/system/company', label: 'Company Profile', icon: Building2 },
     { href: '/dashboard/audit-log', label: 'Audit Trail', icon: ClipboardList },
     { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
-    { href: '/dashboard/email/inbox', label: 'Mail Center', icon: Mail },
   ]},
 ]
 
