@@ -14,6 +14,7 @@ export const quotationItem = pgTable("quotation_item", {
   ppnPerItem: real("ppn_per_item"),
   jumlah: integer("jumlah").notNull(),
   totalHarga: real("total_harga"),
+  namaBarang: text("nama_barang"),
   keterangan: text("keterangan"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

@@ -116,6 +116,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           cfg.kategori_id,
           item.image_url,
           item.harga_satuan,
+          item.keterangan,
         )
         created.push({ nama: newBarang.nama, kode: newBarang.kode })
         await supabaseAdmin.from('rfq_customer_item').update({ barang_id: newBarang.id }).eq('id', item.id)

@@ -386,6 +386,7 @@ export default function QuotationDetailPage() {
                   <TableHead className="w-20">Picture</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Specification</TableHead>
+                  <TableHead>Justification</TableHead>
                   <TableHead className="text-center">Qty</TableHead>
                   <TableHead>UoM</TableHead>
                   <TableHead className="text-right">Price</TableHead>
@@ -399,8 +400,8 @@ export default function QuotationDetailPage() {
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell>
-                        {(item.barang?.image_url || item.image_url) ? (
-                          <img src={item.barang?.image_url || item.image_url!} alt="" className="w-10 h-10 rounded object-cover border" />
+                        {(item.image_url || item.barang?.image_url) ? (
+                          <img src={item.image_url || item.barang?.image_url || ''} alt="" className="w-10 h-10 rounded object-cover border" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-muted-foreground">
                             <FileText className="h-4 w-4" />
@@ -409,6 +410,7 @@ export default function QuotationDetailPage() {
                       </TableCell>
                       <TableCell className="font-medium">{item.barang?.nama || item.nama_barang || "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.specification || item.barang?.spesifikasi || "-"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{item.justification || item.barang?.justification || "-"}</TableCell>
                       <TableCell className="text-center">{item.jumlah}</TableCell>
                       <TableCell>{item.satuan || item.barang?.satuan || "-"}</TableCell>
                       <TableCell className="text-right">{formatCurrency(item.harga_satuan)}</TableCell>

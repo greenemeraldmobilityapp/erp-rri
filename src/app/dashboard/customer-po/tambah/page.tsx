@@ -27,6 +27,7 @@ interface ItemRow {
   has_barang_id: boolean
   save_to_master: boolean
   image_url?: string | null
+  spesifikasi?: string | null
 }
 
 interface QtnOption {
@@ -89,6 +90,7 @@ export default function TambahPoPage() {
   interface QuotationItemData {
     barang_id?: string | null
     nama_barang?: string | null
+    specification?: string | null
     satuan?: string | null
     jumlah: number
     harga_satuan: number
@@ -134,6 +136,7 @@ export default function TambahPoPage() {
           has_barang_id: !!i.barang_id,
           save_to_master: !i.barang_id,
           image_url: i.image_url ?? i.barang?.image_url ?? null,
+          spesifikasi: i.specification ?? null,
         }))
         setItems(rows)
       }
@@ -263,6 +266,7 @@ export default function TambahPoPage() {
           nama_barang: i.has_barang_id ? undefined : i.nama_barang,
           satuan: i.has_barang_id ? undefined : i.satuan,
           image_url: i.image_url ?? undefined,
+          spesifikasi: i.spesifikasi ?? undefined,
           create_barang: !i.has_barang_id,
         })),
       }

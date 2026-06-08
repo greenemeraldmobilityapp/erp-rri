@@ -32,6 +32,7 @@ interface RFQCustomerItem {
   satuan: string | null
   image_url: string | null
   keterangan: string | null
+  justification: string | null
   barang: { id: string; nama: string; kode: string; satuan: string } | null
 }
 
@@ -205,7 +206,8 @@ export default function RfqCustomerDetailPage() {
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Satuan</TableHead>
                   <TableHead>Gambar</TableHead>
-                  <TableHead>Keterangan</TableHead>
+                  <TableHead>Spesifikasi</TableHead>
+                  <TableHead>Justification</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -225,6 +227,7 @@ export default function RfqCustomerDetailPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">{item.keterangan || "-"}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.justification || "-"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

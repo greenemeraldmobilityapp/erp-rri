@@ -12,6 +12,7 @@ const itemSchema = z.object({
   satuan: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
   keterangan: z.string().optional().nullable(),
+  justification: z.string().optional().nullable(),
 })
 
 const fileSchema = z.object({
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
     satuan: item.satuan ?? null,
     image_url: item.image_url ?? null,
     keterangan: item.keterangan ?? null,
+    justification: item.justification ?? null,
     created_at: now,
     updated_at: now,
   }))

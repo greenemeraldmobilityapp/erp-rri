@@ -24,6 +24,7 @@ const itemSchema = z.object({
   satuan: z.string().optional(),
   image_url: z.string().optional(),
   keterangan: z.string().optional(),
+  justification: z.string().optional(),
   _tempImage: z.any().optional(),
 })
 
@@ -195,6 +196,7 @@ export default function TambahRfqCustomerPage() {
           satuan: item.satuan || null,
           image_url: item.image_url || null,
           keterangan: item.keterangan || null,
+          justification: item.justification || null,
         })),
       }
       await apiFetch('/api/v1/rfq-customer', {
@@ -377,10 +379,11 @@ export default function TambahRfqCustomerPage() {
                       <Input {...register(`items.${index}.nama_barang`)} placeholder="Jika tidak ada di master" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-4 gap-3">
                     <div className="space-y-2"><label className="text-xs font-medium">Jumlah *</label><Input type="number" min="1" {...register(`items.${index}.jumlah`)} /></div>
                     <div className="space-y-2"><label className="text-xs font-medium">Satuan</label><Input {...register(`items.${index}.satuan`)} placeholder="pcs" /></div>
-                    <div className="space-y-2"><label className="text-xs font-medium">Keterangan</label><Input {...register(`items.${index}.keterangan`)} placeholder="Spesifikasi / catatan" /></div>
+                    <div className="space-y-2"><label className="text-xs font-medium">Spesifikasi</label><Input {...register(`items.${index}.keterangan`)} placeholder="Spesifikasi / catatan" /></div>
+                    <div className="space-y-2"><label className="text-xs font-medium">Justification</label><Input {...register(`items.${index}.justification`)} placeholder="Alasan / justifikasi" /></div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Gambar Barang</label>

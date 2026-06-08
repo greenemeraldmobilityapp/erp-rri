@@ -42,11 +42,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!items) return internalError('Gagal memuat item')
 
   const barangIds = [...new Set(items?.filter(i => i.barang_id).map(i => i.barang_id) ?? [])]
-  let barangMap = new Map<string, { nama: string; kode: string; satuan: string }>()
+  let barangMap = new Map<string, { nama: string; kode: string; satuan: string; spesifikasi: string | null; image_url: string | null }>()
   if (barangIds.length > 0) {
     const { data: barangList } = await supabaseAdmin
       .from('barang')
-      .select('id, nama, kode, satuan')
+      .select('id, nama, kode, satuan, spesifikasi, image_url')
       .in('id', barangIds)
     barangMap = new Map(barangList?.map(b => [b.id, b]) ?? [])
   }
@@ -124,12 +124,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       const barang = i.barang_id ? barangMap.get(i.barang_id) : null
       const rfqName = idx < rfqItemNames.length ? rfqItemNames[idx] : null
       return {
-      nama: barang?.nama ?? rfqName ?? '-',
+      nama: barang?.nama ?? i.nama_barang ?? rfqName ?? '-',
       kode: barang?.kode ?? '-',
-      specification: i.specification ?? null,
+      specification: i.specification ?? barang?.spesifikasi ?? null,
       justification: i.justification ?? null,
-      image_url: i.image_url ?? null,
-      satuan: i.satuan ?? null,
+      image_url: i.image_url ?? barang?.image_url ?? null,
+      satuan: i.satuan ?? barang?.satuan ?? null,
       jumlah: i.jumlah,
       hargaSatuan: i.harga_satuan,
       diskon: i.diskon ?? 0,

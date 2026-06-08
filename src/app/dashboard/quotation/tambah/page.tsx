@@ -24,6 +24,7 @@ const itemSchema = z.object({
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  nama_barang: z.string().optional(),
   satuan: z.string().min(1, 'Satuan harus diisi'),
   jumlah: z.coerce.number().int().positive('Jumlah harus > 0'),
   harga_satuan: z.coerce.number().nonnegative('Harga harus diisi'),
@@ -88,7 +89,7 @@ export default function TambahQuotationPage() {
       lampiran: '',
       ppn_rate: 0.11,
       ppn_enabled: false,
-      items: [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' }],
+      items: [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' }],
     },
   })
 
@@ -163,6 +164,7 @@ export default function TambahQuotationPage() {
           satuan: string | null
           image_url: string | null
           keterangan: string | null
+          justification: string | null
           barang: { id: string; nama: string; kode: string; satuan: string } | null
         }>
       }
@@ -189,14 +191,15 @@ export default function TambahQuotationPage() {
 
           const newItems = (rfq.items ?? []).map(item => ({
             barang_id: item.barang_id || '',
-            specification: '',
-            justification: '',
+            specification: item.keterangan || '',
+            justification: item.justification || '',
             image_url: item.image_url || '',
+            nama_barang: item.barang?.nama || item.nama_barang || '',
             satuan: item.satuan || '',
             jumlah: item.jumlah,
             harga_satuan: 0,
             diskon: 0,
-            keterangan: item.keterangan || '',
+            keterangan: '',
           }))
           if (cancelled) return
           replace(newItems)
@@ -218,8 +221,12 @@ export default function TambahQuotationPage() {
             if (item.barang_id) {
               const barang = barangData.find(b => b.value === item.barang_id)
               if (barang) {
-                setValue(`items.${i}.specification`, barang.spesifikasi)
-                setValue(`items.${i}.justification`, barang.justification)
+                if (!item.keterangan && barang.spesifikasi) {
+                  setValue(`items.${i}.specification`, barang.spesifikasi)
+                }
+                if (barang.justification) {
+                  setValue(`items.${i}.justification`, barang.justification)
+                }
               }
             }
           })
@@ -341,7 +348,7 @@ export default function TambahQuotationPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Item Penawaran</CardTitle>
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' })}>
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' })}>
                 <Plus className="h-4 w-4 mr-1" />Tambah Item
               </Button>
             </CardHeader>

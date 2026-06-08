@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await supabaseAdmin.from('rfq_customer_item').delete().eq('rfq_customer_id', id)
 
     const now = new Date().toISOString()
-    const items = body.items.map((item: { barang_id?: string; nama_barang?: string; jumlah: number; satuan?: string; image_url?: string; keterangan?: string }) => ({
+    const items = body.items.map((item: { barang_id?: string; nama_barang?: string; jumlah: number; satuan?: string; image_url?: string; keterangan?: string; justification?: string }) => ({
       rfq_customer_id: id,
       barang_id: item.barang_id ?? null,
       nama_barang: item.nama_barang ?? null,
@@ -97,6 +97,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       satuan: item.satuan ?? null,
       image_url: item.image_url ?? null,
       keterangan: item.keterangan ?? null,
+      justification: item.justification ?? null,
       created_at: now,
       updated_at: now,
     }))

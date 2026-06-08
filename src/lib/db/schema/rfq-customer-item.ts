@@ -10,6 +10,7 @@ export const rfqCustomerItem = pgTable("rfq_customer_item", {
   satuan: text("satuan"),
   imageUrl: text("image_url"),
   keterangan: text("keterangan"),
+  justification: text("justification"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

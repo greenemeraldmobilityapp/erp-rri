@@ -10,6 +10,7 @@ const itemSchema = z.object({
   specification: z.string().optional().nullable(),
   justification: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
+  nama_barang: z.string().optional().nullable(),
   satuan: z.string().optional().nullable(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
@@ -133,7 +134,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const itemsWithBarang = (items ?? []).map((item, idx) => ({
     ...item,
     barang: item.barang_id ? (barangMap.get(item.barang_id) ?? null) : null,
-    nama_barang: idx < rfqItemNames.length ? rfqItemNames[idx] : null,
+    nama_barang: item.nama_barang ?? (idx < rfqItemNames.length ? rfqItemNames[idx] : null),
   }))
 
   return NextResponse.json({ data: { ...qtn, customer, rfq_customer: rfqCustomer, pic_customer: picCustomer, items: itemsWithBarang } })
@@ -188,6 +189,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       specification: item.specification ?? null,
       justification: item.justification ?? null,
       image_url: item.image_url ?? null,
+      nama_barang: item.nama_barang ?? null,
       satuan: item.satuan ?? null,
       jumlah: item.jumlah,
       harga_satuan: item.harga_satuan,
@@ -197,7 +199,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { data: existingItems } = await supabaseAdmin
       .from('quotation_item')
-      .select('barang_id, specification, justification, image_url, satuan, jumlah, harga_satuan, diskon, keterangan')
+      .select('barang_id, specification, justification, image_url, nama_barang, satuan, jumlah, harga_satuan, diskon, keterangan')
       .eq('quotation_id', id)
       .order('created_at', { ascending: true })
 

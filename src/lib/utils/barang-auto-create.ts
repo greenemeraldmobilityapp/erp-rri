@@ -34,6 +34,7 @@ export async function createBarangFromRfqItem(
   kategori_id: string | null,
   image_url: string | null,
   harga_jual_default?: number | null,
+  spesifikasi?: string | null,
 ) {
   const kode = await generateAutoKode()
   const kategori = kategori_id || await getDefaultKategoriId()
@@ -46,6 +47,7 @@ export async function createBarangFromRfqItem(
       kategori_id: kategori,
       satuan: satuan || 'pcs',
       image_url,
+      spesifikasi: spesifikasi ?? null,
       harga_jual_default: harga_jual_default ?? null,
       stok_minimum: 0,
       is_active: true,
@@ -82,6 +84,7 @@ interface UnmappedItem {
   nama_barang: string | null
   satuan: string | null
   image_url: string | null
+  keterangan: string | null
   jumlah: number
   harga_satuan: number | null
 }
@@ -105,7 +108,7 @@ export async function getUnmappedRfqItems(customerPoId: string): Promise<Unmappe
 
   const { data: items } = await supabaseAdmin
     .from('rfq_customer_item')
-    .select('id, nama_barang, satuan, image_url, jumlah')
+    .select('id, nama_barang, satuan, image_url, keterangan, jumlah')
     .eq('rfq_customer_id', qtn.rfq_id)
     .is('barang_id', null)
 

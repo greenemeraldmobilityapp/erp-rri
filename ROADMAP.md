@@ -832,3 +832,16 @@ Customer retur barang
 | DI-7 | **API: POST import-from-di** — validasi JSON, auto-match kontrak, auto-create barang, create DI+items, upload PDF | ✅ Done | `src/app/api/v1/master/barang/import-from-di/route.ts` |
 | DI-8 | **Frontend Tab "Import dari DI"** — dropdown customer, prompt, upload PDF, paste JSON, preview, import | ✅ Done | `src/app/dashboard/master/barang/tambah/page.tsx` |
 | DI-9 | **Seed data prompt DI BJS** — isi `customer_prompt_di` untuk customer BJS | ✅ Done | Supabase — BJS aktif |
+
+---
+
+## ✅ DONE — RFQ → Quotation Mapping & RFQ Customer Enhancements
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| RQ-1 | **RFQ `keterangan` → Quotation `specification`** — ganti hardcoded `''` dengan map dari RFQ item `keterangan`. Quotation detail page prioritaskan `item.image_url` atas `barang.image_url`. PDF route fallback ke master barang `spesifikasi`/`image_url` jika item-level kosong. | ✅ Done | `quotation/tambah/page.tsx`, `quotation/[id]/page.tsx`, `quotation/[id]/edit/page.tsx`, `lib/pdf/quotation.ts`, `api/v1/quotation/[id]/pdf/route.ts`, `api/v1/quotation/route.ts`, `api/v1/quotation/[id]/route.ts` |
+| RQ-2 | **Add `justification` to RFQ Customer** — migration 0046, schema `rfq_customer_item`, form (tambah/edit), API (POST/PUT), detail page display, mapped to Quotation's justification | ✅ Done | `0046_add_justification_to_rfq_customer_item.sql`, `rfq-customer.ts`, `rfq-customer/tambah/page.tsx`, `rfq-customer/[id]/edit/page.tsx`, `rfq-customer/[id]/page.tsx`, `api/v1/rfq-customer/route.ts`, `api/v1/rfq-customer/[id]/route.ts` |
+| RQ-3 | **RFQ `keterangan` → Master `spesifikasi` on auto-create** — `createBarangFromRfqItem()` accepts `spesifikasi` param. CPO POST and CPO [id] auto-create handlers pass through `spesifikasi`/`keterangan`. | ✅ Done | `lib/utils/barang-auto-create.ts`, `api/v1/customer-po/route.ts`, `api/v1/customer-po/[id]/route.ts` |
+| RQ-4 | **Add `nama_barang` to `quotation_item`** — migration 0047, schema, API (POST/PUT/GET with fallback to master `barang.nama`), form (tambah/edit). Free-text RFQ items carry name through quotation lifecycle. | ✅ Done | `0047_add_nama_barang_to_quotation_item.sql`, `quotation-item.ts`, `quotation/tambah/page.tsx`, `quotation/[id]/edit/page.tsx`, `api/v1/quotation/route.ts`, `api/v1/quotation/[id]/route.ts` |
+| RQ-5 | **RFQ Customer form UI** — label "Keterangan" → "Spesifikasi", add "Justification" column to detail page. Both tambah/edit forms use 4-column grid: Jumlah/Spesifikasi/Satuan/Justification. | ✅ Done | `rfq-customer/tambah/page.tsx`, `rfq-customer/[id]/edit/page.tsx`, `rfq-customer/[id]/page.tsx` |
+| RQ-6 | **Fix: CPO detail page "Konfirmasi" — auto-create master barang untuk free-text RFQ items** — Detail page "Konfirmasi" button sebelumnya hanya kirim `{ status: "confirmed" }` tanpa `barang_auto_create`, sehingga unmapped RFQ items tidak pernah dibuat sebagai master barang. Fix: tambah check unmapped items (via `/check-unmapped-barang` API) sebelum confirm, munculkan dialog pilih kategori (sama dengan Edit page), kirim payload `barang_auto_create` bersama status. | ✅ Done | `api/v1/customer-po/[id]/route.ts` (existing handler — sudah support `barang_auto_create`), `customer-po/[id]/page.tsx` (add dialog flow + handlers) |

@@ -22,6 +22,7 @@ const itemSchema = z.object({
   specification: z.string().optional(),
   justification: z.string().optional(),
   image_url: z.string().optional(),
+  nama_barang: z.string().optional().nullable(),
   satuan: z.string().optional(),
   jumlah: z.coerce.number().int().positive(),
   harga_satuan: z.coerce.number().nonnegative(),
@@ -135,6 +136,7 @@ export default function EditQuotationPage() {
         specification: string | null
         justification: string | null
         image_url: string | null
+        nama_barang: string | null
         satuan: string | null
         jumlah: number
         harga_satuan: number
@@ -170,12 +172,13 @@ export default function EditQuotationPage() {
             specification: i.specification ?? '',
             justification: i.justification ?? '',
             image_url: i.image_url ?? '',
+            nama_barang: i.nama_barang ?? '',
             satuan: i.satuan ?? '',
             jumlah: i.jumlah,
             harga_satuan: i.harga_satuan,
             diskon: i.diskon ?? 0,
             keterangan: i.keterangan ?? '',
-          })) : [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', satuan: '' }],
+          })) : [{ barang_id: '', jumlah: 1, harga_satuan: 0, specification: '', justification: '', image_url: '', nama_barang: '', satuan: '' }],
         })
         setLoading(false)
       })
