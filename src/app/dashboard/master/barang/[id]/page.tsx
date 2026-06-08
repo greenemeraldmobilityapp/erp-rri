@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/db/client"
 import { Button } from "@/components/ui/button"
+import { ImageLightbox } from "@/components/image-lightbox"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -184,7 +185,9 @@ export default function DetailBarangPage() {
             {data.image_url && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Image</label>
-                <img src={data.image_url} alt={data.nama} className="h-24 w-24 object-contain rounded border" />
+                <ImageLightbox src={data.image_url} alt={data.nama}>
+                  <img src={data.image_url} alt={data.nama} className="h-24 w-24 object-contain rounded border" />
+                </ImageLightbox>
               </div>
             )}
             <div>

@@ -15,6 +15,7 @@ import { TableSkeleton } from "@/components/ui/skeleton"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ExportButton } from "@/components/export-button"
+import { ImageLightbox } from "@/components/image-lightbox"
 import { PageTour } from '@/components/onboarding/page-tour'
 import { barangListSteps } from '@/components/onboarding/tour-steps/barang-list'
 
@@ -167,7 +168,7 @@ export default function BarangPage() {
   const columns: Column<Barang>[] = [
     { header: "Picture", accessor: (item) =>
       item.image_url
-        ? <img src={item.image_url} alt={item.nama} className="h-10 w-10 object-cover rounded" />
+        ? <ImageLightbox src={item.image_url} alt={item.nama}><img src={item.image_url} alt={item.nama} className="h-10 w-10 object-cover rounded" /></ImageLightbox>
         : <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">-</div>
     },
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
