@@ -1,15 +1,16 @@
 import { ReactNode } from 'react'
-import { Building2, ShieldCheck, HeadphonesIcon } from 'lucide-react'
+import { Building2, ShieldCheck, HeadphonesIcon, BarChart3, LayoutDashboard, Package, TrendingUp } from 'lucide-react'
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Brand Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0000FF] via-[#0000D9] to-[#0A0E27] relative overflow-hidden">
-        {/* Animated mesh gradient overlay */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-[#4444FF] blur-[120px] animate-mesh-shift" />
-          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-[#0000CC] blur-[120px] animate-mesh-shift" style={{ animationDelay: '-10s' }} />
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#3B82F6] via-[#2563EB] to-[#0A0E27] relative overflow-hidden">
+        {/* Enhanced mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute -top-1/3 -left-1/4 w-1/2 h-1/2 rounded-full bg-[#60A5FA] blur-[120px] animate-mesh-shift" />
+          <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 rounded-full bg-[#93C5FD] blur-[100px] animate-mesh-shift" style={{ animationDelay: '-7s', animationDuration: '25s' }} />
+          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-[#818CF8] blur-[120px] animate-mesh-shift" style={{ animationDelay: '-14s' }} />
         </div>
         {/* Dot pattern */}
         <div
@@ -17,9 +18,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         />
         <div className="relative flex flex-col justify-between p-12 w-full z-10">
-          <div>
-            <div className="flex items-center gap-3 mb-16">
-              <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+          {/* Header */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-12">
+              <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Building2 className="h-7 w-7 text-white" />
               </div>
               <div>
@@ -27,36 +29,63 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 <p className="text-sm text-white/70">Enterprise Resource Planning</p>
               </div>
             </div>
-            <div className="space-y-8">
+
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-medium text-white/90">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+              Platform ERP Enterprise
+            </div>
+
+            <div className="space-y-2 mt-6">
               <h2 className="text-4xl font-heading font-bold text-white leading-tight">
-                Kelola Bisnis Anda<br />
-                <span className="text-white/80">Dalam Satu Platform</span>
+                Kelola Bisnis Anda
               </h2>
-              <p className="text-lg text-white/70 max-w-md leading-relaxed">
-                Sistem ERP terintegrasi untuk PT. Rizki Ridho Ilahi —
-                mengelola sales, procurement, inventory, finance, dan HR
-                secara real-time.
-              </p>
+              <h2 className="text-4xl font-heading font-bold text-white/80">
+                Dalam Satu Platform
+              </h2>
             </div>
           </div>
+
+          {/* Value proposition cards */}
+          <div className="grid grid-cols-1 gap-3 my-12">
+            {[
+              { icon: LayoutDashboard, label: 'Sales & Procurement', desc: 'Kelola penjualan & pembelian terpadu' },
+              { icon: Package, label: 'Inventory & Warehouse', desc: 'Pantau stok barang real-time' },
+              { icon: BarChart3, label: 'Finance & HR', desc: 'Integrasi akuntansi & data karyawan' },
+            ].map((item, i) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 p-3.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 transition-all duration-200 hover:bg-white/10 hover:-translate-y-0.5"
+                style={{ animationDelay: `${i * 150}ms` }}
+              >
+                <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                  <item.icon className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{item.label}</p>
+                  <p className="text-xs text-white/60">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust signals */}
           <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Aman & Terpercaya</p>
-                <p className="text-xs text-white/60">Data bisnis Anda terlindungi</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center">
-                <HeadphonesIcon className="h-5 w-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Dukungan 24/7</p>
-                <p className="text-xs text-white/60">Tim siap membantu kapanpun</p>
-              </div>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { icon: ShieldCheck, label: 'Aman & Terpercaya', sub: 'Enkripsi end-to-end', color: 'text-green-400' },
+                { icon: TrendingUp, label: 'Real-time Analytics', sub: 'Laporan & dashboard interaktif', color: 'text-blue-400' },
+                { icon: HeadphonesIcon, label: 'Dukungan 24/7', sub: 'Tim siap membantu kapanpun', color: 'text-blue-400' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-3 group transition-all duration-200 hover:-translate-y-0.5">
+                  <div className="h-9 w-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <item.icon className={`h-4 w-4 ${item.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{item.label}</p>
+                    <p className="text-xs text-white/60">{item.sub}</p>
+                  </div>
+                </div>
+              ))}
             </div>
             <p className="text-xs text-white/40 pt-4 border-t border-white/10">
               &copy; 2026 PT. Rizki Ridho Ilahi. All rights reserved.

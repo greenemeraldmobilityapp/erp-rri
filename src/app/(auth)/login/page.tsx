@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/db/client'
 import { z } from 'zod'
@@ -62,18 +61,7 @@ export default function LoginPage() {
 
   return (
     <Card className="border-border/50 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)]">
-      <CardHeader className="space-y-3 pb-6 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 bg-primary/10 rounded-full">
-            <Image
-              src="/logo/logo-rri-bg-transparan.png"
-              alt="Logo"
-              className="h-14 w-auto"
-              width={56}
-              height={56}
-            />
-          </div>
-        </div>
+      <CardHeader className="space-y-2 pb-6 text-center">
         <CardTitle className="text-2xl font-heading font-bold tracking-tight">Selamat Datang</CardTitle>
         <CardDescription className="text-muted-foreground">
           Masukkan kredensial untuk mengakses dashboard
