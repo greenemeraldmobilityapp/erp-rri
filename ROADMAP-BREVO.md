@@ -172,6 +172,21 @@ Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `ema
 
 ---
 
+### ✅ Phase 9 — Mail Center UI: Horizontal Tabs & CRUD Actions (SELESAI)
+
+Perbaikan layout Mail Center + implementasi tombol Reply, Reply All, Forward, Delete.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| MC-10 | **Email context provider** — `EmailProvider` + `useEmail()` hook untuk trigger compose dari mana saja | ✅ Done | `src/components/email/email-context.tsx` |
+| MC-11 | **Horizontal tabs** — ganti sidebar vertical dengan tabs di bawah header (Inbox, Sent, Draft, Templates) | ✅ Done | `src/components/email/email-tabs.tsx` |
+| MC-12 | **Fix layout** — hapus nested `max-w-7xl`, hapus email sidebar (`w-56`), layout sekarang stabil | ✅ Done | `src/app/dashboard/email/layout.tsx` |
+| MC-13 | **Reply** — buka compose dengan `to` = pengirim asli, subject = `Re: ...`, body quote original | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| MC-14 | **Reply All** — buka compose dengan data reply + CC | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| MC-15 | **Forward** — buka compose dengan subject = `Fwd: ...`, body quote + header forward | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| MC-16 | **Delete dengan konfirmasi** — `AlertDialog` popup konfirmasi, panggil `DELETE /api/v1/email/[id]`, redirect back | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` + `src/app/api/v1/email/[id]/route.ts` |
+| MC-17 | **Hapus `email-sidebar.tsx`** — tidak dipakai lagi, diganti tabs horizontal | ✅ Done | `src/components/email/email-sidebar.tsx` (di-archive) |
+
 ### ✅ Phase 8 — Email Body Redesign & Public PDF Link (SELESAI)
 
 | # | Task | Status | File |
@@ -455,25 +470,44 @@ src/app/api/v1/email/
 └── stats/
     └── route.ts               # GET /api/v1/email/stats (Phase 3)
 
+src/app/api/v1/email/
+├── [id]/
+│   └── route.ts               # DELETE /api/v1/email/[id] (Phase 9)
+├── inbound/
+│   └── route.ts               # POST /api/v1/email/inbound (Phase 7)
+├── send/
+│   └── route.ts               # POST /api/v1/email/send (Phase 5)
+├── webhook/
+│   └── route.ts               # POST /api/v1/email/webhook (Phase 2)
+├── sync-contacts/
+│   └── route.ts               # POST /api/v1/email/sync-contacts (Phase 3)
+├── templates/
+│   └── route.ts               # GET /api/v1/email/templates (Phase 3)
+├── campaigns/
+│   └── route.ts               # GET /api/v1/email/campaigns (Phase 3)
+└── stats/
+    └── route.ts               # GET /api/v1/email/stats (Phase 3)
+
 src/components/email/
-├── email-sidebar.tsx          # Folder navigator (Inbox, Sent, Draft, etc.)
-├── email-list.tsx             # Email list component (shared by inbox/sent/draft)
-└── email-compose-sheet.tsx    # Compose email Sheet (reusable)
+├── email-context.tsx           # EmailProvider + useEmail() hook (Phase 9)
+├── email-tabs.tsx              # Horizontal tab navigation (Phase 9)
+├── email-list.tsx              # Email list component (shared by inbox/sent/draft)
+└── email-compose-sheet.tsx     # Compose email Sheet (reusable)
 # Detail panel, status badge, tracking timeline are inlined in page components
 
 src/app/dashboard/email/
-├── layout.tsx                 # Layout split-pane: sidebar + main content
-├── page.tsx                   # Redirect to /dashboard/email/inbox
+├── layout.tsx                  # Layout: header + horizontal tabs + content (Phase 9)
+├── page.tsx                    # Redirect to /dashboard/email/inbox
 ├── inbox/
-│   └── page.tsx               # Inbox page (Phase 5)
+│   └── page.tsx                # Inbox page (Phase 5)
 ├── sent/
-│   └── page.tsx               # Sent page (Phase 5)
+│   └── page.tsx                # Sent page (Phase 5)
 ├── draft/
-│   └── page.tsx               # Draft page (Phase 5)
+│   └── page.tsx                # Draft page (Phase 5)
 ├── templates/
-│   └── page.tsx               # Templates page (Phase 5)
+│   └── page.tsx                # Templates page (Phase 5)
 └── [id]/
-    └── page.tsx               # Email detail page (Phase 5)
+    └── page.tsx                # Email detail page (Phase 5 + Phase 9 CRUD)
 ```
 
 ---

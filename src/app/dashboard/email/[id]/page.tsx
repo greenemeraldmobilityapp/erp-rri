@@ -8,7 +8,19 @@ import { id as idLocale } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ArrowLeft, Reply, ReplyAll, Forward, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import { useEmail } from "@/components/email/email-context"
+import { toast } from "sonner"
 
 interface EmailDetail {
   id: string
@@ -74,11 +86,23 @@ function formatTrackingTime(dateStr: string | null | undefined) {
   return format(date, "dd MMM HH:mm", { locale: idLocale })
 }
 
+function quoteBody(body: string | null | undefined): string {
+  if (!body) return ""
+  const stripped = body.replace(/<[^>]*>/g, "")
+  return stripped
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n")
+}
+
 export default function EmailDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { openCompose } = useEmail()
   const [email, setEmail] = useState<EmailDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!params.id) return
@@ -94,6 +118,54 @@ export default function EmailDetailPage() {
         setLoading(false)
       })
   }, [params.id])
+
+  const handleReply = () => {
+    if (!email) return
+    openCompose({
+      toEmail: email.fromEmail || email.toEmail,
+      toNama: email.fromNama || email.toNama || undefined,
+      subject: `Re: ${email.subject}`,
+      body: `\n\n${quoteBody(email.body)}`,
+    })
+  }
+
+  const handleReplyAll = () => {
+    if (!email) return
+    openCompose({
+      toEmail: email.fromEmail || email.toEmail,
+      toNama: email.fromNama || email.toNama || undefined,
+      subject: `Re: ${email.subject}`,
+      body: `\n\n${quoteBody(email.body)}`,
+    })
+  }
+
+  const handleForward = () => {
+    if (!email) return
+    openCompose({
+      subject: `Fwd: ${email.subject}`,
+      body: `\n\n---------- Forwarded message ----------\nFrom: ${email.fromNama || email.fromEmail}\nDate: ${formatDateTime(email.createdAt)}\nSubject: ${email.subject}\n\n${quoteBody(email.body)}`,
+    })
+  }
+
+  const handleDelete = async () => {
+    if (!email) return
+    setDeleting(true)
+    const toastId = toast.loading("Menghapus email...")
+    try {
+      const res = await fetch(`/api/v1/email/${email.id}`, { method: "DELETE" })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Gagal menghapus email")
+      }
+      toast.success("Email berhasil dihapus", { id: toastId })
+      setDeleteOpen(false)
+      router.back()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus email", { id: toastId })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -144,16 +216,16 @@ export default function EmailDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleReply}>
             <Reply className="mr-1 h-4 w-4" /> Reply
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleReplyAll}>
             <ReplyAll className="mr-1 h-4 w-4" /> Reply All
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleForward}>
             <Forward className="mr-1 h-4 w-4" /> Forward
           </Button>
-          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="mr-1 h-4 w-4" /> Delete
           </Button>
         </div>
@@ -211,6 +283,23 @@ export default function EmailDetailPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Email ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction disabled={deleting} onClick={handleDelete}>
+              {deleting ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

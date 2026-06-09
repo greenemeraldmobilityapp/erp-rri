@@ -24,7 +24,7 @@ type ComposeValues = z.infer<typeof composeSchema>
 interface EmailComposeSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  initialData?: ComposeValues
+  initialData?: Partial<ComposeValues>
   draftId?: string
   onSent?: () => void
 }
