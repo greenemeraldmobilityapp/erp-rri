@@ -166,9 +166,89 @@ Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `ema
 | IN-2 | **`EMAIL_INBOUND_SECRET`** — shared secret antara Worker dan ERP API | ✅ Done | `.env.example` + Vercel env |
 | IN-3 | **Test manual insert** — insert record `inbound=true` langsung ke DB → verifikasi Mail Center Inbox muncul | ✅ Done | Supabase SQL: `INSERT INTO email_log (inbound=true, ...)` |
 | IN-4 | **Cloudflare Email Worker script** — parse MIME, POST ke ERP API, relay via Brevo, fallback forward | ✅ Done | `cloudflare-workers/email-worker.js` |
-| IN-5 | **Deploy Worker** — paste script ke Cloudflare Dashboard, set env vars | ⬜ Pending | Cloudflare Dashboard |
-| IN-6 | **Hubungkan Email Routing → Worker** — ubah routing rule dari forward ke worker | ⬜ Pending | Cloudflare Dashboard → Email Routing |
-| IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ⬜ Pending | Manual test |
+| IN-5 | **Deploy Worker** — deploy via wrangler CLI + set 6 env vars | ✅ Done | `erp-rri-email-worker` di Cloudflare |
+| IN-6 | **Hubungkan Email Routing → Worker** — ubah routing rule dari forward ke worker | ⬜ **KAMU** | Cloudflare Dashboard → Email Routing |
+| IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ⬜ **KAMU** | Manual test |
+
+---
+
+### 📋 Panduan 4 Langkah — Yang Harus Kamu Lakukan
+
+#### 🔧 Langkah 1: Generate Secret & Set Vercel Env
+
+Buka terminal di laptop, jalankan:
+
+```bash
+# 1a. Generate secret key
+openssl rand -hex 32
+```
+Output contoh: `a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890`
+
+**Copy output-nya**, lalu:
+
+```bash
+# 1b. Set ke Vercel environment
+npx vercel env add EMAIL_INBOUND_SECRET
+# Paste secret yang tadi, pilih Production + Preview + Development
+```
+
+> **Note**: Gunakan terminal yang sudah `npx vercel login`. Pastikan `EMAIL_INBOUND_SECRET` sudah ada di Vercel env sebelum lanjut.
+
+---
+
+#### 🌩️ Langkah 2: Deploy Worker di Cloudflare Dashboard
+
+1. Buka https://dash.cloudflare.com → **Workers & Pages** → **Create Worker**
+2. **Hapus** semua template kode yang ada
+3. **Buka file** `cloudflare-workers/email-worker.js` di project ini → **copy seluruh isinya**
+4. **Paste** ke editor Cloudflare Dashboard
+5. Klik **Deploy** (tombol biru)
+6. Setelah deploy, buka tab **Settings → Variables**
+
+Tambahkan environment variables satu per satu:
+
+| **Variable** | **Value** | **Contoh** |
+|---|---|---|
+| `ERP_INBOUND_URL` | `https://erp-rri.vercel.app/api/v1/email/inbound` | — |
+| `ERP_INBOUND_SECRET` | Isi dengan secret dari Langkah 1 | `a1b2c3d4...` |
+| `BREVO_API_KEY` | Buka Brevo Dashboard → Settings → API Keys → copy `xkeysib-...` | `xkeysib-xxxxx` |
+| `FORWARD_TO_EMAIL` | Gmail tujuan | `mazzjoeq@gmail.com` |
+| `SENDER_EMAIL` | Sender terverifikasi | `marzuqi@pt-rri.com` |
+| `SENDER_NAME` | Nama pengirim | `ERP RRI` |
+
+**Save** setelah semua terisi.
+
+> **Verifikasi**: Buka tab **Preview** → harusnya muncul "Worker deployed successfully".
+
+---
+
+#### 🔗 Langkah 3: Hubungkan Email Routing ke Worker
+
+1. Di Cloudflare Dashboard, buka **Email Routing → Routing Rules**
+2. Akan ada rule yang sudah ada: `marzuqi@pt-rri.com` → forward ke Gmail
+3. Klik **Edit** pada rule tersebut (icon pensil)
+4. Ubah **Action** dari `Forward to email` → **Send to Worker**
+5. Pilih Worker yang baru saja dibuat (nama Worker dari Langkah 2)
+6. Klik **Save**
+
+Sekarang semua email ke `marzuqi@pt-rri.com` akan masuk ke Worker, bukan langsung forward ke Gmail.
+
+---
+
+#### ✅ Langkah 4: Test End-to-End
+
+**Test dari Gmail external:**
+1. Buka Gmail lain (misal: `bee7rafiud@gmail.com`)
+2. Tulis email baru ke: **marzuqi@pt-rri.com**
+3. Subject: "Test inbound worker"
+4. Kirim
+
+**Cek hasil:**
+- Buka **http://localhost:3000/dashboard/email/inbox** — email harus muncul di Mail Center Inbox
+- Buka **Gmail** `mazzjoeq@gmail.com` — email harus masuk **Inbox** (bukan Spam)
+- Kalau masih masuk Spam → berarti Brevo relay gagal, cek log Worker di Cloudflare Dashboard (tab **Logs**)
+
+> **Catatan**: Brevo free plan cuma 300 email/hari. Relay inbound juga terhitung kuota.
 
 ### 🔄 Phase 6 — Email Deliverability & DNS Authentication (High Priority) — IN PROGRESS
 
@@ -481,10 +561,10 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 
 ### Inbound Email Pipeline (Phase 7)
 - [x] API route `POST /api/v1/email/inbound` — menerima inbound email dari Worker
-- [x] `EMAIL_INBOUND_SECRET` — shared secret di env vars
+- [x] `EMAIL_INBOUND_SECRET` — shared secret di env vars (`.env` + Vercel + Worker)
 - [x] Test manual insert — record `inbound=true` terverifikasi muncul di Mail Center Inbox
-- [ ] Worker deployed — script terpasang di Cloudflare Dashboard
-- [ ] Email Routing → Worker — routing rule diubah dari forward ke worker
+- [x] Worker deployed — `erp-rri-email-worker` via wrangler CLI ✅ (6 env vars set)
+- [ ] Email Routing → Worker — routing rule diubah dari forward ke worker ⬅️ **Langkah 3**
 - [ ] Test end-to-end — kirim ke `marzuqi@pt-rri.com` → muncul di Inbox ERP + Gmail Inbox
 
 ### Brevo API
