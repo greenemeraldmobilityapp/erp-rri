@@ -87,7 +87,7 @@ Email Routing (gratis) + Email Worker:
 ```bash
 # Brevo
 BREVO_API_KEY=xkeysib-xxxxxxxxxxxx
-BREVO_SENDER_NAME="ERP RRI"
+BREVO_SENDER_NAME="ERP RRI"  # <-- Fallback: sender name utama dari DB (penandatangan_nama + " - RRI")
 BREVO_SENDER_EMAIL=marzuqi@pt-rri.com  # <-- DIUBAH: erp@pt-rri.com tidak dipakai
 
 # Cloudflare
@@ -171,6 +171,18 @@ Setup Cloudflare Email Worker untuk menerima inbound email, menyimpannya di `ema
 | IN-7 | **Test end-to-end** — kirim email dari Gmail → `marzuqi@pt-rri.com` → cek Inbox (Mail Center + Gmail) | ⬜ **KAMU** | Manual test |
 
 ---
+
+### ✅ Phase 8 — Email Body Redesign & Public PDF Link (SELESAI)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| ED-6 | **Add `email_access_token` + expiry ke `quotation`** — migration + drizzle schema | ✅ Done | `drizzle/0051_add_quotation_email_access_token.sql` |
+| ED-7 | **Public PDF route** — `/api/v1/quotation/public/[token]/pdf` tanpa auth, validasi token + expiry 14 hari | ✅ Done | `src/app/api/v1/quotation/public/[token]/pdf/route.ts` |
+| ED-8 | **Shared PDF generator** — extract logic dari route ke `generateQuotationPdfBlob()` | ✅ Done | `src/lib/pdf/generate-quotation-pdf.ts` |
+| ED-9 | **Sender name dinamis** — ambil dari `penandatangan_nama` di DB, format `"{nama} - RRI"` | ✅ Done | `src/lib/email/brevo.ts` |
+| ED-10 | **Footer email baru** — ambil data dari DB, tampilkan company_nama, no_hp, email, website | ✅ Done | `src/lib/email/templates/index.ts` |
+| ED-11 | **Body email quotation baru** — tambah No. Ref RFQ, link PDF, expiry note 14 hari, sign-off dengan penandatangan_nama + no_hp | ✅ Done | `src/lib/email/templates/quotation.ts` |
+| ED-12 | **Token generation di status route** — saat status → `sent`, generate UUID token + expiry, simpan ke DB, kirim email dengan public PDF link | ✅ Done | `src/app/api/v1/quotation/[id]/status/route.ts` |
 
 ### 📋 Panduan 4 Langkah — Yang Harus Kamu Lakukan
 

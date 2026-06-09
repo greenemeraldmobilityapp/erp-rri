@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { badRequest, notFound, internalError } from '@/lib/api/errors'
@@ -53,9 +54,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     )
   }
 
+  const updateData: Record<string, unknown> = {
+    status: parsed.data.status,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (parsed.data.status === 'sent') {
+    const token = randomUUID()
+    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+    updateData.email_access_token = token
+    updateData.email_access_token_expires_at = expiresAt
+  }
+
   const { data, error } = await supabaseAdmin
     .from('quotation')
-    .update({ status: parsed.data.status, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq('id', id)
     .select('*, customer!customer_id(id, nama, kode)')
     .single()
@@ -88,11 +101,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           emailMessage = 'PIC customer belum memiliki alamat email'
         } else {
           const company = await fetchCompanySettings()
+
+          const origin = new URL(request.url).origin
+          const pdfUrl = `${origin}/api/v1/quotation/public/${data.email_access_token}/pdf`
+
           const html = quotationEmailHtml({
             nomor: data.nomor,
+            referensi: data.referensi,
             perihal: data.perihal,
             tanggal: new Date(data.tanggal).toLocaleDateString('id-ID'),
             customerNama: data.customer?.nama ?? '',
+            pdfUrl,
           }, company, pic.nama)
 
           await sendEmail({

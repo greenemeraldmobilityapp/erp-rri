@@ -18,6 +18,15 @@ export async function getCompanyEmail(): Promise<string> {
   return data?.value ?? process.env.BREVO_SENDER_EMAIL ?? 'noreply@erp-rri.com'
 }
 
+async function getCompanySenderName(): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'penandatangan_nama')
+    .maybeSingle()
+  return data?.value ? `${data.value} - RRI` : null
+}
+
 export interface SendBrevoEmailParams {
   to: { email: string; name?: string }
   subject: string
@@ -36,7 +45,7 @@ export interface SendBrevoEmailParams {
 
 export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
   const fromEmail = process.env.BREVO_SENDER_EMAIL ?? (await getCompanyEmail())
-  const fromName = process.env.BREVO_SENDER_NAME ?? 'ERP RRI'
+  const fromName = (await getCompanySenderName()) ?? process.env.BREVO_SENDER_NAME ?? 'ERP RRI'
 
   let status: string
   let errorMessage: string | null = null

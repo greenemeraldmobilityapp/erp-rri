@@ -1,4 +1,14 @@
-export function emailLayout(content: string, title: string): string {
+export interface FooterData {
+  companyNama?: string
+  companyNoHp?: string
+  companyEmail?: string
+}
+
+export function emailLayout(content: string, title: string, footer?: FooterData): string {
+  const nama = footer?.companyNama || 'PT. Rizqi Ridho Ilahi'
+  const noHp = footer?.companyNoHp || '+6281 2607 5500'
+  const email = footer?.companyEmail || 'info@pt-rri.com'
+
   return `
 <!DOCTYPE html>
 <html>
@@ -14,8 +24,9 @@ export function emailLayout(content: string, title: string): string {
 ${content}
 </td></tr>
 <tr><td style="background-color:#f8fafc;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8">
-<p style="margin:0">Dokumen ini dikirim secara otomatis oleh <strong>ERP RRI</strong>.</p>
+<p style="margin:0">Dokumen ini dikirim secara otomatis oleh ERP System - <strong>${nama}</strong>.</p>
 <p style="margin:4px 0 0">Hubungi kami bila ada pertanyaan lebih lanjut.</p>
+<p style="margin:4px 0 0">${noHp} | ${email} | https://pt-rri.com</p>
 </td></tr>
 </table>
 </td></tr>

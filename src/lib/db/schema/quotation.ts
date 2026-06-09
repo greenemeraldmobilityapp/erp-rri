@@ -19,6 +19,8 @@ export const quotation = pgTable("quotation", {
   ppnEnabled: boolean("ppn_enabled").notNull().default(true),
   totalHarga: real("total_harga"),
   revisi: integer("revisi").notNull().default(0),
+  emailAccessToken: text("email_access_token"),
+  emailAccessTokenExpiresAt: timestamp("email_access_token_expires_at"),
   keterangan: text("keterangan"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
