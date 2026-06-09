@@ -17,11 +17,12 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString()
+    const defaultTo = process.env.BREVO_SENDER_EMAIL || 'marzuqi@pt-rri.com'
     const { data, error } = await supabaseAdmin.from("email_log").insert({
       message_id: messageId ?? null,
       from_email: fromEmail,
       from_nama: fromNama ?? null,
-      to_email: toEmail ?? null,
+      to_email: toEmail || defaultTo,
       subject,
       body: emailBody ?? null,
       has_attachments: hasAttachments ?? false,
