@@ -95,6 +95,7 @@ import { grnCustomerDocument } from "./grn-customer-document";
 import { customerPrompt } from "./customer-prompt";
 import { customerPromptDi } from "./customer-prompt-di";
 import { emailLog } from "./email-log";
+import { emailTemplates } from "./email-templates";
 
 export {
   users,
@@ -192,5 +193,6 @@ export {
   grnCustomerDocument,
   customerPrompt,
   customerPromptDi,
-  emailLog
+  emailLog,
+  emailTemplates
 };

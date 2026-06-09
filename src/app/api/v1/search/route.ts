@@ -38,6 +38,7 @@ const routeMap: Record<string, string> = {
   kategori_barang: '/dashboard/master/kategori-barang',
   customer_pic: '/dashboard/master/pic-customer',
   gudang: '/dashboard/inventory/gudang',
+  email_log: '/dashboard/email',
 }
 
 const tableConfigs = [
@@ -69,6 +70,7 @@ const tableConfigs = [
   { table: 'kategori_barang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('kategori_barang').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
   { table: 'gudang', select: 'id, nama', query: (q: string) => supabaseAdmin.from('gudang').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
   { table: 'customer_pic', select: 'id, nama', query: (q: string) => supabaseAdmin.from('customer_pic').select('id, nama').ilike('nama', `%${q}%`).limit(5) },
+  { table: 'email_log', select: 'id, subject, from_email, from_nama', query: (q: string) => supabaseAdmin.from('email_log').select('id, subject, from_email, from_nama').or(`subject.ilike.%${q}%,from_email.ilike.%${q}%,from_nama.ilike.%${q}%`).limit(5) },
 ]
 
 export async function POST(request: NextRequest) {
@@ -89,8 +91,8 @@ export async function POST(request: NextRequest) {
     if (res.status === 'fulfilled' && res.value.data) {
       const cfg = tableConfigs[i]
       for (const row of res.value.data) {
-        const r = row as { id: string; nomor?: string; nama?: string; keterangan?: string }
-        const label = r.nomor ?? r.nama ?? r.keterangan ?? r.id
+        const r = row as { id: string; nomor?: string; nama?: string; keterangan?: string; subject?: string }
+        const label = r.nomor ?? r.subject ?? r.nama ?? r.keterangan ?? r.id
         const baseRoute = routeMap[cfg.table]
         if (baseRoute) {
           results.push({ table: cfg.table, id: row.id, label: `[${cfg.table.replace(/_/g, ' ').toUpperCase()}] ${label}`, href: `${baseRoute}/${row.id}` })

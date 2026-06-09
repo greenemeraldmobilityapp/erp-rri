@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useState } from "react"
+import { ReactNode } from "react"
 import { PageHeader } from "@/components/page-header"
 import { EmailTabs } from "@/components/email/email-tabs"
 import { EmailComposeSheet } from "@/components/email/email-compose-sheet"
@@ -17,7 +17,7 @@ function EmailLayoutInner({ children }: { children: ReactNode }) {
         <PageHeader title="Mail Center" description="Surat elektronik terpusat RRI" />
         <Button
           onClick={() => openCompose()}
-          className="bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_2px_rgba(0,0,0,0.1)] hover:opacity-95"
+          className="btn-primary-gradient"
         >
           <Pencil className="mr-2 h-4 w-4" />
           Compose

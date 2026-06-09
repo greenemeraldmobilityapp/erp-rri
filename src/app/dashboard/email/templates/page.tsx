@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,13 +12,18 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { File, Plus, Pencil, Trash2, Eye } from "lucide-react"
+import { apiFetch } from "@/lib/api/client"
+import { File, Plus, Pencil, Trash2, Send } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useEmail } from "@/components/email/email-context"
 
 interface Template {
   id: string
   name: string
   htmlBody: string
-  description?: string
+  description?: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 const templateSchema = z.object({
@@ -28,30 +33,34 @@ const templateSchema = z.object({
 
 type TemplateValues = z.infer<typeof templateSchema>
 
-const defaultTemplates: Template[] = [
-  {
-    id: "1",
-    name: "Quotation Notification",
-    htmlBody: "<h1>Quotation #{{nomor}}</h1><p>Kepada Yth. {{nama_customer}},</p><p>Terlampir quotation terbaru dari kami.</p>",
-    description: "Template notifikasi quotation ke customer",
-  },
-  {
-    id: "2",
-    name: "Invoice Notification",
-    htmlBody: "<h1>Invoice #{{nomor}}</h1><p>Kepada Yth. {{nama_customer}},</p><p>Invoice dengan total {{total}} telah diterbitkan.</p>",
-    description: "Template notifikasi invoice ke customer",
-  },
-]
-
 export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<Template[]>(defaultTemplates)
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const { openCompose } = useEmail()
 
   const form = useForm<TemplateValues>({
     resolver: zodResolver(templateSchema),
     defaultValues: { name: "", htmlBody: "" },
   })
+
+  const fetchTemplates = async () => {
+    setLoading(true)
+    try {
+      const res = await apiFetch<Template[]>("/api/v1/email/templates")
+      setTemplates(res.data)
+    } catch {
+      toast.error("Gagal memuat template")
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTemplates()
+  }, [])
 
   const openCreate = () => {
     setEditingTemplate(null)
@@ -65,27 +74,65 @@ export default function TemplatesPage() {
     setSheetOpen(true)
   }
 
-  const handleSave = (values: TemplateValues) => {
-    if (editingTemplate) {
-      setTemplates((prev) =>
-        prev.map((t) =>
-          t.id === editingTemplate.id ? { ...t, ...values } : t,
-        ),
-      )
-      toast.success("Template diperbarui")
-    } else {
-      setTemplates((prev) => [
-        ...prev,
-        { id: String(Date.now()), ...values },
-      ])
-      toast.success("Template baru ditambahkan")
+  const handleSave = async (values: TemplateValues) => {
+    setSaving(true)
+    try {
+      if (editingTemplate) {
+        await apiFetch(`/api/v1/email/templates/${editingTemplate.id}`, {
+          method: "PUT",
+          body: JSON.stringify(values),
+        })
+        toast.success("Template diperbarui")
+      } else {
+        await apiFetch("/api/v1/email/templates", {
+          method: "POST",
+          body: JSON.stringify(values),
+        })
+        toast.success("Template baru ditambahkan")
+      }
+      setSheetOpen(false)
+      fetchTemplates()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan template")
     }
-    setSheetOpen(false)
+    setSaving(false)
   }
 
-  const handleDelete = (id: string) => {
-    setTemplates((prev) => prev.filter((t) => t.id !== id))
-    toast.success("Template dihapus")
+  const handleDelete = async (id: string) => {
+    try {
+      await apiFetch(`/api/v1/email/templates/${id}`, { method: "DELETE" })
+      toast.success("Template dihapus")
+      fetchTemplates()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus template")
+    }
+  }
+
+  const handleUse = (tmpl: Template) => {
+    openCompose({ body: tmpl.htmlBody, subject: tmpl.name })
+    toast.success(`Template "${tmpl.name}" siap digunakan`)
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32 mt-1" />
+          </div>
+          <Skeleton className="h-9 w-36" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader><Skeleton className="h-5 w-32" /></CardHeader>
+              <CardContent><Skeleton className="h-10 w-full" /></CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -128,6 +175,10 @@ export default function TemplatesPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-end gap-1">
+                <Button variant="ghost" size="sm" onClick={() => handleUse(tmpl)}>
+                  <Send className="h-3 w-3 mr-1" />
+                  Use
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => openEdit(tmpl)}>
                   <Pencil className="h-3 w-3 mr-1" />
                   Edit
@@ -206,8 +257,8 @@ export default function TemplatesPage() {
               />
 
               <div className="flex items-center gap-2 pt-4 border-t border-border">
-                <Button type="submit">
-                  {editingTemplate ? "Simpan Perubahan" : "Buat Template"}
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Menyimpan..." : editingTemplate ? "Simpan Perubahan" : "Buat Template"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>
                   Batal

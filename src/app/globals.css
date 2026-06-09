@@ -97,6 +97,25 @@
   }
 }
 
+.btn-primary-gradient {
+  background-color: var(--primary);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, transparent 50%, rgba(0,0,0,0.12) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.1);
+  color: var(--primary-foreground);
+}
+.btn-primary-gradient:hover {
+  opacity: 0.95;
+}
+
+@keyframes tab-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.animate-tab-pulse {
+  animation: tab-pulse 2s ease-in-out infinite;
+}
+
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }

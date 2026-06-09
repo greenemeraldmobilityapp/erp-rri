@@ -5,8 +5,11 @@ import { createContext, useContext, useState, useCallback, ReactNode } from "rea
 export interface ComposeData {
   toEmail?: string
   toNama?: string
+  cc?: string
+  bcc?: string
   subject?: string
   body?: string
+  replyType?: "reply" | "replyAll" | "forward"
 }
 
 interface EmailContextType {

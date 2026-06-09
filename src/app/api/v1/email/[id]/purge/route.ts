@@ -9,19 +9,19 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params
 
-    const now = new Date().toISOString()
     const { error } = await supabaseAdmin
       .from("email_log")
-      .update({ status: "trashed", updated_at: now })
+      .delete()
       .eq("id", id)
+      .eq("status", "trashed")
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ data: { status: "trashed" } })
+    return NextResponse.json({ data: { success: true } })
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to trash email"
+    const message = err instanceof Error ? err.message : "Failed to permanently delete email"
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

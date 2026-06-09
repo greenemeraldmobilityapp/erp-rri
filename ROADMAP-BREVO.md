@@ -18,7 +18,8 @@
 | Email template engine | ✅ Active | `src/lib/email/templates/` (quotation, invoice, cpo, do) |
 | Webhook endpoint | ✅ Active | `POST /api/v1/email/webhook` |
 | Contact sync | ✅ Active | `POST /api/v1/email/sync-contacts` |
-| Mail Center UI | ✅ Active | `/dashboard/email/inbox`, `sent`, `draft`, `templates`, `[id]` |
+| Contact search | ✅ Active | `GET /api/v1/email/contacts/search?q=...` (Phase 10 MC-35) |
+| Mail Center UI | ✅ Active | `/dashboard/email/inbox`, `sent`, `trash`, `templates`, `[id]` |
 
 ### Points of Integration (Trigger email)
 
@@ -153,7 +154,7 @@ Halaman email client di dalam ERP layaknya Gmail/Outlook web.
 | MC-5 | **Compose Sheet** — Sheet `side="right" sm:max-w-2xl` — form To, Subject, Body, Send/Save Draft/Discard, Zod validasi, react-hook-form | ✅ Done | `src/components/email/email-compose-sheet.tsx` | Sheet §3.11; Form §3.10; Button default gradient §3.1 |
 | MC-6 | **Compose API** — `POST /api/v1/email/send` — kirim via Brevo API, simpan ke `email_log`, auth via token, validasi Zod | ✅ Done | `src/app/api/v1/email/send/route.ts` | Response `{ data: ... }`; uses Brevo transactional API |
 | MC-7 | **Email detail page** — `/dashboard/email/[id]` — From/To/CC/Date, HTML body render, tracking timeline (Sent→Delivered→Opened→Clicked), Reply/Reply All/Forward/Delete actions | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` | Lexend heading; Status timeline; Badge status; Card shadow §3.7 |
-| MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done | `src/app/dashboard/email/draft/page.tsx` | Skeleton loading; Empty state §14.2 |
+| MC-8 | **Draft page** — `/dashboard/email/draft` — list from `email_log` WHERE `status='draft'` | ✅ Done (Phase 10: dihapus, diganti Trash) | `src/app/dashboard/email/draft/page.tsx` (deleted Phase 10) | Skeleton loading; Empty state §14.2 |
 | MC-9 | **Templates page** — `/dashboard/email/templates` — Card grid, Create Sheet with Tabs (Edit/Preview), Edit, Delete | ✅ Done | `src/app/dashboard/email/templates/page.tsx` | Card §3.7; Sheet §3.11; Tabs §3.12 |
 
 ### ⬜ Phase 7 — Inbound Email Pipeline & Mail Center Inbox (High Priority) — PENDING
@@ -186,6 +187,36 @@ Perbaikan layout Mail Center + implementasi tombol Reply, Reply All, Forward, De
 | MC-15 | **Forward** — buka compose dengan subject = `Fwd: ...`, body quote + header forward | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
 | MC-16 | **Delete dengan konfirmasi** — `AlertDialog` popup konfirmasi, panggil `DELETE /api/v1/email/[id]`, redirect back | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` + `src/app/api/v1/email/[id]/route.ts` |
 | MC-17 | **Hapus `email-sidebar.tsx`** — tidak dipakai lagi, diganti tabs horizontal | ✅ Done | `src/components/email/email-sidebar.tsx` (di-archive) |
+
+### ✅ Phase 10 — Mail Center Enhancement: Design, Trash & Bugfix (SELESAI)
+
+Perbaikan UI/UX Mail Center: warna tombol pakai `bg-primary`, redesign compose modal premium, hapus fitur Draft ganti Trash (soft-delete), redesign tabs dengan badge unread, fix error `[object Object]`.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| MC-18 | **Utility class `btn-primary-gradient`** — pakai `var(--primary)`, auto-switch light/dark, ganti semua hardcoded `#0000FF` di tombol Mail Center | ✅ Done | `src/app/globals.css` |
+| MC-19 | **Redesign compose sheet premium** — header kontekstual, banner reply/fwd, CC/BCC collapsible, attachment upload, signature area, button bar, animasi | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
+| MC-20 | **Tab redesign** — active tab `bg-primary text-primary-foreground rounded-t-lg` + pulse animasi; hover `bg-primary/10` | ✅ Done | `src/components/email/email-tabs.tsx` |
+| MC-21 | **Unread badge (Inbox)** — count email inbound `opened_at IS NULL`, tampil badge merah `bg-destructive` | ✅ Done | `src/components/email/email-tabs.tsx` |
+| MC-22 | **Refresh button** — ikon `RefreshCw` di kanan tabs untuk reload count | ✅ Done | `src/components/email/email-tabs.tsx` |
+| MC-23 | **Hapus fitur Draft** — tab Draft dihapus, Save Draft di compose dihapus, file `draft/page.tsx` dihapus | ✅ Done | `src/app/dashboard/email/draft/page.tsx` (deleted), `src/components/email/email-compose-sheet.tsx` |
+| MC-24 | **Trash (soft-delete)** — ganti hard-delete dengan `status='trashed'`; API `DELETE /api/v1/email/[id]` → UPDATE | ✅ Done | `src/app/api/v1/email/[id]/route.ts` |
+| MC-25 | **Restore API** — `POST /api/v1/email/[id]/restore` → set `status='sent'` (kembalikan ke Inbox/Sent) | ✅ Done | `src/app/api/v1/email/[id]/restore/route.ts` |
+| MC-26 | **Purge API** — `DELETE /api/v1/email/[id]/purge` → hard-delete permanen (hanya untuk email di Trash) | ✅ Done | `src/app/api/v1/email/[id]/purge/route.ts` |
+| MC-27 | **Trash page** — `/dashboard/email/trash` — list email `status='trashed'` | ✅ Done | `src/app/dashboard/email/trash/page.tsx` |
+| MC-28 | **Filter trashed** — Inbox & Sent exclude `status='trashed'` | ✅ Done | `src/app/dashboard/email/inbox/page.tsx`, `sent/page.tsx` |
+| MC-29 | **Badge trashed di list** — `variant="outline"` untuk status trashed | ✅ Done | `src/components/email/email-list.tsx` |
+| MC-30 | **Detail page trash mode** — tampilkan Restore + Delete Permanently untuk email di Trash; Move to Trash untuk non-trashed | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| MC-31 | **Fix `[object Object]`** — perbaiki error handler API call: `typeof err.error === 'string'` | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| MC-32 | **Hapus tombol `type="submit"`** — ganti `type="button"` pada Send button (di luar `<form>`) | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
+| MC-33 | **Trash count badge** — jumlah email di Trash (badge abu-abu `bg-muted-foreground`) | ✅ Done | `src/components/email/email-tabs.tsx` |
+| MC-34 | **Rename Archive → Trash** — rename folder, tab, page, API status, UI labels dari "Archive" ke "Trash" | ✅ Done | Semua file (email-tabs, email-list, [id]/page, api routes, etc.) |
+| MC-35 | **Autocomplete To dari DB customer** — API search customer_pic + Command dialog di compose sheet | ✅ Done | `src/app/api/v1/email/contacts/search/route.ts` + `src/components/email/email-compose-sheet.tsx` |
+| MC-36 | **CMD+K global search mencakup email** — email_log ditambahkan ke scope POST /api/v1/search | ✅ Done | `src/app/api/v1/search/route.ts` + `src/components/global-search.tsx` |
+| MC-37 | **Inline search bar inbox** — filter email by subject/pengirim client-side di inbox page | ✅ Done | `src/app/dashboard/email/inbox/page.tsx` |
+| MC-38 | **Pagination / Load More** — range-based pagination + Load More button di inbox, sent, trash | ✅ Done | `src/app/dashboard/email/inbox/page.tsx`, `sent/page.tsx`, `trash/page.tsx` |
+| MC-39 | **Templates DB + CRUD API** — email_templates table, full CRUD API (POST/GET/PUT/DELETE) | ✅ Done | `src/lib/db/schema/email-templates.ts`, `src/app/api/v1/email/templates/route.ts`, `templates/[id]/route.ts` |
+| MC-40 | **Templates page persisted** — ganti local state dengan API fetch, tambah "Use" button | ✅ Done | `src/app/dashboard/email/templates/page.tsx` |
 
 ### ✅ Phase 8 — Email Body Redesign & Public PDF Link (SELESAI)
 
@@ -287,7 +318,7 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 | ED-2 | **DKIM Brevo** — CNAME `brevo1._domainkey` + `brevo2._domainkey` via Brevo managed DKIM | ✅ Done | Cloudflare DNS + Brevo Dashboard |
 | ED-3 | **DMARC record** — `_dmarc` → `"v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com"` | ✅ Done | Cloudflare DNS |
 | ED-4 | **Verify sender di Brevo** — `Muhammad Marzuqi<marzuqi@pt-rri.com>` verified | ✅ Done | Brevo Dashboard → Settings → Senders |
-| ED-5 | **Test kirim ulang** — dari Gmail `bee7rafiud@gmail.com` → `marzuqi@pt-rri.com` → cek Inbox | ⬜ Pending | Manual test |
+| ED-5 | **Test kirim ulang** — dari Gmail `bee7rafiud@gmail.com` → `marzuqi@pt-rri.com` → cek Inbox | ⬜ **KAMU** | Manual test |
 
 ### ✅ Phase 3 — Enhancement & Marketing (Low Priority) — SELESAI
 
@@ -342,7 +373,7 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 | Preview text | `text-sm text-muted-foreground truncate` | §4 Muted |
 | Timestamp | `text-xs text-muted-foreground shrink-0` | §4 Muted + Label |
 | Folder label | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` | §4 Label |
-| Compose button | `bg-gradient-to-b from-[#0000FF] to-[#0000D9] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]` | §3.1 Button default Luxury |
+| Compose button | `bg-primary` via `btn-primary-gradient` utility class (auto light/dark via CSS vars) | §3.1 Button default Luxury |
 | Card container | `shadow-[0_1px_3px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.01)] border-border` | §3.7 Luxury Card |
 | Status Delivered | `text-success` (#22C55E) | §2 Khusus status |
 | Status Bounced | `text-destructive` (#EF4444) | §2 bg-destructive |
@@ -392,45 +423,48 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 
 ```
 📥 Inbox          (12)
-  ⭐ Starred       (3)
   ✉️ Sent          (45)
-  📝 Draft         (2)
+  🗄️ Archive       (2)
   🗂️ Templates    (6)
-  🚫 Spam          (1)
-  🗑️ Trash
 ```
 
-- Icons: **Lucide** — `Inbox`, `Star`, `Send`, `FileText`, `File`, `AlertTriangle`, `Trash2`
+- Icons: **Lucide** — `Inbox`, `Send`, `Trash2`, `File`
+- [Phase 10] Tab Draft dihapus, diganti Trash (soft-delete)
 - Ikon berjarak: `mr-3 h-4 w-4 text-muted-foreground` (active: `text-primary-foreground`)
 - Active state: `bg-primary text-primary-foreground` (biru #0000FF)
 - Count: `ml-auto bg-primary/10 text-primary text-xs font-semibold rounded-full px-2 py-0.5` (active: `bg-white/20 text-primary-foreground`)
 - Aturan 60-30-10: sidebar adalah bagian dari 30% struktur, primary hanya muncul di item aktif (10%)
 
-### Compose Email — Sheet Design
+### Compose Email — Sheet Design (Phase 10 Redesign)
 
 - `Sheet` slide dari kanan: `side="right" className="sm:max-w-2xl"`
-- `SheetHeader` + `SheetTitle` = "Compose Email"
+- `SheetHeader` + `SheetTitle` dinamis: "Compose Email" (Reply: `Re: subject`, Forward: `Fwd: subject`)
+- Banner untuk Reply/Forward — quote original message, avatar sender, timestamp
 - Form fields:
   - **To:** `Input` + `Command` dialog untuk autocomplete dari contact/customer DB
-  - **CC/BCC:** toggle expand link
+  - **CC/BCC:** toggle expand link (collapsible `AnimatePresence`)
   - **Subject:** `Input` dengan placeholder
   - **Body:** `Textarea` (atau rich text editor ringan, Phase 5 enhancement)
   - **Attachments:** Upload button → upload ke Supabase Storage (`dokumen/email/{id}/`) → tampilkan list dengan nama & size + remove button
+  - **Signature:** Area signature otomatis
 - Action buttons:
-  - **Send** — `Button variant="default"` dengan gradient blue (loading state)
-  - **Save Draft** — `Button variant="outline"`
+  - **Send** — `Button variant="default"` dengan `bg-primary` gradient (loading state + disabled)
   - **Discard** — `Button variant="ghost" text-destructive hover:text-destructive` + AlertDialog confirm
+- [Phase 10] Save Draft dihapus — fitur Draft diganti Trash
+- [Phase 10 MC-35] Tombol **BookUser** di sebelah kanan input "To" → buka `Command` dialog → search kontak dari DB (`customer_pic`) → select → isi otomatis `toEmail` + `toNama`
 - Validasi: Zod schema → `react-hook-form`
 
 ### Email Detail View
 
 - Panel kanan (atau Sheet di mobile):
   - **Header:** Avatar sender, From, To, Date, Subject (Lexend bold)
-  - **Actions:** Reply, Reply All, Forward, Archive, Delete (icon buttons)
+  - **Actions:** Reply, Reply All, Forward, Trash/Restore/Delete Permanently (icon buttons)
   - **Body:** Rendered HTML (iframe sandbox atau div sanitized)
   - **Attachments:** List cards — icon Paperclip, filename, size, Download button
   - **Tracking Timeline:** Timeline pattern (vertical) — Sent → Delivered → Opened → Clicked (dengan timestamp)
   - **Reply:** Textarea inline + Send button di bagian bawah
+- [Phase 10] Trash (soft-delete) → `status='trashed'`; Restore → `status='sent'`; Purge → hard-delete
+- [Phase 10] Trashed email → tampilkan Restore + Delete Permanently; non-trashed → Move to Trash
 
 ---
 
@@ -455,24 +489,12 @@ src/lib/email/
 └── webhook.ts                 # Webhook payload types & handler (Phase 2)
 
 src/app/api/v1/email/
-├── inbound/
-│   └── route.ts               # POST /api/v1/email/inbound (Phase 7)
-├── send/
-│   └── route.ts               # POST /api/v1/email/send (Phase 5)
-├── webhook/
-│   └── route.ts               # POST /api/v1/email/webhook (Phase 2)
-├── sync-contacts/
-│   └── route.ts               # POST /api/v1/email/sync-contacts (Phase 3)
-├── templates/
-│   └── route.ts               # GET /api/v1/email/templates (Phase 3)
-├── campaigns/
-│   └── route.ts               # GET /api/v1/email/campaigns (Phase 3)
-└── stats/
-    └── route.ts               # GET /api/v1/email/stats (Phase 3)
-
-src/app/api/v1/email/
 ├── [id]/
-│   └── route.ts               # DELETE /api/v1/email/[id] (Phase 9)
+│   ├── route.ts               # DELETE /api/v1/email/[id] → soft-delete (trash) (Phase 10)
+│   ├── restore/
+│   │   └── route.ts           # POST /api/v1/email/[id]/restore (Phase 10)
+│   └── purge/
+│       └── route.ts           # DELETE /api/v1/email/[id]/purge (Phase 10)
 ├── inbound/
 │   └── route.ts               # POST /api/v1/email/inbound (Phase 7)
 ├── send/
@@ -481,8 +503,15 @@ src/app/api/v1/email/
 │   └── route.ts               # POST /api/v1/email/webhook (Phase 2)
 ├── sync-contacts/
 │   └── route.ts               # POST /api/v1/email/sync-contacts (Phase 3)
+├── contacts/
+│   └── search/
+│       └── route.ts           # GET /api/v1/email/contacts/search?q=... (Phase 10 MC-35)
+├── brevo-templates/
+│   └── route.ts               # GET /api/v1/email/brevo-templates (moved from templates/, Phase 3)
 ├── templates/
-│   └── route.ts               # GET /api/v1/email/templates (Phase 3)
+│   ├── route.ts               # GET+POST /api/v1/email/templates (local CRUD, Phase 10 MC-39)
+│   └── [id]/
+│       └── route.ts           # PUT+DELETE /api/v1/email/templates/[id] (Phase 10 MC-39)
 ├── campaigns/
 │   └── route.ts               # GET /api/v1/email/campaigns (Phase 3)
 └── stats/
@@ -502,12 +531,13 @@ src/app/dashboard/email/
 │   └── page.tsx                # Inbox page (Phase 5)
 ├── sent/
 │   └── page.tsx                # Sent page (Phase 5)
-├── draft/
-│   └── page.tsx                # Draft page (Phase 5)
+├── trash/
+│   └── page.tsx                # Trash page (Phase 10)
 ├── templates/
 │   └── page.tsx                # Templates page (Phase 5)
+├── draft/                      # [Phase 10] Dihapus — fitur Draft diganti Trash
 └── [id]/
-    └── page.tsx                # Email detail page (Phase 5 + Phase 9 CRUD)
+    └── page.tsx                # Email detail page (Phase 5 + Phase 9 CRUD + Phase 10 Trash/Restore/Purge)
 ```
 
 ---
@@ -641,11 +671,11 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 ### Mail Center UI — Inbox
 - [ ] Folder navigator — klik folder filter email list
 - [ ] Email list — Table dengan kolom Subject, From, Date
-- [ ] Unread indicator — blue dot (w-2 h-2 rounded-full bg-primary) untuk email unread
-- [ ] Selected row — bg-primary/5 border-l-2 border-primary
-- [ ] Hover row — hover:bg-muted/40 transition-colors
-- [ ] Search — CMD+K membuka Command dialog, search by subject/sender
-- [ ] Pagination atau infinite scroll
+- [x] Unread indicator — blue dot (w-2 h-2 rounded-full bg-primary) untuk email unread
+- [x] Selected row — bg-primary/5 border-l-2 border-primary
+- [x] Hover row — hover:bg-muted/40 transition-colors
+- [x] Search — CMD+K global + inline search bar by subject/pengirim
+- [x] Pagination — Load More button per 50 email
 - [ ] Klik email → tampilkan detail di panel kanan
 
 ### Mail Center UI — Sent
@@ -656,19 +686,25 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 ### Mail Center UI — Compose
 - [ ] Sheet slide dari kanan (side="right" sm:max-w-2xl)
 - [ ] Form: To (required, email valid), Subject, Body
-- [ ] Autocomplete To — Command dialog dari contact/customer
+- [x] Header dinamis: "Compose Email" / "Re: ..." / "Fwd: ..."
+- [x] Banner Reply/Forward — avatar sender, quote original, timestamp
+- [x] CC/BCC collapsible — toggle expand
+- [x] Signature area otomatis
+- [x] Autocomplete To — Command dialog dari contact/customer — Phase 10 MC-35
 - [ ] Attachment upload — upload ke storage, tampilkan nama + size + remove
-- [ ] Send — loading state, toast.success/error
-- [ ] Save Draft — simpan ke email_log status=draft, toast notification
-- [ ] Discard — AlertDialog confirmation lalu close sheet
-- [ ] Validasi Zod — error tampil via FormMessage
+- [x] Send — loading state (disabled), toast.success/error
+- [x] Save Draft dihapus — fitur Draft diganti Trash (Phase 10)
+- [x] Discard — AlertDialog confirmation lalu close sheet
+- [x] Validasi Zod — error tampil via FormMessage
+- [x] Warna tombol `bg-primary` (bukan hardcoded `#0000FF`) — Phase 10
 
-### Mail Center UI — Draft
-- [ ] List draft dari email_log WHERE status='draft'
-- [ ] Klik draft → buka Compose Sheet dengan data prefilled
-- [ ] Send dari draft → update status jadi 'sent'
-- [ ] Delete draft → AlertDialog confirmation
-- [ ] Empty state jika tidak ada draft
+### Mail Center UI — Trash (Phase 10, replacing Draft)
+- [x] Tab Trash — list email WHERE status='trashed'
+- [x] Badge `variant="outline"` untuk status trashed di list
+- [x] Detail page: Restore + Delete Permanently button untuk email di Trash
+- [x] Detail page: Move to Trash button untuk non-trashed
+- [x] Trash count badge di tab (abu-abu `bg-muted-foreground`)
+- [ ] Empty state jika tidak ada email di Trash
 
 ### Mail Center UI — Email Detail
 - [ ] Header: Avatar sender, From, To, CC, Date, Subject (Lexend bold)
@@ -676,14 +712,19 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 - [ ] Attachments: Paperclip icon, filename, size, download button
 - [ ] Tracking timeline: Sent → Delivered → Opened → Clicked (dengan timestamp)
 - [ ] Reply: Textarea inline + Send button
-- [ ] Actions: Reply, Reply All, Forward (icon button + DropdownMenu)
+- [x] Actions: Reply, Reply All, Forward (icon button + DropdownMenu) — Phase 9
+- [x] Actions: Move to Trash (soft-delete) untuk non-trashed — Phase 10
+- [x] Actions: Restore + Delete Permanently untuk trashed — Phase 10
+- [x] Delete → AlertDialog → soft-delete (trash) — Phase 10
+- [x] Fix `[object Object]` error di handler — Phase 10
 
 ### Mail Center UI — Templates
-- [ ] Card grid: nama template, preview snippet, icon
-- [ ] Create: Sheet form Title + HTML body + preview toggle (Tabs: Edit | Preview)
-- [ ] Edit: buka sheet prefilled
-- [ ] Delete: AlertDialog confirmation
-- [ ] Use: klik → buka Compose Sheet dengan body prefilled
+- [x] Card grid: nama template, preview snippet, icon
+- [x] Create: Sheet form Title + HTML body + preview toggle (Tabs: Edit | Preview)
+- [x] Edit: buka sheet prefilled
+- [x] Delete: langsung hapus via API
+- [x] Use: klik → buka Compose Sheet dengan body + subject prefilled
+- [x] Data persisted di database (email_templates table) — tidak hilang setelah refresh
 
 ---
 

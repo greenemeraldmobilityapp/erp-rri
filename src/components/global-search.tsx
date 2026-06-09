@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Loader2, Package, Users, FileText, ShoppingCart, Truck, DollarSign, Building2, ClipboardList, BookOpen, Receipt, ArrowLeftRight, Warehouse, KanbanSquare, Landmark, Handshake, UserCheck, GitBranch, Calculator } from 'lucide-react'
+import { Search, Loader2, Package, Users, FileText, ShoppingCart, Truck, DollarSign, Building2, ClipboardList, BookOpen, Receipt, ArrowLeftRight, Warehouse, KanbanSquare, Landmark, Handshake, UserCheck, GitBranch, Calculator, Mail } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator } from '@/components/ui/command'
 
@@ -38,6 +38,7 @@ const tableIcons: Record<string, React.ElementType> = {
   stock_opname: ClipboardList,
   supplier_payment: DollarSign,
   penggajian: Calculator,
+  email_log: Mail,
 }
 
 const tableLabels: Record<string, string> = {
@@ -71,6 +72,7 @@ const tableLabels: Record<string, string> = {
   stock_opname: 'Stock Opname',
   supplier_payment: 'Pembayaran Supplier',
   penggajian: 'Penggajian',
+  email_log: 'Email',
   general: 'Lainnya',
 }
 

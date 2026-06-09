@@ -18,7 +18,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ArrowLeft, Reply, ReplyAll, Forward, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import {
+  ArrowLeft,
+  Reply,
+  ReplyAll,
+  Forward,
+  Trash2,
+  RotateCcw,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react"
 import { useEmail } from "@/components/email/email-context"
 import { toast } from "sonner"
 
@@ -42,13 +52,13 @@ interface EmailDetail {
 }
 
 const statusConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  draft: { label: "Draft", icon: <Clock className="h-3 w-3" />, color: "text-warning" },
   sent: { label: "Sent", icon: <Clock className="h-3 w-3" />, color: "text-muted-foreground" },
   delivered: { label: "Delivered", icon: <CheckCircle2 className="h-3 w-3" />, color: "text-success" },
   opened: { label: "Opened", icon: <CheckCircle2 className="h-3 w-3" />, color: "text-primary" },
   clicked: { label: "Clicked", icon: <CheckCircle2 className="h-3 w-3" />, color: "text-primary" },
   bounced: { label: "Bounced", icon: <AlertCircle className="h-3 w-3" />, color: "text-destructive" },
   failed: { label: "Failed", icon: <AlertCircle className="h-3 w-3" />, color: "text-destructive" },
+  trashed: { label: "Trash", icon: <Trash2 className="h-3 w-3" />, color: "text-muted-foreground" },
 }
 
 function mapEmailDetail(row: Record<string, unknown>): EmailDetail {
@@ -101,8 +111,11 @@ export default function EmailDetailPage() {
   const { openCompose } = useEmail()
   const [email, setEmail] = useState<EmailDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [trashOpen, setTrashOpen] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const [purgeOpen, setPurgeOpen] = useState(false)
+  const [purging, setPurging] = useState(false)
+  const [trashing, setTrashing] = useState(false)
 
   useEffect(() => {
     if (!params.id) return
@@ -126,6 +139,7 @@ export default function EmailDetailPage() {
       toNama: email.fromNama || email.toNama || undefined,
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
+      replyType: "reply",
     })
   }
 
@@ -134,8 +148,10 @@ export default function EmailDetailPage() {
     openCompose({
       toEmail: email.fromEmail || email.toEmail,
       toNama: email.fromNama || email.toNama || undefined,
+      cc: email.cc || undefined,
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
+      replyType: "replyAll",
     })
   }
 
@@ -144,26 +160,66 @@ export default function EmailDetailPage() {
     openCompose({
       subject: `Fwd: ${email.subject}`,
       body: `\n\n---------- Forwarded message ----------\nFrom: ${email.fromNama || email.fromEmail}\nDate: ${formatDateTime(email.createdAt)}\nSubject: ${email.subject}\n\n${quoteBody(email.body)}`,
+      replyType: "forward",
     })
   }
 
-  const handleDelete = async () => {
+  const handleTrash = async () => {
     if (!email) return
-    setDeleting(true)
-    const toastId = toast.loading("Menghapus email...")
+    setTrashing(true)
+    const toastId = toast.loading("Memindahkan ke Trash...")
     try {
       const res = await fetch(`/api/v1/email/${email.id}`, { method: "DELETE" })
+      const data = await res.json()
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || "Gagal menghapus email")
+        throw new Error(typeof data.error === "string" ? data.error : "Gagal memindahkan ke Trash")
       }
-      toast.success("Email berhasil dihapus", { id: toastId })
-      setDeleteOpen(false)
+      toast.success("Email dipindahkan ke Trash", { id: toastId })
+      setTrashOpen(false)
+      router.back()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal memindahkan ke Trash", { id: toastId })
+    } finally {
+      setTrashing(false)
+    }
+  }
+
+  const handleRestore = async () => {
+    if (!email) return
+    setRestoring(true)
+    const toastId = toast.loading("Mengembalikan email...")
+    try {
+      const res = await fetch(`/api/v1/email/${email.id}/restore`, { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(typeof data.error === "string" ? data.error : "Gagal mengembalikan email")
+      }
+      toast.success("Email dikembalikan ke Inbox", { id: toastId })
+      setEmail({ ...email, status: "sent" })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengembalikan email", { id: toastId })
+    } finally {
+      setRestoring(false)
+    }
+  }
+
+  const handlePurge = async () => {
+    if (!email) return
+    setPurging(true)
+    const toastId = toast.loading("Menghapus permanen...")
+    try {
+      const res = await fetch(`/api/v1/email/${email.id}/purge`, { method: "DELETE" })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(typeof data.error === "string" ? data.error : "Gagal menghapus email")
+      }
+      toast.success("Email dihapus permanen", { id: toastId })
+      setPurgeOpen(false)
       router.back()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal menghapus email", { id: toastId })
     } finally {
-      setDeleting(false)
+      setPurging(false)
     }
   }
 
@@ -189,6 +245,7 @@ export default function EmailDetailPage() {
     )
   }
 
+  const isTrashed = email.status === "trashed"
   const config = statusConfig[email.status] ?? { label: email.status, icon: null, color: "text-muted-foreground" }
   const trackingEvents: { status: string; time?: string | null }[] = [
     { status: "sent", time: email.createdAt },
@@ -216,18 +273,32 @@ export default function EmailDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" size="sm" onClick={handleReply}>
-            <Reply className="mr-1 h-4 w-4" /> Reply
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleReplyAll}>
-            <ReplyAll className="mr-1 h-4 w-4" /> Reply All
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleForward}>
-            <Forward className="mr-1 h-4 w-4" /> Forward
-          </Button>
-          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="mr-1 h-4 w-4" /> Delete
-          </Button>
+          {isTrashed ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={handleRestore} disabled={restoring}>
+                <RotateCcw className="mr-1 h-4 w-4" />
+                {restoring ? "Mengembalikan..." : "Restore"}
+              </Button>
+              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setPurgeOpen(true)}>
+                <Trash2 className="mr-1 h-4 w-4" /> Delete Permanently
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={handleReply}>
+                <Reply className="mr-1 h-4 w-4" /> Reply
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleReplyAll}>
+                <ReplyAll className="mr-1 h-4 w-4" /> Reply All
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleForward}>
+                <Forward className="mr-1 h-4 w-4" /> Forward
+              </Button>
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => setTrashOpen(true)}>
+                <Trash2 className="mr-1 h-4 w-4" /> Move to Trash
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/20">
@@ -261,7 +332,7 @@ export default function EmailDetailPage() {
           </div>
         )}
 
-        {trackingEvents.length > 0 && (
+        {trackingEvents.length > 0 && !isTrashed && (
           <div className="border border-border rounded-lg p-4 space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tracking</h3>
             <div className="space-y-2">
@@ -284,18 +355,37 @@ export default function EmailDetailPage() {
         )}
       </div>
 
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      {!isTrashed && (
+        <AlertDialog open={trashOpen} onOpenChange={setTrashOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Pindahkan ke Trash?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Email akan dipindahkan ke Trash. Kamu bisa mengembalikannya kapan saja.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={trashing}>Batal</AlertDialogCancel>
+              <AlertDialogAction disabled={trashing} onClick={handleTrash}>
+                {trashing ? "Memindahkan..." : "Trash"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      <AlertDialog open={purgeOpen} onOpenChange={setPurgeOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Email?</AlertDialogTitle>
+            <AlertDialogTitle>Hapus Permanen?</AlertDialogTitle>
             <AlertDialogDescription>
               Email ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
-            <AlertDialogAction disabled={deleting} onClick={handleDelete}>
-              {deleting ? "Menghapus..." : "Hapus"}
+            <AlertDialogCancel disabled={purging}>Batal</AlertDialogCancel>
+            <AlertDialogAction disabled={purging} onClick={handlePurge}>
+              {purging ? "Menghapus..." : "Hapus Permanen"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

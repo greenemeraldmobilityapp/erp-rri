@@ -1,22 +1,20 @@
 "use client"
 
-import { useEffect, useState, useMemo, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/db/client"
 import { EmailList, EmailItem, mapEmailLogRow } from "@/components/email/email-list"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 const PAGE_SIZE = 50
 
-export default function InboxPage() {
+export default function TrashPage() {
   const [emails, setEmails] = useState<EmailItem[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
 
   const fetchPage = useCallback(async (pageNum: number, append: boolean) => {
     const start = (pageNum - 1) * PAGE_SIZE
@@ -27,9 +25,8 @@ export default function InboxPage() {
     const { data, error } = await supabase
       .from("email_log")
       .select("*")
-      .eq("inbound", true)
-      .neq("status", "trashed")
-      .order("created_at", { ascending: false })
+      .eq("status", "trashed")
+      .order("updated_at", { ascending: false })
       .range(start, end)
 
     if (!error && data) {
@@ -57,21 +54,10 @@ export default function InboxPage() {
     fetchPage(nextPage, true)
   }
 
-  const filteredEmails = useMemo(() => {
-    if (!searchQuery.trim()) return emails
-    const q = searchQuery.toLowerCase()
-    return emails.filter(
-      (e) =>
-        e.subject.toLowerCase().includes(q) ||
-        (e.fromEmail && e.fromEmail.toLowerCase().includes(q)) ||
-        (e.fromNama && e.fromNama.toLowerCase().includes(q)),
-    )
-  }, [emails, searchQuery])
-
   if (loading) {
     return (
       <div className="divide-y divide-border p-4 space-y-4">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
             <Skeleton className="h-2 w-2 rounded-full" />
             <div className="flex-1 space-y-2">
@@ -88,21 +74,9 @@ export default function InboxPage() {
 
   return (
     <div>
-      <div className="px-4 pt-4 pb-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cari email by subject atau pengirim..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
-      </div>
+      <EmailList emails={emails} basePath="/dashboard/email" />
 
-      <EmailList emails={filteredEmails} basePath="/dashboard/email" />
-
-      {hasMore && searchQuery === "" && (
+      {hasMore && (
         <div className="flex justify-center py-4 border-t border-border">
           <Button
             variant="outline"

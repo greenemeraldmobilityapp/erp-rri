@@ -48,9 +48,9 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
   sent: "default",
   delivered: "default",
   opened: "default",
-  draft: "secondary",
   failed: "destructive",
   bounced: "destructive",
+  trashed: "outline",
 }
 
 function formatDate(dateStr: string | null | undefined) {
