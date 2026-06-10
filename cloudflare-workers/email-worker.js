@@ -25,7 +25,7 @@
 
 export default {
   async email(message, env, ctx) {
-    const MAX_BODY = parseInt(env.MAX_BODY_SIZE || '1048576', 10)
+    const MAX_BODY = parseInt(env.MAX_BODY_SIZE || '26214400', 10) // 25MB
     const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25MB
     const startTime = Date.now()
 
