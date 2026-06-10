@@ -136,8 +136,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const parsedCc = typeof cc === 'string' ? cc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: e })) : cc
-    const parsedBcc = typeof bcc === 'string' ? bcc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: e })) : bcc
+    const extractEmail = (raw: string): string => {
+      const match = raw.match(/<([^>]+)>/)
+      return (match ? match[1] : raw).trim()
+    }
+    const parsedCc = typeof cc === 'string' ? cc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: extractEmail(e) })) : cc
+    const parsedBcc = typeof bcc === 'string' ? bcc.split(',').map(e => e.trim()).filter(Boolean).map(e => ({ email: extractEmail(e) })) : bcc
 
     const result = await sendEmail({
       to: toEmail,

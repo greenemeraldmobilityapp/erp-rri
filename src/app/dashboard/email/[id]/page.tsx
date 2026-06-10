@@ -120,6 +120,12 @@ function formatTrackingTime(dateStr: string | null | undefined) {
   return format(date, "dd MMM HH:mm", { locale: idLocale })
 }
 
+function extractEmails(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined
+  const matches = raw.match(/[^\s,<>]+@[^\s,<>]+/g)
+  return matches ? matches.join(", ") : undefined
+}
+
 function quoteBody(body: string | null | undefined): string {
   if (!body) return ""
   const stripped = body.replace(/<[^>]*>/g, "")
@@ -242,8 +248,9 @@ export default function EmailDetailPage() {
 
   const handleReply = (email: EmailDetail) => {
     openCompose({
-      toEmail: email.fromEmail || email.toEmail,
-      toNama: email.fromNama || email.toNama || undefined,
+      toEmail: email.inbound ? (email.fromEmail || email.toEmail) : email.toEmail,
+      toNama: email.inbound ? (email.fromNama || undefined) : (email.toNama || undefined),
+      cc: extractEmails(email.cc),
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
       replyType: "reply",
@@ -254,9 +261,9 @@ export default function EmailDetailPage() {
 
   const handleReplyAll = (email: EmailDetail) => {
     openCompose({
-      toEmail: email.fromEmail || email.toEmail,
-      toNama: email.fromNama || email.toNama || undefined,
-      cc: email.cc || undefined,
+      toEmail: email.inbound ? (email.fromEmail || email.toEmail) : email.toEmail,
+      toNama: email.inbound ? (email.fromNama || undefined) : (email.toNama || undefined),
+      cc: extractEmails(email.cc),
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
       replyType: "replyAll",
@@ -280,7 +287,12 @@ export default function EmailDetailPage() {
     setTrashing(true)
     const toastId = toast.loading("Memindahkan ke Trash...")
     try {
-      const res = await fetch(`/api/v1/email/${email.id}`, { method: "DELETE" })
+      const token = await getAuthToken()
+      if (!token) throw new Error("Not authenticated")
+      const res = await fetch(`/api/v1/email/${email.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(typeof data.error === "string" ? data.error : "Gagal memindahkan ke Trash")
@@ -300,7 +312,12 @@ export default function EmailDetailPage() {
     setRestoring(true)
     const toastId = toast.loading("Mengembalikan email...")
     try {
-      const res = await fetch(`/api/v1/email/${email.id}/restore`, { method: "POST" })
+      const token = await getAuthToken()
+      if (!token) throw new Error("Not authenticated")
+      const res = await fetch(`/api/v1/email/${email.id}/restore`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(typeof data.error === "string" ? data.error : "Gagal mengembalikan email")
@@ -319,7 +336,12 @@ export default function EmailDetailPage() {
     setPurging(true)
     const toastId = toast.loading("Menghapus permanen...")
     try {
-      const res = await fetch(`/api/v1/email/${email.id}/purge`, { method: "DELETE" })
+      const token = await getAuthToken()
+      if (!token) throw new Error("Not authenticated")
+      const res = await fetch(`/api/v1/email/${email.id}/purge`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(typeof data.error === "string" ? data.error : "Gagal menghapus email")

@@ -14,6 +14,7 @@ export interface EmailItem {
   fromNama?: string | null
   toEmail: string
   toNama?: string | null
+  cc?: string | null
   subject: string
   body?: string | null
   status: string
@@ -33,6 +34,7 @@ export function mapEmailLogRow(row: Record<string, unknown>): EmailItem {
     fromNama: row.from_nama as string | null | undefined,
     toEmail: row.to_email as string,
     toNama: row.to_nama as string | null | undefined,
+    cc: row.cc as string | null | undefined,
     subject: row.subject as string,
     body: row.body as string | null | undefined,
     status: row.status as string,
@@ -183,6 +185,9 @@ function EmailThreadRow({ thread, path }: { thread: ThreadGroup; path: string })
         <p className="truncate text-sm text-muted-foreground">
           {latest.body?.replace(/<[^>]*>/g, "").slice(0, 100) || ""}
         </p>
+        {latest.cc && (
+          <p className="truncate text-xs text-muted-foreground/70">CC: {latest.cc}</p>
+        )}
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
         <span className="text-xs text-muted-foreground whitespace-nowrap">

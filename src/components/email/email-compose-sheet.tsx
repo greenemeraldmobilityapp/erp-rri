@@ -87,6 +87,19 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
     },
   })
 
+  useEffect(() => {
+    form.reset({
+      toEmail: initialData?.toEmail ?? "",
+      toNama: initialData?.toNama ?? "",
+      cc: initialData?.cc ?? "",
+      bcc: initialData?.bcc ?? "",
+      subject: initialData?.subject ?? "",
+      body: initialData?.body ?? "",
+    })
+    setShowCc(!!initialData?.cc)
+    setShowBcc(!!initialData?.bcc)
+  }, [initialData, form])
+
   interface ContactResult {
     id: string
     nama: string

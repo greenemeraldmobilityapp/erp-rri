@@ -88,7 +88,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
         htmlContent: params.htmlContent,
         textContent: params.textContent,
         attachment: params.attachment,
-        cc: params.cc,
+        cc: params.cc ?? [],
         bcc: bccList,
         replyTo: params.replyTo,
         referenceId: params.referenceId,
@@ -106,7 +106,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
         params: params.params,
         tags: params.tags,
         attachment: params.attachment,
-        cc: params.cc,
+        cc: params.cc ?? [],
         bcc: bccList,
         replyTo: params.replyTo,
       })
