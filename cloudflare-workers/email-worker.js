@@ -36,6 +36,8 @@ export default {
     const messageId = message.headers.get('message-id') || `cf-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const replyTo = message.headers.get('reply-to') || rawFrom
     const cc = message.headers.get('cc') || ''
+    const inReplyTo = message.headers.get('in-reply-to') || ''
+    const references = message.headers.get('references') || ''
 
     // ---- 2. Parse From header (Name <email> format) ----
     const { email: fromEmail, nama: fromNama } = parseFromHeader(rawFrom)
@@ -110,6 +112,8 @@ export default {
           fromNama,
           toEmail: to,
           cc: cc || undefined,
+          inReplyTo: inReplyTo || undefined,
+          references: references || undefined,
           subject,
           body: finalBody.substring(0, 50000),
           hasAttachments,

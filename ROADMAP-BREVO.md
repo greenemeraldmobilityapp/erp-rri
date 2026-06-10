@@ -795,6 +795,70 @@ Brevo sekarang menjadi satu-satunya provider email. Nodemailer + seluruh kode SM
 
 ---
 
+## ✅ Phase 12 — Threading & Avatar Mail Center Redesign (SELESAI)
+
+Mail Center kini mendukung Gmail-like conversation view: email dalam thread yang sama dikelompokkan, avatar lingkaran di setiap baris, dan conversation view di halaman detail.
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| TH-1 | **Migration `thread_id`** — tambah kolom `thread_id` (text) + index di `email_log`. Update existing records dengan UUID unik. | ✅ Done | `0048_add_thread_id_to_email_log.sql` |
+| TH-2 | **Schema `email-log.ts`** — tambah `threadId: text("thread_id")` di Drizzle schema | ✅ Done | `src/lib/db/schema/email-log.ts` |
+| TH-3 | **`brevo.ts` — thread_id assignment outbound** — saat send reply, resolve `thread_id` dari parent email (via `referenceId` → `message_id`). Jika tidak ada parent, generate UUID baru via `crypto.randomUUID()`. | ✅ Done | `src/lib/email/brevo.ts` |
+| TH-4 | **`inbound/route.ts` — thread_id assignment inbound** — accept `inReplyTo` + `references` fields. Parse `References` header, cari parent email di DB, gunakan `thread_id` yang sama. Jika reply ke email baru, generate UUID baru. | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| TH-5 | **`email-worker.js` — extract threading headers** — tambah extract `in-reply-to` + `references` dari MIME headers, kirim ke inbound API. | ✅ Done | `cloudflare-workers/email-worker.js` |
+| TH-6 | **`email-list.tsx` — thread grouping** — grup email by `thread_id`. Tiap grup: avatar lingkaran (inisial, warna random konsisten per seed), sender name, subject, body preview, count badge (jumlah email dalam thread), timestamp email terbaru. Click → navigasi ke detail email terbaru dalam thread. | ✅ Done | `src/components/email/email-list.tsx` |
+| TH-7 | **`[id]/page.tsx` — conversation view** — fetch semua email dalam thread yang sama (by `thread_id`). Tampilkan vertical conversation: tiap email punya avatar + metadata (from, to, date) + body + attachments + action buttons (Reply/Reply All/Forward). Bisa collapse/expand per email. Tracking timeline untuk email terbaru. | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
+| TH-8 | **`EmailItem` interface** — tambah `threadId?: string` field, update `mapEmailLogRow()` | ✅ Done | `src/components/email/email-list.tsx` |
+
+## 📋 Future Plan — Multi-Email Perusahaan (Rencana)
+
+### Latar Belakang
+Saat ini hanya `marzuqi@pt-rri.com` yang aktif. Untuk meningkatkan profesionalisme, direncanakan 5 alamat email perusahaan:
+- `marzuqi@pt-rri.com` ✅ (sudah aktif)
+- `info@pt-rri.com`
+- `sales@pt-rri.com`
+- `procurement@pt-rri.com`
+- `finance@pt-rri.com`
+
+### Arsitektur
+
+```
+Cloudflare Email Routing (catch-all *@pt-rri.com)
+  │
+  ▼
+Cloudflare Email Worker (satu Worker untuk semua)
+  │  ├─ Parse To header → deteksi alamat tujuan (sales@ / info@ / dll)
+  │  ├─ Upload attachments ke R2
+  │  ├─ POST ke ERP API → email_log (dengan from_email_original)
+  │  └─ Relay ke mazzjoeq@gmail.com
+  │
+  ▼
+ERP Mail Center
+  ├─ Filter by recipient address (tab per alamat? atau badge?)
+  ├─ From dropdown di Compose → pilih sender address
+  └─ Per-modul default sender (quotation → sales@, invoice → finance@)
+```
+
+| # | Task | Status | Priority |
+|---|------|--------|----------|
+| ME-1 | **Verify 5 sender addresses di Brevo** — tambah sender di Brevo Dashboard → Settings → Senders → Add Sender. Verifikasi via email confirmation. | ⬜ Planned | 🔴 High |
+| ME-2 | **Set DKIM/SPF/DMARC** — pastikan DKIM keys sudah active untuk domain, SPF include Brevo, DMARC policy upgrade dari `p=none` ke `p=quarantine` | ⬜ Planned | 🔴 High |
+| ME-3 | **Add `from_email_original` column** — migration untuk simpan alamat penerima inbound (parsed dari `To` header) | ⬜ Planned | 🔴 High |
+| ME-4 | **Worker upgrade: parse `To` header** — extract alamat tujuan dari `To` header, kirim sebagai `toEmailOriginal` ke inbound API | ⬜ Planned | 🔴 High |
+| ME-5 | **Worker relay upgrade** — tambah info alamat tujuan di relay email subject/body | ⬜ Planned | 🟡 Medium |
+| ME-6 | **"From" dropdown di Compose Sheet** — pilih sender address dari daftar verified Brevo senders | ⬜ Planned | 🟡 Medium |
+| ME-7 | **API `send/route.ts` — accept `fromEmail`** — override sender email saat kirim (default: BREVO_SENDER_EMAIL) | ⬜ Planned | 🟡 Medium |
+| ME-8 | **Per-modul default sender** — quotation → `sales@`, invoice → `finance@`, etc. | ⬜ Planned | 🟢 Low |
+| ME-9 | **Relay >7MB notice include alamat tujuan** — update Worker relay body | ⬜ Planned | 🟢 Low |
+
+### Catatan Penting
+- **Catch-all Worker** adalah pendekatan paling sederhana — 1 Worker handle semua alamat, parse `To` header
+- Bukan per-address route (terlalu banyak Worker, sulit maintain)
+- Setiap alamat perlu diverifikasi di Brevo agar bisa jadi sender outbound
+- DKIM/SPF/DMARC wajib untuk deliverability — tanpa ini email ke customer masuk Spam
+
+---
+
 ## 📚 Referensi
 
 | Sumber | URL |

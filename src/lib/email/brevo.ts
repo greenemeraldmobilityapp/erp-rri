@@ -44,6 +44,26 @@ export interface SendBrevoEmailParams {
   referenceId?: string
 }
 
+async function resolveThreadId(referenceId?: string | null): Promise<string | null> {
+  if (!referenceId) return null
+  const bareId = referenceId.replace(/^<|>$/g, '')
+  const { data } = await supabaseAdmin
+    .from('email_log')
+    .select('thread_id')
+    .eq('message_id', bareId)
+    .maybeSingle()
+  if (data?.thread_id) return data.thread_id
+
+  const { data: byRef } = await supabaseAdmin
+    .from('email_log')
+    .select('thread_id')
+    .eq('reference_id', bareId)
+    .maybeSingle()
+  if (byRef?.thread_id) return byRef.thread_id
+
+  return null
+}
+
 export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
   const rawSender = process.env.BREVO_SENDER_EMAIL?.trim()
   const fromEmail = rawSender || (await getCompanyEmail())
@@ -98,11 +118,21 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
     errorMessage = err instanceof Error ? err.message : String(err)
   }
 
+  // Resolve thread_id from parent reference, or generate new
+  let threadId: string | null = null
+  if (params.referenceId) {
+    threadId = await resolveThreadId(params.referenceId)
+  }
+  if (!threadId) {
+    threadId = crypto.randomUUID()
+  }
+
   const now = new Date().toISOString()
   const { data: emailLogResult, error: insertError } = await supabaseAdmin
     .from('email_log')
     .insert({
       message_id: messageId,
+      thread_id: threadId,
       from_email: fromEmail,
       from_nama: fromName,
       to_email: params.to.email,

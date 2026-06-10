@@ -17,6 +17,8 @@ const inboundBodySchema = z.object({
   fromNama: z.string().optional().nullable(),
   toEmail: z.string(),
   cc: z.string().optional().nullable(),
+  inReplyTo: z.string().optional().nullable(),
+  references: z.string().optional().nullable(),
   subject: z.string(),
   body: z.string().optional(),
   hasAttachments: z.boolean().optional(),
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { messageId, fromEmail, fromNama, toEmail, cc, subject, body: emailBody, hasAttachments, attachments } = parsed.data
+    const { messageId, fromEmail, fromNama, toEmail, cc, inReplyTo, references, subject, body: emailBody, hasAttachments, attachments } = parsed.data
 
     console.log('[INBOUND API] parsed hasAttachments:', hasAttachments)
     console.log('[INBOUND API] parsed attachments:', attachments)
@@ -76,11 +78,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Resolve thread_id
+    let threadId: string | null = null
+    const refToCheck = references || inReplyTo || ''
+    if (refToCheck) {
+      const refIds = refToCheck
+        .replace(/\s+/g, ' ')
+        .split(' ')
+        .map(r => r.replace(/^<|>$/g, ''))
+        .filter(Boolean)
+      if (refIds.length > 0) {
+        const { data: parent } = await supabaseAdmin
+          .from("email_log")
+          .select("thread_id")
+          .in("message_id", refIds)
+          .not("thread_id", "is", null)
+          .maybeSingle()
+        if (parent?.thread_id) threadId = parent.thread_id
+      }
+    }
+    if (!threadId) {
+      threadId = crypto.randomUUID()
+    }
+
     // Insert into email_log
     const { data, error } = await supabaseAdmin
       .from("email_log")
       .insert({
         message_id: messageId ?? null,
+        thread_id: threadId,
         from_email: fromEmail,
         from_nama: fromNama ?? null,
         to_email: toEmail || defaultTo,
