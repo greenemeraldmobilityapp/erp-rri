@@ -35,6 +35,7 @@ export default {
     const subject = message.headers.get('subject') || '(No Subject)'
     const messageId = message.headers.get('message-id') || `cf-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const replyTo = message.headers.get('reply-to') || rawFrom
+    const cc = message.headers.get('cc') || ''
 
     // ---- 2. Parse From header (Name <email> format) ----
     const { email: fromEmail, nama: fromNama } = parseFromHeader(rawFrom)
@@ -108,6 +109,7 @@ export default {
           fromEmail,
           fromNama,
           toEmail: to,
+          cc: cc || undefined,
           subject,
           body: finalBody.substring(0, 50000),
           hasAttachments,
@@ -128,20 +130,37 @@ export default {
     // ---- 7. Relay via Brevo (fix spam — proper DKIM/SPF) ----
     let brevoSuccess = false
     try {
+      // Include attachments in relay (≤7MB per Brevo limit)
+      const MAX_RELAY_ATTACHMENT_SIZE = 7 * 1024 * 1024
+      const relayAttachments = []
+      for (const att of attachments) {
+        if (att.content && att.content.byteLength <= MAX_RELAY_ATTACHMENT_SIZE) {
+          relayAttachments.push({
+            name: att.filename,
+            content: uint8ArrayToBase64(att.content),
+          })
+        }
+      }
+
+      const brevoPayload = {
+        sender: { name: env.SENDER_NAME || 'ERP RRI', email: env.SENDER_EMAIL },
+        to: [{ email: env.FORWARD_TO_EMAIL }],
+        replyTo: { email: replyTo, name: fromNama || fromEmail },
+        subject: `${subject}`,
+        htmlContent: buildRelayBody(fromEmail, fromNama, to, subject, htmlBody || textBody),
+        tags: ['inbound-relay'],
+      }
+      if (relayAttachments.length > 0) {
+        brevoPayload.attachment = relayAttachments
+      }
+
       const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
           'api-key': env.BREVO_API_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          sender: { name: env.SENDER_NAME || 'ERP RRI', email: env.SENDER_EMAIL },
-          to: [{ email: env.FORWARD_TO_EMAIL }],
-          replyTo: { email: replyTo, name: fromNama || fromEmail },
-          subject: `${subject}`,
-          htmlContent: buildRelayBody(fromEmail, fromNama, to, subject, htmlBody || textBody),
-          tags: ['inbound-relay'],
-        }),
+        body: JSON.stringify(brevoPayload),
       })
       brevoSuccess = brevoRes.ok
       if (!brevoSuccess) {
@@ -425,4 +444,12 @@ function escapeHtml(str) {
     .replace(/</g, '<')
     .replace(/>/g, '>')
     .replace(/"/g, '"')
+}
+
+function uint8ArrayToBase64(bytes) {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
 }

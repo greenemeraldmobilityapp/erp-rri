@@ -16,6 +16,7 @@ const inboundBodySchema = z.object({
   fromEmail: z.string(),
   fromNama: z.string().optional().nullable(),
   toEmail: z.string(),
+  cc: z.string().optional().nullable(),
   subject: z.string(),
   body: z.string().optional(),
   hasAttachments: z.boolean().optional(),
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { messageId, fromEmail, fromNama, toEmail, subject, body: emailBody, hasAttachments, attachments } = parsed.data
+    const { messageId, fromEmail, fromNama, toEmail, cc, subject, body: emailBody, hasAttachments, attachments } = parsed.data
 
     console.log('[INBOUND API] parsed hasAttachments:', hasAttachments)
     console.log('[INBOUND API] parsed attachments:', attachments)
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
         from_email: fromEmail,
         from_nama: fromNama ?? null,
         to_email: toEmail || defaultTo,
+        cc: cc ?? null,
         subject,
         body: emailBody ?? null,
         has_attachments: hasAttachments ?? false,

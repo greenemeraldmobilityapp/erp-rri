@@ -61,8 +61,9 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
     // Build In-Reply-To / References headers for reply threading
     const emailHeaders: Record<string, string> = {}
     if (params.referenceType === 'reply' && params.referenceId) {
-      emailHeaders['In-Reply-To'] = `<${params.referenceId}>`
-      emailHeaders.References = `<${params.referenceId}>`
+      const bareId = params.referenceId.replace(/^<|>$/g, '')
+      emailHeaders['In-Reply-To'] = `<${bareId}>`
+      emailHeaders.References = `<${bareId}>`
     }
 
     const response = await client.transactionalEmails.sendTransacEmail({
