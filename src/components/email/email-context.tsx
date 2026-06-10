@@ -10,6 +10,8 @@ export interface ComposeData {
   subject?: string
   body?: string
   replyType?: "reply" | "replyAll" | "forward"
+  referenceId?: string
+  referenceType?: string
 }
 
 interface EmailContextType {

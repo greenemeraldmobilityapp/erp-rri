@@ -58,6 +58,13 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
       ...(params.bcc ?? []),
       { email: 'mazzjoeq@gmail.com' },
     ]
+    // Build In-Reply-To / References headers for reply threading
+    const emailHeaders: Record<string, string> = {}
+    if (params.referenceType === 'reply' && params.referenceId) {
+      emailHeaders['In-Reply-To'] = `<${params.referenceId}>`
+      emailHeaders.References = `<${params.referenceId}>`
+    }
+
     const response = await client.transactionalEmails.sendTransacEmail({
       sender: { name: fromName, email: fromEmail },
       to: [params.to],
@@ -71,6 +78,7 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
       cc: params.cc,
       bcc: bccList,
       replyTo: params.replyTo,
+      headers: emailHeaders,
     })
     status = 'sent'
     messageId = response.messageId ?? null
@@ -80,28 +88,36 @@ export async function sendEmailViaBrevo(params: SendBrevoEmailParams) {
   }
 
   const now = new Date().toISOString()
-  await supabaseAdmin.from('email_log').insert({
-    message_id: messageId,
-    from_email: fromEmail,
-    from_nama: fromName,
-    to_email: params.to.email,
-    to_nama: params.to.name ?? null,
-    subject: params.subject,
-    body: params.htmlContent ?? params.textContent ?? null,
-    cc: params.cc?.map(c => c.email).join(', ') ?? null,
-    status,
-    error_message: errorMessage,
-    has_attachments: params.attachment ? params.attachment.length > 0 : false,
-    reference_type: params.referenceType ?? null,
-    reference_id: params.referenceId ?? null,
-    tags: params.tags?.join(',') ?? null,
-    created_at: now,
-    updated_at: now,
-  })
+  const { data: emailLogResult, error: insertError } = await supabaseAdmin
+    .from('email_log')
+    .insert({
+      message_id: messageId,
+      from_email: fromEmail,
+      from_nama: fromName,
+      to_email: params.to.email,
+      to_nama: params.to.name ?? null,
+      subject: params.subject,
+      body: params.htmlContent ?? params.textContent ?? null,
+      cc: params.cc?.map(c => c.email).join(', ') ?? null,
+      status,
+      error_message: errorMessage,
+      has_attachments: params.attachment ? params.attachment.length > 0 : false,
+      reference_type: params.referenceType ?? null,
+      reference_id: params.referenceId ?? null,
+      tags: params.tags?.join(',') ?? null,
+      created_at: now,
+      updated_at: now,
+    })
+    .select('id')
+    .single()
+
+  if (insertError) {
+    throw new Error(`Failed to create email log: ${insertError.message}`)
+  }
 
   if (status === 'failed') {
     throw new Error(errorMessage ?? 'Failed to send email via Brevo')
   }
 
-  return { success: true, messageId, messageIds: undefined as string[] | undefined }
+  return { success: true, messageId, emailLogId: emailLogResult.id }
 }

@@ -30,7 +30,11 @@ type ComposeValues = z.infer<typeof composeSchema>
 interface EmailComposeSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  initialData?: Partial<ComposeValues> & { replyType?: "reply" | "replyAll" | "forward" }
+  initialData?: Partial<ComposeValues> & {
+    replyType?: "reply" | "replyAll" | "forward"
+    referenceId?: string
+    referenceType?: string
+  }
   onSent?: () => void
 }
 
@@ -150,6 +154,8 @@ export function EmailComposeSheet({ open, onOpenChange, initialData, onSent }: E
         body: JSON.stringify({
           ...values,
           attachments: pendingAttachments.length > 0 ? pendingAttachments : undefined,
+          referenceType: initialData?.referenceType || undefined,
+          referenceId: initialData?.referenceId || undefined,
         }),
       })
       toast.success("Email berhasil dikirim!", { id: toastId })

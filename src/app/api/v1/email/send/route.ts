@@ -148,16 +148,8 @@ export async function POST(request: NextRequest) {
     })
 
     // Store attachment metadata after successful send
-    if (attachments && Array.isArray(attachments) && attachments.length > 0 && result.messageId) {
-      const { data: emailLog } = await supabaseAdmin
-        .from("email_log")
-        .select("id")
-        .eq("message_id", result.messageId)
-        .single()
-
-      if (emailLog) {
-        await storeEmailAttachments(emailLog.id, attachments as AttachmentInput[])
-      }
+    if (attachments && Array.isArray(attachments) && attachments.length > 0 && result.emailLogId) {
+      await storeEmailAttachments(result.emailLogId, attachments as AttachmentInput[])
     }
 
     return NextResponse.json({ data: result })

@@ -37,6 +37,7 @@ import { getAuthToken } from "@/lib/api/client"
 
 interface EmailDetail {
   id: string
+  messageId?: string | null
   fromEmail?: string | null
   fromNama?: string | null
   toEmail: string
@@ -82,6 +83,7 @@ function formatBytes(bytes: number | null | undefined): string {
 function mapEmailDetail(row: Record<string, unknown>): EmailDetail {
   return {
     id: row.id as string,
+    messageId: row.message_id as string | null | undefined,
     fromEmail: row.from_email as string | null | undefined,
     fromNama: row.from_nama as string | null | undefined,
     toEmail: row.to_email as string,
@@ -175,6 +177,8 @@ export default function EmailDetailPage() {
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
       replyType: "reply",
+      referenceId: email.messageId || undefined,
+      referenceType: "reply",
     })
   }
 
@@ -187,6 +191,8 @@ export default function EmailDetailPage() {
       subject: `Re: ${email.subject}`,
       body: `\n\n${quoteBody(email.body)}`,
       replyType: "replyAll",
+      referenceId: email.messageId || undefined,
+      referenceType: "reply",
     })
   }
 
@@ -196,6 +202,8 @@ export default function EmailDetailPage() {
       subject: `Fwd: ${email.subject}`,
       body: `\n\n---------- Forwarded message ----------\nFrom: ${email.fromNama || email.fromEmail}\nDate: ${formatDateTime(email.createdAt)}\nSubject: ${email.subject}\n\n${quoteBody(email.body)}`,
       replyType: "forward",
+      referenceId: email.messageId || undefined,
+      referenceType: "forward",
     })
   }
 

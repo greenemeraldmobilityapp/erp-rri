@@ -45,33 +45,52 @@ export default {
       const reader = message.raw.getReader()
       const chunks = []
       let totalSize = 0
+      let lastErr = null
       while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        totalSize += value.length
-        if (totalSize > MAX_BODY) {
-          chunks.push(value.slice(0, MAX_BODY - totalSize + value.length))
+        try {
+          const { done, value } = await reader.read()
+          if (done) break
+          totalSize += value.length
+          if (totalSize > MAX_BODY) {
+            chunks.push(value.slice(0, MAX_BODY - totalSize + value.length))
+            break
+          }
+          chunks.push(value)
+        } catch (readErr) {
+          lastErr = readErr
           break
         }
-        chunks.push(value)
       }
-      const allBytes = new Uint8Array(totalSize > MAX_BODY ? MAX_BODY : chunks.reduce((a, c) => a + c.length, 0))
+      const actualSize = chunks.reduce((a, c) => a + c.length, 0)
+      const allBytes = new Uint8Array(actualSize)
       let pos = 0
       for (const chunk of chunks) {
         allBytes.set(chunk, pos)
         pos += chunk.length
       }
       rawText = new TextDecoder().decode(allBytes)
+      console.log(`[DEBUG] raw email read: ${rawText.length} chars, ${totalSize} bytes raw, lastErr=${lastErr?.message}`)
+      if (rawText.length < 100) {
+        console.log(`[DEBUG] rawText preview: ${rawText.substring(0, Math.min(200, rawText.length))}`)
+      }
     } catch (err) {
       console.error('Error reading raw email:', err.message)
     }
 
     // ---- 4. Parse MIME (body + attachments) ----
-    const parsed = parseMime(rawText)
+    const ctHeader = message.headers.get('content-type') || ''
+    console.log(`[DEBUG] content-type header: ${ctHeader}`)
+    const parsed = parseMime(rawText, ctHeader)
     const htmlBody = parsed.htmlBody || ''
     const textBody = parsed.textBody || ''
     const attachments = parsed.attachments || []
     const hasAttachments = attachments.length > 0
+    console.log(`[DEBUG] parseMime result: htmlBody.length=${htmlBody.length} textBody.length=${textBody.length} attachments=${attachments.length}`)
+    if (attachments.length > 0) {
+      for (const att of attachments) {
+        console.log(`[DEBUG] attachment: filename=${att.filename} mimeType=${att.mimeType} content=${att.content ? att.content.byteLength + ' bytes' : 'null'}`)
+      }
+    }
     const finalBody = htmlBody || textBody || '(no body)'
 
     // ---- 5. Upload attachments to R2 ----
@@ -172,8 +191,10 @@ function parseFromHeader(raw) {
 }
 
 // ---- MIME Parser (zero dependencies) ----
-function parseMime(rawText) {
+function parseMime(rawText, ctHeader) {
   if (!rawText) return { htmlBody: '', textBody: '', attachments: [] }
+
+  console.log(`[DEBUG parseMime] ctHeader param: ${String(ctHeader).substring(0, 200)}`)
 
   const headerEnd = rawText.indexOf('\r\n\r\n')
   if (headerEnd < 0) return { htmlBody: '', textBody: rawText, attachments: [] }
