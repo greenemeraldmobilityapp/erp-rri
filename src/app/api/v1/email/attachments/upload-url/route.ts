@@ -4,7 +4,7 @@ import { getPresignedUrl } from '@/lib/email/r2-client'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const fileName = searchParams.get('fileName')
-  const contentType = searchParams.get('contentType') ?? 'application/octate-stream'
+  const contentType = searchParams.get('contentType') ?? 'application/octet-stream'
   const emailId = searchParams.get('emailId')
 
   if (!fileName) {
