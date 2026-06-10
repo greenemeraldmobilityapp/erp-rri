@@ -5,7 +5,6 @@ import { sendEmail } from "@/lib/utils/email"
 import { getFile } from "@/lib/email/r2-client"
 
 const MAX_BREVO_ATTACHMENT_SIZE = 7 * 1024 * 1024 // 7MB
-const R2_ENDPOINT = process.env.R2_ENDPOINT ?? ""
 
 interface AttachmentInput {
   key: string
@@ -22,14 +21,13 @@ async function fetchAttachmentFromR2(key: string): Promise<Uint8Array> {
 
 async function storeEmailAttachments(
   emailId: string,
-  attachments: AttachmentInput[],
-  r2Endpoint: string
+  attachments: AttachmentInput[]
 ) {
   const records = attachments.map(att => ({
     id: att.id,
     email_id: emailId,
     file_name: att.fileName,
-    file_url: `${r2Endpoint}/${att.key}`,
+    file_url: att.key,
     file_size: att.fileSize,
     mime_type: att.mimeType,
   }))
@@ -158,7 +156,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (emailLog) {
-        await storeEmailAttachments(emailLog.id, attachments as AttachmentInput[], R2_ENDPOINT)
+        await storeEmailAttachments(emailLog.id, attachments as AttachmentInput[])
       }
     }
 

@@ -24,7 +24,16 @@ export async function GET(
       return notFound('Attachment not found')
     }
 
-    const key = attachment.file_url.replace(`${process.env.R2_ENDPOINT}/`, '')
+    let key = attachment.file_url
+    // Handle both raw R2 key ("email-attachments/...") and full URL ("https://...")
+    if (key.includes('://')) {
+      try {
+        const url = new URL(key)
+        key = url.pathname.replace(/^\//, '')
+      } catch {
+        key = attachment.file_url.replace(`${process.env.R2_ENDPOINT ?? ''}/`, '').replace(/^\//, '')
+      }
+    }
 
     const { body, contentType } = await getFile(key)
     const blob = new Blob([new Uint8Array(body)], { type: contentType })

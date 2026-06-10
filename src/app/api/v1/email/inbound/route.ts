@@ -31,6 +31,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+
+    // DEBUG: log what we received
+    console.log('[INBOUND API] messageId:', body.messageId)
+    console.log('[INBOUND API] hasAttachments:', body.hasAttachments)
+    console.log('[INBOUND API] attachments count:', body.attachments?.length ?? 0)
+    console.log('[INBOUND API] attachments:', JSON.stringify(body.attachments))
+
     const parsed = inboundBodySchema.safeParse(body)
 
     if (!parsed.success) {
@@ -41,6 +48,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { messageId, fromEmail, fromNama, toEmail, subject, body: emailBody, hasAttachments, attachments } = parsed.data
+
+    console.log('[INBOUND API] parsed hasAttachments:', hasAttachments)
+    console.log('[INBOUND API] parsed attachments:', attachments)
+
     const now = new Date().toISOString()
     const defaultTo = process.env.BREVO_SENDER_EMAIL || 'marzuqi@pt-rri.com'
 
@@ -103,7 +114,9 @@ export async function POST(request: NextRequest) {
 
     // Insert attachments into email_attachments
     let savedAttachments: Array<{ id: string; fileName: string; fileUrl: string; fileSize: number; mimeType: string }> = []
+    console.log('[INBOUND API] Checking attachments - count:', attachments?.length ?? 0)
     if (attachments && attachments.length > 0) {
+      console.log('[INBOUND API] Inserting attachments, email_id:', data.id)
       const attRecords = attachments.map(att => ({
         email_id: data.id,
         file_name: att.fileName,
@@ -120,9 +133,11 @@ export async function POST(request: NextRequest) {
       if (attError) {
         // Cleanup: delete email_log record if attachment insert fails
         await supabaseAdmin.from("email_log").delete().eq('id', data.id)
+        console.log('[INBOUND API] Attachment insert FAILED:', attError.message)
         return NextResponse.json({ error: `Failed to store attachments: ${attError.message}` }, { status: 500 })
       }
 
+      console.log('[INBOUND API] Attachment insert SUCCESS, count:', attData.length)
       savedAttachments = attData.map(att => ({
         id: att.id,
         fileName: att.file_name,
@@ -130,6 +145,8 @@ export async function POST(request: NextRequest) {
         fileSize: att.file_size,
         mimeType: att.mime_type,
       }))
+    } else {
+      console.log('[INBOUND API] No attachments to insert')
     }
 
     return NextResponse.json({
