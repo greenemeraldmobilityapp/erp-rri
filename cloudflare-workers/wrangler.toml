@@ -2,3 +2,7 @@ name = "erp-rri-email-worker"
 main = "email-worker.js"
 compatibility_date = "2025-06-01"
 account_id = "232df196a52ef9b65520dcf2d4b0e289"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "email-attachments"

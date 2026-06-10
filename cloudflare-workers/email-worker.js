@@ -5,10 +5,11 @@
 //
 // Flow:
 //   Email arrives at pt-rri.com MX → Email Routing Rule → This Worker
-//   1. Parse email (headers + body)
-//   2. POST to ERP API  → stored in email_log (inbound=true) → Mail Center Inbox
-//   3. Relay via Brevo   → arrives at Gmail with proper DKIM/SPF/DMARC → Inbox, not Spam
-//   4. Fallback forward  → if Brevo fails, forward original via Cloudflare
+//   1. Parse email (headers + body + attachments)
+//   2. Upload attachments to R2 via Worker R2 binding
+//   3. POST to ERP API  → stored in email_log + email_attachments → Mail Center Inbox
+//   4. Relay via Brevo   → arrives at Gmail with proper DKIM/SPF/DMARC → Inbox, not Spam
+//   5. Fallback forward  → if Brevo fails, forward original via Cloudflare
 //
 // ==========================================================
 // SETTINGS — Configure these as Worker environment variables:
@@ -20,20 +21,25 @@
 // SENDER_EMAIL=marzuqi@pt-rri.com
 // SENDER_NAME="ERP RRI"
 // MAX_BODY_SIZE=1048576  (1MB, optional)
+// R2 bucket binding: [[r2_buckets]] binding = "R2" bucket_name = "email-attachments" (in wrangler.toml)
 
 export default {
   async email(message, env, ctx) {
     const MAX_BODY = parseInt(env.MAX_BODY_SIZE || '1048576', 10)
+    const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25MB
     const startTime = Date.now()
 
     // ---- 1. Extract headers ----
-    const from = message.from
+    const rawFrom = message.from
     const to = message.to
     const subject = message.headers.get('subject') || '(No Subject)'
     const messageId = message.headers.get('message-id') || `cf-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    const replyTo = message.headers.get('reply-to') || from
+    const replyTo = message.headers.get('reply-to') || rawFrom
 
-    // ---- 2. Read & parse raw MIME body ----
+    // ---- 2. Parse From header (Name <email> format) ----
+    const { email: fromEmail, nama: fromNama } = parseFromHeader(rawFrom)
+
+    // ---- 3. Read & parse raw MIME body ----
     let rawText = ''
     try {
       const reader = message.raw.getReader()
@@ -60,15 +66,28 @@ export default {
       console.error('Error reading raw email:', err.message)
     }
 
-    // ---- 3. Parse MIME ----
+    // ---- 4. Parse MIME (body + attachments) ----
     const parsed = parseMime(rawText)
     const htmlBody = parsed.htmlBody || ''
     const textBody = parsed.textBody || ''
-    const hasAttachments = parsed.hasAttachments || false
+    const attachments = parsed.attachments || []
+    const hasAttachments = attachments.length > 0
     const finalBody = htmlBody || textBody || '(no body)'
 
-    // ---- 4. Send to ERP API (store in email_log) ----
+    // ---- 5. Upload attachments to R2 ----
+    let uploadedAttachments = []
+    if (attachments.length > 0 && env.R2) {
+      try {
+        uploadedAttachments = await uploadAttachmentsToR2(attachments, messageId, env.R2, MAX_ATTACHMENT_SIZE)
+        console.log(`Uploaded ${uploadedAttachments.length}/${attachments.length} attachments to R2`)
+      } catch (r2Err) {
+        console.error('R2 upload error:', r2Err.message)
+      }
+    }
+
+    // ---- 6. Send to ERP API (store in email_log + email_attachments) ----
     let erpSuccess = false
+    let erpResponse = null
     try {
       const erpRes = await fetch(env.ERP_INBOUND_URL, {
         method: 'POST',
@@ -78,16 +97,19 @@ export default {
         },
         body: JSON.stringify({
           messageId,
-          fromEmail: from,
-          fromNama: from,
+          fromEmail,
+          fromNama,
           toEmail: to,
           subject,
           body: finalBody.substring(0, 50000),
           hasAttachments,
+          attachments: uploadedAttachments,
         }),
       })
       erpSuccess = erpRes.ok
-      if (!erpSuccess) {
+      if (erpRes.ok) {
+        try { erpResponse = await erpRes.json() } catch {}
+      } else {
         const erpErr = await erpRes.text()
         console.error(`ERP API error (${erpRes.status}):`, erpErr)
       }
@@ -95,7 +117,7 @@ export default {
       console.error('Failed to call ERP API:', err.message)
     }
 
-    // ---- 5. Relay via Brevo (fix spam — proper DKIM/SPF) ----
+    // ---- 7. Relay via Brevo (fix spam — proper DKIM/SPF) ----
     let brevoSuccess = false
     try {
       const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -107,9 +129,9 @@ export default {
         body: JSON.stringify({
           sender: { name: env.SENDER_NAME || 'ERP RRI', email: env.SENDER_EMAIL },
           to: [{ email: env.FORWARD_TO_EMAIL }],
-          replyTo: { email: replyTo, name: from },
+          replyTo: { email: replyTo, name: fromNama || fromEmail },
           subject: `${subject}`,
-          htmlContent: buildRelayBody(from, to, subject, htmlBody || textBody),
+          htmlContent: buildRelayBody(fromEmail, fromNama, to, subject, htmlBody || textBody),
           tags: ['inbound-relay'],
         }),
       })
@@ -122,7 +144,7 @@ export default {
       console.error('Failed to relay via Brevo:', err.message)
     }
 
-    // ---- 6. Fallback: forward original via Cloudflare ----
+    // ---- 8. Fallback: forward original via Cloudflare ----
     if (!brevoSuccess) {
       try {
         await message.forward(env.FORWARD_TO_EMAIL)
@@ -133,16 +155,28 @@ export default {
     }
 
     const elapsed = Date.now() - startTime
-    console.log(`Processed email from=${from} subject="${subject}" erp=${erpSuccess} brevo=${brevoSuccess} fallback=${!brevoSuccess} ${elapsed}ms`)
+    console.log(`Processed email from=${fromEmail} subject="${subject}" erp=${erpSuccess} brevo=${brevoSuccess} attachments=${uploadedAttachments.length} ${elapsed}ms`)
   },
+}
+
+// ---- Parse From header: "Name <email>" → { email, nama } ----
+function parseFromHeader(raw) {
+  // "John Doe <john@example.com>" → { email: "john@example.com", nama: "John Doe" }
+  // "john@example.com" → { email: "john@example.com", nama: null }
+  // "<john@example.com>" → { email: "john@example.com", nama: null }
+  const match = String(raw).match(/^(.+?)\s*<(.+)>$/)
+  if (match) {
+    return { email: match[2].trim(), nama: match[1].trim() }
+  }
+  return { email: String(raw).trim(), nama: null }
 }
 
 // ---- MIME Parser (zero dependencies) ----
 function parseMime(rawText) {
-  if (!rawText) return { htmlBody: '', textBody: '', hasAttachments: false }
+  if (!rawText) return { htmlBody: '', textBody: '', attachments: [] }
 
   const headerEnd = rawText.indexOf('\r\n\r\n')
-  if (headerEnd < 0) return { htmlBody: '', textBody: rawText, hasAttachments: false }
+  if (headerEnd < 0) return { htmlBody: '', textBody: rawText, attachments: [] }
 
   const headerSection = rawText.substring(0, headerEnd)
   const bodySection = rawText.substring(headerEnd + 4)
@@ -169,9 +203,9 @@ function parseMime(rawText) {
   }
 
   if (contentType.includes('text/html')) {
-    return { htmlBody: decodedBody.trim(), textBody: '', hasAttachments: false }
+    return { htmlBody: decodedBody.trim(), textBody: '', attachments: [] }
   }
-  return { htmlBody: '', textBody: decodedBody.trim(), hasAttachments: false }
+  return { htmlBody: '', textBody: decodedBody.trim(), attachments: [] }
 }
 
 function parseHeaders(headerSection) {
@@ -196,7 +230,7 @@ function parseMultipart(body, boundary) {
   const parts = body.split('--' + boundary)
   let htmlBody = ''
   let textBody = ''
-  let hasAttachments = false
+  const attachments = []
 
   for (const part of parts) {
     const trimmed = part.trim()
@@ -212,52 +246,127 @@ function parseMultipart(body, boundary) {
     const ce = (partHeaders['content-transfer-encoding'] || '').toLowerCase().trim()
     const cd = (partHeaders['content-disposition'] || '').toLowerCase()
 
-    let decoded = partBody
-    if (ce === 'base64') {
-      try {
-        const binary = atob(partBody.replace(/[\r\n\s]/g, ''))
-        const bytes = new Uint8Array(binary.length)
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-        decoded = new TextDecoder().decode(bytes)
-      } catch { decoded = partBody }
-    } else if (ce === 'quoted-printable') {
-      decoded = decodeQuotedPrintable(partBody)
-    }
-
-    if (cd.includes('attachment') || cd.includes('filename=')) {
-      hasAttachments = true
+    const subBoundary = ct.match(/boundary="?([^";]+)"?/)
+    if (subBoundary) {
+      const sub = parseMultipart(partBody, subBoundary[1])
+      if (sub.htmlBody) htmlBody = sub.htmlBody
+      if (sub.textBody) textBody = sub.textBody
+      attachments.push(...sub.attachments)
       continue
     }
 
-    const subBoundary = ct.match(/boundary="?([^";]+)"?/)
-    if (subBoundary) {
-      const sub = parseMultipart(decoded, subBoundary[1])
-      if (sub.htmlBody) htmlBody = sub.htmlBody
-      if (sub.textBody) textBody = sub.textBody
-      if (sub.hasAttachments) hasAttachments = true
+    if (cd.includes('attachment') || cd.includes('filename=')) {
+      const filename = extractFilename(partHeaders['content-disposition'] || ct)
+      const mimeType = partHeaders['content-type'] || 'application/octet-stream'
+
+      let decodedBytes = null
+      if (ce === 'base64') {
+        try {
+          const binary = atob(partBody.replace(/[\r\n\s]/g, ''))
+          decodedBytes = new Uint8Array(binary.length)
+          for (let i = 0; i < binary.length; i++) decodedBytes[i] = binary.charCodeAt(i)
+        } catch {}
+      } else if (ce === 'quoted-printable') {
+        const decoded = decodeQuotedPrintable(partBody)
+        decodedBytes = new Uint8Array(decoded.length)
+        for (let i = 0; i < decoded.length; i++) decodedBytes[i] = decoded.charCodeAt(i)
+      }
+
+      attachments.push({
+        filename: filename || 'attachment',
+        mimeType,
+        content: decodedBytes,
+      })
       continue
     }
 
     if (ct.includes('text/html')) {
-      htmlBody = decoded.trim()
+      htmlBody = partBody.trim()
     } else if (ct.includes('text/plain') && !htmlBody) {
-      textBody = decoded.trim()
+      textBody = partBody.trim()
     }
   }
 
-  return { htmlBody, textBody, hasAttachments }
+  return { htmlBody, textBody, attachments }
+}
+
+function extractFilename(cd) {
+  if (!cd) return null
+  // Try RFC 2231 / RFC 5987 format: filename*=UTF-8''... (decoded)
+  const rfc2231Match = cd.match(/filename\*=(?:UTF-8|utf-8)''([^;\r\n]+)/i)
+  if (rfc2231Match) {
+    try { return decodeURIComponent(rfc2231Match[1]) } catch { return rfc2231Match[1] }
+  }
+  // Try standard format: filename="..." or filename=...
+  const standardMatch = cd.match(/filename="?([^";\r\n]+)"?/i)
+  if (standardMatch) return standardMatch[1].trim()
+  return null
 }
 
 function decodeQuotedPrintable(text) {
   return text
     .replace(/=\r\n/g, '')
+    .replace(/=\n/g, '')
     .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
 }
 
-function buildRelayBody(from, to, subject, originalBody) {
-  const safeOriginal = originalBody
+// ---- Upload attachments to R2 via Worker R2 binding ----
+async function uploadAttachmentsToR2(attachments, messageId, r2, maxSize) {
+  const results = []
+
+  for (const att of attachments) {
+    if (!att.content || !att.filename) continue
+
+    const fileSize = att.content.byteLength
+    if (fileSize > maxSize) {
+      console.warn(`Skipping attachment ${att.filename}: ${fileSize} bytes exceeds ${maxSize} limit`)
+      continue
+    }
+
+    const uuid = generateUUID()
+    const safeFilename = att.filename.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const key = `email-attachments/${messageId}/${uuid}-${safeFilename}`
+
+    try {
+      await r2.put(key, att.content, {
+        httpMetadata: {
+          contentType: att.mimeType,
+        },
+        customMetadata: {
+          originalFilename: att.filename,
+        },
+      })
+
+      results.push({
+        key,
+        fileName: att.filename,
+        fileSize,
+        mimeType: att.mimeType,
+      })
+
+      console.log(`Uploaded: ${key} (${fileSize} bytes)`)
+    } catch (uploadErr) {
+      console.error(`Failed to upload ${att.filename}:`, uploadErr.message)
+    }
+  }
+
+  return results
+}
+
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+function buildRelayBody(fromEmail, fromNama, to, subject, originalBody) {
+  const safeOriginal = String(originalBody || '')
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/on\w+="[^"]*"/gi, '')
+
+  const senderDisplay = fromNama ? `${fromNama} <${fromEmail}>` : fromEmail
 
   return `<!DOCTYPE html>
 <html>
@@ -276,7 +385,7 @@ function buildRelayBody(from, to, subject, originalBody) {
             <td style="padding: 0 30px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
                 <tr><td style="padding: 4px 0; color: #666; font-size: 13px;">Dari</td></tr>
-                <tr><td style="padding: 2px 0 12px; color: #333; font-size: 15px; font-weight: 600;">${escapeHtml(from)}</td></tr>
+                <tr><td style="padding: 2px 0 12px; color: #333; font-size: 15px; font-weight: 600;">${escapeHtml(senderDisplay)}</td></tr>
                 <tr><td style="padding: 4px 0; color: #666; font-size: 13px;">Tujuan</td></tr>
                 <tr><td style="padding: 2px 0 12px; color: #333; font-size: 15px;">${escapeHtml(to)}</td></tr>
                 <tr><td style="padding: 4px 0; color: #666; font-size: 13px;">Subjek</td></tr>
@@ -289,7 +398,7 @@ function buildRelayBody(from, to, subject, originalBody) {
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
               <p style="color: #999; font-size: 12px; font-style: italic;">
                 Pesan ini dikirim ke ${escapeHtml(to)} dan diteruskan secara otomatis oleh ERP RRI.
-                Balas email ini akan langsung terkirim ke ${escapeHtml(from)}.
+                Balas email ini akan langsung terkirim ke ${escapeHtml(fromEmail)}.
               </p>
             </td>
           </tr>
@@ -304,8 +413,8 @@ function buildRelayBody(from, to, subject, originalBody) {
 function escapeHtml(str) {
   if (!str) return ''
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
 }

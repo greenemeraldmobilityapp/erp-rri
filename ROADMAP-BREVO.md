@@ -21,7 +21,11 @@
 | Contact search | ✅ Active | `GET /api/v1/email/contacts/search?q=...` (Phase 10 MC-35) |
 | Mail Center UI | ✅ Active | `/dashboard/email/inbox`, `sent`, `trash`, `templates`, `[id]` |
 | Cloudflare R2 (Phase 11) | ✅ Active | `src/lib/email/r2-client.ts` — presigned URL, getFile, uploadFromWorker |
+| Cloudflare Worker R2 binding | ✅ Active | `cloudflare-workers/email-worker.js` + `wrangler.toml` — R2.put() for inbound attachments |
 | R2 env vars | ✅ Active | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` in `.env` + Vercel |
+| `email_attachments` table + Drizzle schema | ✅ Active | `src/lib/db/schema/email-attachments.ts` |
+| Inbound API with attachment support | ✅ Active | `src/app/api/v1/email/inbound/route.ts` — Zod validation, upsert, first-received-wins |
+| `message_id` unique index | ✅ Active | `idx_email_log_message_id_unique` — partial unique index (WHERE NOT NULL) |
 
 ### Points of Integration (Trigger email)
 
@@ -229,7 +233,7 @@ Perbaikan UI/UX Mail Center: warna tombol pakai `bg-primary`, redesign compose m
 | MC-42 | **Search bar di trash page** — filter email by subject/pengirim client-side, Load More hidden saat search | ✅ Done | `src/app/dashboard/email/trash/page.tsx` |
 | MC-43 | **Search bar di templates page** — filter template by nama client-side | ✅ Done | `src/app/dashboard/email/templates/page.tsx` |
 
-### ⬜ Phase 11 — Cloudflare R2 Attachment Storage (High Priority) — IN PROGRESS
+### ✅ Phase 11 — Cloudflare R2 Attachment Storage (High Priority) — SELESAI
 
 Menyimpan file attachment email (outbound compose & inbound) ke Cloudflare R2 (free tier 10 GB). Menggunakan Presigned URL untuk upload langsung dari client (bypass Vercel 4.5 MB body limit). File >7 MB di-outbound dikirim sebagai link download, bukan attachment base64.
 
@@ -246,9 +250,9 @@ Menyimpan file attachment email (outbound compose & inbound) ke Cloudflare R2 (f
 | R2-9 | **Update Send API** — terima `attachmentIds`, ambil file dari R2, kirim via Brevo (base64 untuk file ≤7 MB, atau link download untuk >7 MB) | ✅ Done | `src/app/api/v1/email/send/route.ts` |
 | R2-10 | **API `GET /api/v1/email/attachments/[id]`** — download file attachment dari R2 | ✅ Done | `src/app/api/v1/email/attachments/[id]/route.ts` |
 | R2-11 | **Update Email Detail** — tampilkan daftar attachment: Paperclip icon, nama, size, tombol download | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` |
-| R2-12 | **Update Email Worker** — parse MIME attachment, upload langsung ke R2 (via Worker R2 binding), kirim metadata ke inbound API | ⬜ Pending | `cloudflare-workers/email-worker.js` |
-| R2-13 | **Update Inbound API** — terima `attachments: Array<{fileName, fileUrl, fileSize, mimeType}>`, simpan ke `email_attachments` table | ⬜ Pending | `src/app/api/v1/email/inbound/route.ts` |
-| R2-14 | **Update ROADMAP + AGENTS.md** — tambah storage path convention, update semua referensi | ⬜ Pending | `ROADMAP-BREVO.md`, `AGENTS.md` |
+| R2-12 | **Update Email Worker** — parse MIME attachment, upload directly to R2 (via Worker R2 binding), send metadata to inbound API | ✅ Done | `cloudflare-workers/email-worker.js`, `wrangler.toml` |
+| R2-13 | **Update Inbound API** — accept `attachments: Array<{key, fileName, fileSize, mimeType}>`, save to `email_attachments` table, upsert email_log (first-received wins) | ✅ Done | `src/app/api/v1/email/inbound/route.ts` |
+| R2-14 | **Update ROADMAP + AGENTS.md** — storage path convention, env vars, R2 client status | ✅ Done | `ROADMAP-BREVO.md`, `AGENTS.md` |
 
 **Storage Path Convention:**
 ```
@@ -523,7 +527,8 @@ Setup SPF, DKIM, dan DMARC agar email dari domain `pt-rri.com` tidak masuk Spam.
 
 ```
 cloudflare-workers/
-├── email-worker.js           # Cloudflare Email Worker (Phase 7)
+├── email-worker.js           # Cloudflare Email Worker (Phase 7 + R2-12 inbound attachment upload)
+├── wrangler.toml             # Worker config with R2 bucket binding (Phase 11 R2-12)
 └── README.md                 # Deployment instructions (Phase 7)
 
 src/lib/email/
