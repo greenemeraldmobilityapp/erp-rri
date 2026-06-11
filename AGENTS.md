@@ -22,7 +22,7 @@
 - **Forms**: React Hook Form + Zod
 - **Database**: Drizzle ORM with Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **File Storage**: Supabase Storage (dokumen ERP) + Cloudflare R2 (email attachments — Phase 11 planned)
+- **File Storage**: Cloudflare R2 (bucket `erp-documents`, custom domain `files.erp.pt-rri.com`) — migrated from Supabase Storage (bucket `dokumen`)
 - **PDF Generation**: @react-pdf/renderer
 
 ## Project Structure
@@ -50,10 +50,14 @@
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `DATABASE_URL` (optional, for direct database access)
-   - `R2_ENDPOINT` (Cloudflare R2)
-   - `R2_ACCESS_KEY_ID` (Cloudflare R2)
-   - `R2_SECRET_ACCESS_KEY` (Cloudflare R2)
-   - `R2_BUCKET` (Cloudflare R2)
+   - `R2_DOCUMENTS_ENDPOINT` (Cloudflare R2 — dokumen ERP)
+   - `R2_DOCUMENTS_ACCESS_KEY_ID` (Cloudflare R2 — dokumen ERP)
+   - `R2_DOCUMENTS_SECRET_ACCESS_KEY` (Cloudflare R2 — dokumen ERP)
+   - `R2_DOCUMENTS_BUCKET` (Cloudflare R2 — dokumen ERP, value: `erp-documents`)
+   - `R2_ENDPOINT` (Cloudflare R2 — email attachments)
+   - `R2_ACCESS_KEY_ID` (Cloudflare R2 — email attachments)
+   - `R2_SECRET_ACCESS_KEY` (Cloudflare R2 — email attachments)
+   - `R2_BUCKET` (Cloudflare R2 — email attachments)
    - `BREVO_SMTP_LOGIN` (Brevo SMTP login, e.g. `adfecc001@smtp-brevo.com`)
    - `BREVO_SMTP_PASSWORD` (Brevo SMTP Master Password)
 
@@ -106,8 +110,10 @@
 - Office documents (.doc, .docx, .xls, .xlsx, .ppt, .pptx) are opened via Google Docs Viewer: `window.open('https://docs.google.com/viewer?url=...&embedded=true', ...)`
 
 ### Storage Structure
-- Bucket: `dokumen` (Supabase Storage)
+- Bucket: `erp-documents` (Cloudflare R2)
+- Public URL: `https://files.erp.pt-rri.com/{path}`
 - Standard path pattern: `dokumen/{modul}/{recordId}/{file.name}` (no timestamp prefix, no sub-folders)
+- All paths identical to legacy Supabase Storage — migrated via `scripts/migrate-storage-to-r2.ts`
 
 ```
 dokumen/rfq-customer/{id}/{file}
@@ -123,8 +129,8 @@ dokumen/invoice/{id}/{file}
 dokumen/grn/{id}/{file}
 dokumen/retur-penjualan/{id}/{file}
 dokumen/retur-pembelian/{id}/{file}
-dokumen/ocr-kontrak/{ts}-{file}"         # temp — uses timestamp
-dokumen/temp/rfq-customer/{type}/{ts}-{file}"  # temp — uses timestamp
+dokumen/ocr-kontrak/{ts}-{file}         # temp — uses timestamp
+dokumen/temp/rfq-customer/{type}/{ts}-{file}  # temp — uses timestamp
 ```
 
 - `avatars/` → User profile images
@@ -142,7 +148,7 @@ dokumen/temp/rfq-customer/{type}/{ts}-{file}"  # temp — uses timestamp
 2. Compress with `browser-image-compression`
 3. Convert to WebP
 4. Delete existing file if present
-5. Upload to Supabase Storage
+5. Upload to Cloudflare R2 (S3 SDK via `@aws-sdk/client-s3`)
 6. Store public URL in database
 
 ### API Structure

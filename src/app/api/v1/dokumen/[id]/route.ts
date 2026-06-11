@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 import { verifyAuth } from '@/lib/api/auth'
 import { internalError, notFound } from '@/lib/api/errors'
+import { storageService } from '@/lib/storage'
 
 const modulTableMap: Record<string, string> = {
   'RFQ Customer': 'rfq_customer_document',
@@ -33,7 +34,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { data: doc, error: fetchError } = await supabaseAdmin
     .from('all_documents')
-    .select('id, modul, filename, fileurl, recordid')
+    .select('id, modul, filename, fileurl, drivefileid, recordid')
     .eq('id', id)
     .maybeSingle()
 
@@ -55,19 +56,10 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return internalError(deleteDbError)
   }
 
-  const fileUrl = doc.fileurl
-  if (fileUrl && !fileUrl.startsWith('/api/')) {
-    const url = new URL(fileUrl)
-    const path = url.pathname.split('/').slice(-3).join('/')
-    const bucket = 'dokumen'
-    
-    const { error: storageError } = await supabaseAdmin.storage
-      .from(bucket)
-      .remove([path])
-
-    if (storageError) {
-      console.error('Failed to delete file from storage:', storageError)
-    }
+  if (doc.drivefileid) {
+    await storageService.delete(doc.drivefileid).catch((err) => {
+      console.error('Failed to delete file from storage:', err)
+    })
   }
 
   return NextResponse.json({ success: true })

@@ -59,7 +59,7 @@ Membangun sistem ERP berbasis web yang terintegrasi untuk:
 | AI Agent | NVIDIA NIM (free tier) — 3 agent architecture: NegoAgent (stepfun-ai/step-3.5-flash), DataAgent (minimaxai/minimax-m2.7), VisionAgent (microsoft/phi-4-multimodal-instruct) |
 | Testing (Unit) | Vitest |
 | Testing (E2E) | Playwright |
-| Storage | Google Drive API (Shared Drive) — all files via Service Account |
+| Storage | Cloudflare R2 (bucket `erp-documents`) + Custom Domain `files.erp.pt-rri.com` — migrated from Supabase Storage |
 | Image Optimization | browser-image-compression + WebP conversion |
 | Deploy | Vercel |
 | Platform | Web Browser (Responsive: Mobile, Tablet, Desktop) |
@@ -149,22 +149,33 @@ Tema dirancang untuk enterprise/government — fokus pada accessibility, high co
 
 ## 5. Storage & File Management
 
-### 5.1 Supabase Storage Strategy
-File storage menggunakan **Supabase Storage** — bucket `dokumen` yang sudah ada di project Supabase yang sama.
+### 5.1 Cloudflare R2 Storage Strategy (Current — migrated from Supabase Storage)
 
-**Alasan:**
-- **1GB gratis** — cukup untuk ~1-2 tahun ERP RRI (estimasi ~800MB/tahun)
-- **Tanpa kartu kredit** — langsung aktif dengan project Supabase yang sudah berjalan
-- **Terintegrasi** — pakai `supabaseAdmin` yang sama dengan API routes lainnya
-- **Public URL** built-in — setiap file langsung punya URL publik yang bisa di-share
-- **CDN** — file di-serve via CDN Supabase
+File storage menggunakan **Cloudflare R2** — bucket `erp-documents` dengan custom domain `https://files.erp.pt-rri.com/`.
 
-**Catatan:** Jika suatu saat melebihi 1GB, upgrade ke Pro plan ($25/bulan) dapat 100GB.
+**Alasan migrasi dari Supabase Storage:**
+| Item | Supabase Storage | Cloudflare R2 |
+|------|-----------------|---------------|
+| **Free tier** | 1 GB | 10 GB |
+| **Estimasi pemakaian/tahun** | ~800 MB | ~800 MB |
+| **Durasi gratis** | ~1 tahun | ~12 tahun |
+| **Upgrade plan** | $25/bulan (100 GB) | Tidak perlu upgrade |
+| **Egress (bandwidth)** | Termasuk dalam plan | **$0 selamanya** |
+| **CDN** | Supabase CDN | Cloudflare global network |
+| **Kustom domain** | Tidak support | ✅ Support gratis |
 
-### 5.2 Struktur Folder di Supabase Storage
+**Keuntungan:**
+- **10GB gratis** — cukup untuk ~12 tahun ERP RRI
+- **$0 egress** — tidak ada biaya bandwidth
+- **Custom domain** — `https://files.erp.pt-rri.com/` untuk branding konsisten
+- **Global CDN** — Cloudflare edge network di seluruh dunia
+- **Abstraction layer** — kode tetap sama via `IStorageService`
+
+### 5.2 Struktur Folder di Cloudflare R2
 
 ```
-Bucket: dokumen
+Bucket: erp-documents
+Public URL: https://files.erp.pt-rri.com/{path}
 ├── dokumen/rfq-customer/{id}/{file}.pdf              # RFQ Customer documents
 ├── dokumen/rfq-supplier/{id}/{file}.pdf               # RFQ Supplier documents
 ├── dokumen/quotation/{id}/{file}.pdf                  # Quotation documents
@@ -197,7 +208,7 @@ Bucket: dokumen
 | **Max dimensi** | Foto barang: max 1920px. Avatar: max 200px. Foto profil: max 600px | File size terkontrol |
 | **Max file size** | Client-side + server-side validation: Foto = max 5MB, Dokumen PDF = max 10MB | Mencegah abuse |
 | **Whitelist tipe file** | Hanya izinkan: `image/jpeg`, `image/png`, `image/webp`, `application/pdf` | Keamanan storage |
-| **Public URL** | Setiap file punya public URL via `getPublicUrl()` | Share ke supplier/customer tanpa login |
+| **Public URL** | Setiap file punya public URL via `https://files.erp.pt-rri.com/{path}` | Share ke supplier/customer tanpa login |
 
 ### 5.4 Arsitektur Upload File
 
@@ -217,9 +228,9 @@ Bucket: dokumen
                      ↓
 ┌──────────────────────────────────────────────────────────┐
 │ StorageService (src/lib/storage/)                        │
-│ supabaseAdmin.storage.from('dokumen')                    │
-│ → upload(path, buffer)                                   │
-│ → getPublicUrl(path)                                     │
+│ S3Client (Cloudflare R2 via @aws-sdk/client-s3)         │
+│ → PutObjectCommand(filePath, buffer)                    │
+│ → public URL: https://files.erp.pt-rri.com/{path}       │
 │ → return { fileId, webViewLink, webContentLink }        │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -231,14 +242,15 @@ Abstraction layer di `src/lib/storage/`:
 | File | Fungsi |
 |------|--------|
 | `types.ts` | Interface `IStorageService` + type definitions |
-| `supabase.ts` | Implementasi Supabase Storage (upload, getUrl, delete, list) |
-| `index.ts` | Re-export `storageService` |
+| `r2.ts` | Implementasi Cloudflare R2 via S3 SDK (aktif) |
+| `supabase.ts` | Implementasi Supabase Storage (legacy — untuk referensi) |
+| `index.ts` | Re-export `storageService` (switch dari `./supabase` ke `./r2`) |
 
 ### 5.6 Keamanan File
 
-- **Public URL** — semua file bisa diakses siapa pun yang memiliki URL
+- **Public URL** — semua file bisa diakses siapa pun yang memiliki URL (`https://files.erp.pt-rri.com/{path}`)
 - **Upload via API saja** — semua upload melalui API Route yang sudah diverifikasi auth (`verifyAuth()`)
-- **Supabase Admin Client** — menggunakan service role key (`supabaseAdmin`) untuk operasi storage
+- **R2 S3 Client** — menggunakan Access Key & Secret Key untuk operasi storage
 - `drive_file_id` di database berisi path objek di bucket (contoh: `dokumen/rfq/abc123/file.pdf`)
 
 ### 5.7 File Naming Convention
@@ -333,7 +345,7 @@ interface CompactFileUploadProps {
 
 ### 5.10 Halaman Manajemen Dokumen & Virtual PDF
 
-Halaman `/dashboard/dokumen` menyatukan semua dokumen dari seluruh modul — baik file yang di-upload ke Supabase Storage (real documents) maupun PDF yang di-generate on-the-fly via API routes (virtual PDF entries).
+Halaman `/dashboard/dokumen` menyatukan semua dokumen dari seluruh modul — baik file yang di-upload ke Cloudflare R2 (real documents) maupun PDF yang di-generate on-the-fly via API routes (virtual PDF entries).
 
 #### `all_documents` View
 
@@ -343,7 +355,7 @@ PostgreSQL view (`all_documents`) menggabungkan real uploaded documents dari tab
 |-------|-----------|
 | `id` | Unique ID — virtual: `pdf-{modul}-{recordId}` |
 | `filename` | Nama file untuk ditampilkan |
-| `fileurl` | Storage: public URL Supabase. Virtual: relative API route (`/api/v1/{modul}/{id}/pdf`) |
+| `fileurl` | Storage: public URL Cloudflare R2 (`https://files.erp.pt-rri.com/...`). Virtual: relative API route (`/api/v1/{modul}/{id}/pdf`) |
 | `modul` | Nama modul asal |
 | `nomordokumen` | Format `RRI-...` |
 | `customerid` / `customernama` | Resolusi customer via joins |
@@ -554,7 +566,7 @@ a.href = blobUrl; a.download = filename; a.click()
 URL.revokeObjectURL(blobUrl)
 ```
 
-Untuk storage public URLs: tetap `window.open(url)` langsung — tidak perlu auth.
+Untuk storage public URLs (`https://files.erp.pt-rri.com/...`): tetap `window.open(url)` langsung — tidak perlu auth.
 
 ## 6. Scalability & Arsitektur
 
@@ -650,7 +662,7 @@ Data yang "dihapus" hanya di-filter di query level. Data tetap utuh untuk audit 
 - **Supabase Point-in-Time Recovery (PITR)** — restore ke detik kapanpun dalam 7 hari terakhir (termasuk di free tier)
 - **Daily automated backup** — Supabase backup otomatis setiap 24 jam
 - **Manual backup** — export database via `pg_dump` bisa dijadwalkan via cron job
-- **Storage backup** — file di Supabase Storage di-replicate secara otomatis
+- **Storage backup** — file di Cloudflare R2 di-replicate secara otomatis oleh network Cloudflare
 
 ### 6.8 Database Archiving
 Data lama (>1 tahun) bisa di-archive ke tabel khusus atau bucket storage khusus untuk mengoptimasi performa query utama. Proses archiving bisa dijadwalkan bulan sekali.

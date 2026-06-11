@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       storage: {
         connected: storageConnected,
         total_files: storageFiles,
-        provider: 'supabase',
+        provider: 'cloudflare-r2',
       },
       errors: {
         count_7d: recentErrors ?? 0,

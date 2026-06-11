@@ -1,5 +1,27 @@
 # ROADMAP — Pengembangan ERP RRI
 
+## ✅ DONE — Storage Migration: Supabase Storage → Cloudflare R2
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| SM-1 | **Create R2 bucket `erp-documents`** — Cloudflare Dashboard, bucket created | ✅ Done | Cloudflare R2 Dashboard |
+| SM-2 | **Set custom domain `files.erp.pt-rri.com`** — SSL auto-provisioned, DNS CNAME added | ✅ Done | Cloudflare R2 Settings |
+| SM-3 | **Implement `src/lib/storage/r2.ts`** — full `IStorageService` implementation using `@aws-sdk/client-s3` (upload, getUrl, copy, delete, list) | ✅ Done | `r2.ts` |
+| SM-4 | **Switch export `index.ts`** — from `./supabase` to `./r2` | ✅ Done | `index.ts` |
+| SM-5 | **Fix `dokumen/[id]/route.ts` DELETE** — replace Supabase URL parsing with `storageService.delete(doc.drivefileid)` | ✅ Done | `route.ts` |
+| SM-6 | **Fix `barang/[id]/image/route.ts`** — replace `/public/dokumen/` regex with `extractStoragePath()` helper | ✅ Done | `route.ts` |
+| SM-7 | **Update health endpoint** — `provider: 'supabase'` → `provider: 'cloudflare-r2'` | ✅ Done | `route.ts` |
+| SM-8 | **Data migration** — copy 120 files from Supabase Storage to R2 via `scripts/migrate-storage-to-r2.ts` (0 errors) | ✅ Done | `scripts/migrate-storage-to-r2.ts` |
+| SM-9 | **Update `file_url` in database** — REPLACE() all 22 URL columns across 15 tables, 0 remaining Supabase URLs | ✅ Done | SQL via Supabase |
+| SM-10 | **Set Vercel env vars** — `R2_DOCUMENTS_ENDPOINT`, `R2_DOCUMENTS_ACCESS_KEY_ID`, `R2_DOCUMENTS_SECRET_ACCESS_KEY`, `R2_DOCUMENTS_BUCKET` (Production + Development) | ✅ Done | Vercel Dashboard |
+| SM-11 | **Deploy to production** — `npx vercel deploy --prod` → live at `https://erp.pt-rri.com` | ✅ Done | Vercel |
+
+### Remaining (Cleanup — optional)
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| SM-12 | **Hapus file dari Supabase Storage** | ⏳ Remaining | Hanya jika semua sudah diverifikasi |
+| SM-13 | **Archive migration script** | ⏳ Remaining | Simpan untuk referensi |
+
 ## ✅ DONE — Sidebar Navigation & Document Management Page
 
 | # | Task | Status | File |

@@ -4,6 +4,14 @@ import { badRequest, internalError, notFound } from '@/lib/api/errors'
 import { storageService } from '@/lib/storage'
 import { supabaseAdmin } from '@/lib/api/supabase-server'
 
+function extractStoragePath(url: string): string | null {
+  const r2Match = url.match(/^https:\/\/files\.erp\.pt-rri\.com\/(.+)/)
+  if (r2Match) return r2Match[1]
+  const supabaseMatch = url.match(/\/public\/dokumen\/(.+)/)
+  if (supabaseMatch) return supabaseMatch[1]
+  return null
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAuth(request)
   if (auth.error) return auth.error
@@ -27,9 +35,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!allowedTypes.includes(file.type)) return badRequest('Gambar harus JPG, PNG, atau WebP')
 
   if (barang.image_url) {
-    const match = barang.image_url.match(/\/public\/dokumen\/(.+)/)
-    if (match) {
-      await storageService.delete(match[1]).catch(() => {})
+    const path = extractStoragePath(barang.image_url)
+    if (path) {
+      await storageService.delete(path).catch(() => {})
     }
   }
 
@@ -63,9 +71,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (!barang) return notFound('Barang tidak ditemukan')
 
   if (barang.image_url) {
-    const match = barang.image_url.match(/\/public\/dokumen\/(.+)/)
-    if (match) {
-      await storageService.delete(match[1])
+    const path = extractStoragePath(barang.image_url)
+    if (path) {
+      await storageService.delete(path)
     }
   }
 
