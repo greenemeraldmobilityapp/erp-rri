@@ -12,6 +12,21 @@ function escapeForSupabase(value: string): string {
   return value.replace(/'/g, "''")
 }
 
+function decodeQuotedPrintable(text: string): string {
+  return text
+    .replace(/=\r\n/g, '')
+    .replace(/=\n/g, '')
+    .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+}
+
+function decodeQpIfPresent(text: string): string {
+  if (!text) return text
+  if (text.includes('=') && /=[0-9A-Fa-f]{2}/.test(text)) {
+    return decodeQuotedPrintable(text)
+  }
+  return text
+}
+
 const attachmentSchema = z.object({
   key: z.string(),
   fileName: z.string(),
@@ -141,6 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into email_log
+    const decodedBody = emailBody ? decodeQpIfPresent(emailBody) : null
     const { data, error } = await supabaseAdmin
       .from("email_log")
       .insert({
@@ -151,7 +167,7 @@ export async function POST(request: NextRequest) {
         to_email: toEmail || defaultTo,
         cc: cc ?? null,
         subject,
-        body: emailBody ?? null,
+        body: decodedBody,
         has_attachments: hasAttachments ?? false,
         inbound: true,
         status: "delivered",

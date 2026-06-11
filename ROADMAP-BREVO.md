@@ -822,7 +822,7 @@ Mail Center kini mendukung Gmail-like conversation view: email dalam thread yang
 
 ### ✅ Phase 13 — Security Audit: Critical + High Bugs Fixed (SELESAI)
 
-Audit menyeluruh modul Mail Center (30 bugs ditemukan). 9 bugs diperbaiki (4 Critical + 5 High).
+Audit menyeluruh modul Mail Center (31 bugs ditemukan). 11 bugs diperbaiki (4 Critical + 6 High + 1 Medium).
 
 | # | Task | Status | File |
 |---|------|--------|------|
@@ -834,6 +834,7 @@ Audit menyeluruh modul Mail Center (30 bugs ditemukan). 9 bugs diperbaiki (4 Cri
 | SEC-6 | **BUG-008: No Auth on Upload URL** — tidak ada `verifyAuth()` di route presigned URL. Fix: tambah `verifyAuth(request)` | ✅ Done | `src/app/api/v1/email/attachments/upload-url/route.ts` |
 | SEC-7 | **BUG-010: Contact Search Race Condition** — debounce tidak cancel request sebelumnya. Fix: `AbortController` per request + handle `AbortError` | ✅ Done | `src/components/email/email-compose-sheet.tsx` |
 | SEC-8 | **NEW-404: 404 on Thread Expand** — email body dengan `<base>`/`<meta refresh>` cause navigation ke URL corrupt `="https://...`. Fix: DOMPurify sanitization — strip `<base>`, `<meta>`, dan危险 tags | ✅ Done | `src/app/dashboard/email/[id]/page.tsx` + `isomorphic-dompurify` |
+| SEC-9 | **NEW-QP: Email Body Quoted-Printable Garbled** — inline text parts dalam multipart email tidak di-decode berdasarkan `content-transfer-encoding`. Hasil: `=C2=A0`, `=3D`, `=20` muncul di body email. Fix: decode `partBody` berdasarkan CE sebelum use; nested multipart decode sebelum recursive call; tambah `decodeQuotedPrintable()` di `sanitizeBody()` sebagai safety net | ✅ Done | `cloudflare-workers/email-worker.js` + `src/app/api/v1/email/inbound/route.ts` + `src/app/dashboard/email/[id]/page.tsx` |
 
 **BREVO_WEBHOOK_SECRET** sudah ditambahkan ke `.env`:
 ```
@@ -847,11 +848,11 @@ Konfigurasi di Brevo Dashboard → Webhooks → pilih webhook → set Secret key
 
 | Severity | Count | Details |
 |----------|-------|---------|
-| HIGH | 2 | BUG-007 (verifyAuth type inconsistency), BUG-009 (intentional), BUG-005 (intentional) |
+| HIGH | 1 | BUG-007 (verifyAuth type inconsistency) |
 | MEDIUM | 10 | Attachment failure silent, no ownership check, XSS risk in templates, etc. |
 | LOW | 10 | Duplicate code, magic numbers, unused results |
 
-> 22 bugs remaining. BUG-005 (hardcoded BCC) dan BUG-009 (thread grouping) adalah **design decision** — tidak perlu fix. RLS policies belum ditambahkan (relies on API-layer auth only).
+> 21 bugs remaining (11 fixed). BUG-005 (hardcoded BCC) dan BUG-009 (thread grouping) adalah **design decision** — tidak perlu fix. RLS policies belum ditambahkan (relies on API-layer auth only).
 
 ## 📋 Future Plan — Multi-Email Perusahaan (Rencana)
 

@@ -278,11 +278,23 @@ function parseMultipart(body, boundary) {
     if (partHeaderEnd < 0) continue
 
     const partHeaders = parseHeaders(part.substring(0, partHeaderEnd))
-    const partBody = part.substring(partHeaderEnd + 4)
+    let partBody = part.substring(partHeaderEnd + 4)
 
     const ct = (partHeaders['content-type'] || '').toLowerCase()
     const ce = (partHeaders['content-transfer-encoding'] || '').toLowerCase().trim()
     const cd = (partHeaders['content-disposition'] || '').toLowerCase()
+
+    // Decode partBody based on content-transfer-encoding (for inline text parts)
+    if (ce === 'base64') {
+      try {
+        const binary = atob(partBody.replace(/[\r\n\s]/g, ''))
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+        partBody = new TextDecoder().decode(bytes)
+      } catch { /* keep original if decode fails */ }
+    } else if (ce === 'quoted-printable') {
+      partBody = decodeQuotedPrintable(partBody)
+    }
 
     const subBoundary = ct.match(/boundary="?([^";]+)"?/)
     if (subBoundary) {
@@ -297,18 +309,9 @@ function parseMultipart(body, boundary) {
       const filename = extractFilename(partHeaders['content-disposition'] || ct)
       const mimeType = partHeaders['content-type'] || 'application/octet-stream'
 
-      let decodedBytes = null
-      if (ce === 'base64') {
-        try {
-          const binary = atob(partBody.replace(/[\r\n\s]/g, ''))
-          decodedBytes = new Uint8Array(binary.length)
-          for (let i = 0; i < binary.length; i++) decodedBytes[i] = binary.charCodeAt(i)
-        } catch {}
-      } else if (ce === 'quoted-printable') {
-        const decoded = decodeQuotedPrintable(partBody)
-        decodedBytes = new Uint8Array(decoded.length)
-        for (let i = 0; i < decoded.length; i++) decodedBytes[i] = decoded.charCodeAt(i)
-      }
+      // For attachments, convert decoded partBody to bytes
+      const decodedBytes = new Uint8Array(partBody.length)
+      for (let i = 0; i < partBody.length; i++) decodedBytes[i] = partBody.charCodeAt(i)
 
       attachments.push({
         filename: filename || 'attachment',

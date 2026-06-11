@@ -189,8 +189,16 @@ function escapeForSupabase(value: string): string {
   return value.replace(/'/g, "''")
 }
 
+function decodeQuotedPrintable(text: string): string {
+  return text
+    .replace(/=\r\n/g, '')
+    .replace(/=\n/g, '')
+    .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+}
+
 function sanitizeBody(html: string): string {
-  return DOMPurify.sanitize(html, {
+  const decoded = /=[0-9A-Fa-f]{2}/.test(html) ? decodeQuotedPrintable(html) : html
+  return DOMPurify.sanitize(decoded, {
     ALLOWED_TAGS: [
       "b", "i", "em", "strong", "u", "a", "p", "br", "span", "div",
       "ul", "ol", "li", "blockquote", "pre", "code", "h1", "h2", "h3",

@@ -263,6 +263,7 @@ This prevents XSS and blocks navigation hijacking via email HTML.
 | BUG-018 | R2 Delete Errors Silent | `src/app/api/v1/email/[id]/purge/route.ts:20-26` | File deletion errors swallowed |
 | BUG-019 | Generic Catch Blocks | Multiple files | Error details lost, no stack traces |
 | BUG-020 | Reply to Sent Email Bounces to Self | `src/app/dashboard/email/[id]/page.tsx:281-291` | Replying to outbound email goes to yourself, not recipient |
+| NEW-QP | **Email Body Quoted-Printable Garbled** | `cloudflare-workers/email-worker.js:parseMultipart` + `src/app/dashboard/email/[id]/page.tsx` | Inbound/outbound email body shows `=C2=A0`, `=3D`, `=20` etc. instead of decoded UTF-8. Root cause: `parseMultipart` did not decode inline text parts based on `content-transfer-encoding`. Fix: decode `partBody` at top of loop for CE; add `decodeQuotedPrintable()` to `sanitizeBody()` as safety net |
 
 ---
 
@@ -288,10 +289,10 @@ This prevents XSS and blocks navigation hijacking via email HTML.
 | Severity | Total | Fixed | Remaining |
 |----------|-------|-------|-----------|
 | CRITICAL | 4 | 4 ✅ | 0 |
-| HIGH | 6 (+1 new) | 5 ✅ | 2 ⏳ |
-| MEDIUM | 10 | 0 | 10 ⏳ |
+| HIGH | 6 (+1 new) | 6 ✅ | 2 ⏳ |
+| MEDIUM | 10 (+1 new) | 1 ✅ | 11 ⏳ |
 | LOW | 10 | 0 | 10 ⏳ |
-| **Total** | **30** | **9** | **22** |
+| **Total** | **31** | **11** | **23** |
 
 > BUG-005 (Hardcoded BCC) and BUG-009 (Thread grouping behavior) are **intentional design decisions** — not bugs to fix. BUG-007 (verifyAuth type) is not yet addressed.
 
