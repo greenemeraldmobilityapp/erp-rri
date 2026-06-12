@@ -70,11 +70,24 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .from('quotation')
     .update(updateData)
     .eq('id', id)
-    .select('*, customer!customer_id(id, nama, kode)')
+    .select('*, rfq_id, customer!customer_id(id, nama, kode)')
     .single()
 
   if (error) return internalError(error)
   if (!data) return notFound('Quotation tidak ditemukan')
+
+  if (data.rfq_id) {
+    const newRfqStatus = parsed.data.status === 'sent' ? 'sent'
+      : parsed.data.status === 'closed' ? 'closed'
+      : null
+
+    if (newRfqStatus) {
+      await supabaseAdmin
+        .from('rfq_customer')
+        .update({ status: newRfqStatus })
+        .eq('id', data.rfq_id)
+    }
+  }
 
   await logAudit({
     userId: auth.user?.id,

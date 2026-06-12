@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!autoErr) kwt.status = 'completed'
   }
 
-  const { data: items } = await supabaseAdmin.from('kwitansi_item').select('*, invoice_item!invoice_item_id(barang_id, harga_satuan, harga, barang!barang_id(nama, kode, satuan))').eq('kwitansi_id', id)
+  const { data: items } = await supabaseAdmin.from('kwitansi_item').select('*, invoice_item!invoice_item_id(barang_id, harga, barang!barang_id(nama, kode, satuan))').eq('kwitansi_id', id)
 
   type SalesOrderWithPIC = {
     nomor: string

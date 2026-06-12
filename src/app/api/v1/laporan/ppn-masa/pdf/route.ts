@@ -46,15 +46,16 @@ function buildMonthlyBuckets(period: { since: string; until: string }) {
   return buckets
 }
 
-function calcPpnKeluaran(items: Array<Record<string, unknown>>): number {
-  let total = 0
-  for (const inv of items) {
-    const invItems = (inv as { invoice_item?: Array<{ ppn: number | null }> }).invoice_item ?? []
-    for (const it of invItems) {
-      total += it.ppn ?? 0
-    }
-  }
-  return total
+async function fetchInvoiceItems(since: string, until: string, statuses: string[] = ['paid', 'sent', 'lunas']) {
+  const { data: invIds } = await supabaseAdmin.from('invoice').select('id').in('status', statuses).gte('tanggal', since).lte('tanggal', until)
+  const ids = (invIds ?? []).map(inv => inv.id)
+  if (!ids.length) return []
+  const { data: items } = await supabaseAdmin.from('invoice_item').select('invoice_id, harga, jumlah, ppn').in('invoice_id', ids)
+  return items ?? []
+}
+
+function calcPpnKeluaran(items: Array<{ ppn?: number | null }>): number {
+  return items.reduce((total, it) => total + (it.ppn ?? 0), 0)
 }
 
 function calcPpnMasukan(items: Array<Record<string, unknown>>): number {
@@ -72,22 +73,22 @@ export async function GET(request: NextRequest) {
   const bulan = searchParams.get('bulan')
   const period = makeDateRange(tahun, bulan)
 
-  const [{ data: invoices }, { data: poItems }] = await Promise.all([
-    supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', period.since).lte('tanggal', period.until),
+  const [invItems, { data: poItems }] = await Promise.all([
+    fetchInvoiceItems(period.since, period.until),
     supabaseAdmin.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status, tanggal)').gte('purchase_order.tanggal', period.since).lte('purchase_order.tanggal', period.until),
   ])
 
-  const ppnKeluaran = calcPpnKeluaran(invoices ?? [])
+  const ppnKeluaran = calcPpnKeluaran(invItems)
   const ppnMasukan = calcPpnMasukan(poItems ?? [])
   const kurangBayar = ppnKeluaran - ppnMasukan
 
   const buckets = buildMonthlyBuckets(period)
   const chartData = await Promise.all(buckets.map(async b => {
     const [r, c] = await Promise.all([
-      supabaseAdmin.from('invoice').select('*, invoice_item!invoice_id(harga_satuan, jumlah, ppn)').in('status', ['paid', 'sent', 'lunas']).gte('tanggal', b.since).lte('tanggal', b.until),
+      fetchInvoiceItems(b.since, b.until),
       supabaseAdmin.from('purchase_order_item').select('*, purchase_order!purchase_order_id(status)').gte('purchase_order.tanggal', b.since).lte('purchase_order.tanggal', b.until),
     ])
-    const keluaran = calcPpnKeluaran(r.data ?? [])
+    const keluaran = calcPpnKeluaran(r)
     const masukan = calcPpnMasukan(c.data ?? [])
     return { label: b.label, keluaran, masukan, net: keluaran - masukan }
   }))

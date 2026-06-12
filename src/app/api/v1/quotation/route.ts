@@ -170,6 +170,13 @@ export async function POST(request: NextRequest) {
     return internalError(itemsError)
   }
 
+  if (parsed.data.rfq_id) {
+    await supabaseAdmin
+      .from('rfq_customer')
+      .update({ status: 'responded' })
+      .eq('id', parsed.data.rfq_id)
+  }
+
   try {
     const { data: pics } = await supabaseAdmin
       .from('customer_pic')

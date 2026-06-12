@@ -23,7 +23,6 @@ interface KwitansiItem {
   jumlah: number
   invoice_item: {
     barang_id: string
-    harga_satuan: number
     harga: number
     barang: { nama: string; kode: string; satuan: string } | null
   } | null

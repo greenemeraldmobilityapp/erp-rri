@@ -22,7 +22,7 @@ export function RevenueChartCard({ data }: RevenueChartCardProps) {
         <div className="h-[140px]">
           <RevenueChart data={data} />
         </div>
-        <p className="text-xs text-muted-foreground mt-2">6 bulan terakhir</p>
+        <p className="text-xs text-muted-foreground mt-2">12 bulan terakhir</p>
       </div>
     </div>
   )

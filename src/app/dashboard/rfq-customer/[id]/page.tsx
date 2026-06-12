@@ -6,7 +6,8 @@ import { apiFetch } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Pencil, Trash2, ImageIcon, FileText } from "lucide-react"
+import { Loader2, Pencil, Trash2, ImageIcon, FileText, CheckCircle2 } from "lucide-react"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
@@ -61,6 +62,7 @@ export default function RfqCustomerDetailPage() {
   const [loading, setLoading] = useState(true)
   const [documents, setDocuments] = useState<DocumentFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -101,6 +103,24 @@ export default function RfqCustomerDetailPage() {
       toast.success("File berhasil dihapus")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal hapus file")
+    }
+  }
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!id) return
+    setStatusLoading(true)
+    try {
+      await apiFetch(`/api/v1/rfq-customer/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: newStatus }),
+      })
+      toast.success('Status berhasil diubah')
+      const res = await apiFetch<RFQCustomer>(`/api/v1/rfq-customer/${id}`)
+      setData(res.data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengubah status')
+    } finally {
+      setStatusLoading(false)
     }
   }
 
@@ -146,9 +166,25 @@ export default function RfqCustomerDetailPage() {
               <p className="text-xs text-muted-foreground uppercase tracking-wide">No. Dokumen Internal</p>
               <h2 className="text-xl font-bold font-mono">{data.nomor}</h2>
             </div>
-            <Badge variant={statusLabel[data.status]?.variant ?? "outline"}>
-              {statusLabel[data.status]?.label ?? data.status}
-            </Badge>
+            <Select value={data.status} onValueChange={handleStatusChange} disabled={statusLoading}>
+              <SelectTrigger className="w-44">
+                <SelectValue>
+                  <div className="flex items-center gap-2">
+                    {statusLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className={`h-4 w-4 ${statusLabel[data.status]?.variant === 'success' ? 'text-green-500' : statusLabel[data.status]?.variant === 'warning' ? 'text-amber-500' : statusLabel[data.status]?.variant === 'destructive' ? 'text-red-500' : 'text-muted-foreground'}`} />}
+                    <Badge variant={statusLabel[data.status]?.variant ?? "outline"} className="px-2 py-0">
+                      {statusLabel[data.status]?.label ?? data.status}
+                    </Badge>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(statusLabel).map(([key, val]) => (
+                  <SelectItem key={key} value={key}>
+                    <Badge variant={val.variant} className="px-2 py-0">{val.label}</Badge>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
