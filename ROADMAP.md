@@ -909,3 +909,12 @@ Customer retur barang
 | EM-11I | **Brevo SMTP for reply threading** — Nodemailer via `smtp-relay.brevo.com:587` with custom `In-Reply-To`/`References`/`Message-ID` headers (Brevo REST API silently ignores standard headers). Route `referenceType === 'reply'` to SMTP. | ✅ Done | `src/lib/email/smtp.ts`, `src/lib/email/brevo.ts` |
 | EM-11J | **CC + BCC passthrough** — forward `cc` and `bcc` from frontend through API → sendEmail → brevoSend. Auto BCC `mazzjoeq@gmail.com` on every outbound. | ✅ Done | `src/app/api/v1/email/send/route.ts`, `src/lib/utils/email.ts`, `src/lib/email/brevo.ts`, `src/lib/email/smtp.ts` |
 | EM-11K | **Brevo SMTP credentials + env** — obtained from Brevo dashboard; `BREVO_SMTP_LOGIN` + `BREVO_SMTP_PASSWORD` added to AGENTS.md | ✅ Done | `.env.example`, `AGENTS.md` |
+
+---
+
+## 🟡 Master Barang — Soft Delete (Fix Tombol Hapus)
+
+| # | Task | Status | File |
+|---|------|--------|------|
+| BD-1 | **API DELETE → soft delete** — ganti `supabase.from('barang').delete()` jadi `.update({ is_active: false })` + return 200 with data (bukan 204) | ⏳ Pending | `src/app/api/v1/master/barang/[id]/route.ts` |
+| BD-2 | **Frontend handleDelete** — tambah try/catch + toast.success/error + loading state via `isLoading` di dialog | ⏳ Pending | `src/app/dashboard/master/barang/page.tsx` |

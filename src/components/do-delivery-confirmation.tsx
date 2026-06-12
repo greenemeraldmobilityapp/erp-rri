@@ -38,8 +38,6 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
   const barangRef = useRef<HTMLInputElement>(null)
   const suratRef = useRef<HTMLInputElement>(null)
 
-  const bothUploaded = !!fotoBarang.url && !!fotoSurat.url
-
   async function handleFileSelect(type: 'barang_diterima' | 'surat_jalan', file: File) {
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Ukuran file maksimal 5MB')
@@ -162,7 +160,7 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
           <div className="flex flex-wrap gap-3 pt-2">
             <Button
               size="lg"
-              disabled={!bothUploaded || submitting}
+              disabled={submitting}
               onClick={() => handleConfirm('dikirim')}
             >
               {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
@@ -172,7 +170,6 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
               <Button
                 variant="destructive"
                 size="lg"
-                disabled={!bothUploaded}
                 onClick={() => setShowAlasan(true)}
               >
                 <XCircle className="h-4 w-4 mr-2" />
@@ -182,7 +179,7 @@ export function DOPhotoConfirmation({ doId, status, existingFotoBarang, existing
               <Button
                 variant="destructive"
                 size="lg"
-                disabled={!bothUploaded || submitting || !alasan.trim()}
+                disabled={submitting || !alasan.trim()}
                 onClick={() => handleConfirm('ditolak')}
               >
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
