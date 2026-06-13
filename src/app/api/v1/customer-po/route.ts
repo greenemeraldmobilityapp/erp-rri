@@ -27,7 +27,6 @@ const schema = z.object({
   terms_of_payment: z.string().optional(),
   waktu_pengiriman: z.coerce.number().int().positive().optional(),
   pic_customer_id: z.string().optional(),
-  kategori_baru_id: z.string().optional(),
   nama_penandatangan: z.string().optional().nullable(),
   jabatan_penandatangan: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1),
@@ -50,6 +49,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
   let nomor: string
+  let nomorQuotationRri: string | null = null
   if (parsed.data.quotation_id) {
     const { data: parent } = await supabaseAdmin
       .from('quotation')
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
     if (parent?.nomor) {
       nomor = formatChildNumber(parent.nomor, 'CPO')
+      nomorQuotationRri = parent.nomor
     } else {
       nomor = await generateGlobalDocumentNumber('CPO')
     }
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
 
   const { data: po, error: poError } = await supabaseAdmin.from('customer_po').insert({
     nomor, customer_id: parsed.data.customer_id, quotation_id: parsed.data.quotation_id ?? null,
+    nomor_quotation_rri: nomorQuotationRri,
     tanggal: parsed.data.tanggal, status: 'draft', nomor_po_customer: parsed.data.nomor_po_customer ?? null,
     terms_of_payment: parsed.data.terms_of_payment ?? null,
     waktu_pengiriman: parsed.data.waktu_pengiriman ?? null,
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
       const newBarang = await createBarangFromRfqItem(
         item.nama_barang || '',
         item.satuan || null,
-        parsed.data.kategori_baru_id || null,
+        null,
         item.image_url ?? null,
         item.harga_satuan ?? null,
         item.spesifikasi ?? null,

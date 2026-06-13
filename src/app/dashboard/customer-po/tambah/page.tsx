@@ -11,9 +11,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { ArrowLeft, Loader2, Trash2, FileText, Plus, Settings2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Trash2, FileText, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { KelolaKategoriDialog } from '@/components/kelola-kategori-dialog'
 
 const fallbackTopOptions = ['Net 14', 'Net 20', 'Net 30', 'Net 60', 'Net 90', 'Cash', 'Custom']
 
@@ -42,7 +41,6 @@ export default function TambahPoPage() {
   const [submitting, setSubmitting] = useState(false)
   const [custOpts, setCustOpts] = useState<Array<{ value: string; label: string }>>([])
   const [qtnOpts, setQtnOpts] = useState<QtnOption[]>([])
-  const [kategoriOpts, setKategoriOpts] = useState<Array<{ value: string; label: string }>>([])
   const [barangOpts, setBarangOpts] = useState<Array<{ value: string; label: string }>>([])
   const [items, setItems] = useState<ItemRow[]>([])
   const [populating, setPopulating] = useState(false)
@@ -56,8 +54,6 @@ export default function TambahPoPage() {
   const [dynamicTopOpts, setDynamicTopOpts] = useState<string[]>([])
   const [picCustomerId, setPicCustomerId] = useState('')
   const [waktuPengiriman, setWaktuPengiriman] = useState('')
-  const [kategoriBaruId, setKategoriBaruId] = useState('')
-  const [kategoriDialogOpen, setKategoriDialogOpen] = useState(false)
   const [manualBarangId, setManualBarangId] = useState('')
   const [manualJumlah, setManualJumlah] = useState(1)
   const [manualHargaSatuan, setManualHargaSatuan] = useState(0)
@@ -152,16 +148,14 @@ export default function TambahPoPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nomor: string; status: string; revisi?: number; customer?: { id: string; nama: string } }>>('/api/v1/quotation'),
-      apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/kategori-barang'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
-    ]).then(([cRes, qRes, kRes, bRes]) => {
+    ]).then(([cRes, qRes, bRes]) => {
       setCustOpts((cRes.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       const approved = (qRes.data ?? []).filter((x: { status: string }) => x.status === 'approved' || x.status === 'proses_negosiasi')
       setQtnOpts(approved.map((x: { id: string; nomor: string; revisi?: number; customer?: { nama: string } }) => ({
         value: x.id,
         label: `${x.nomor} - R${x.revisi ?? 0} - ${x.customer?.nama ?? ''}`,
       })))
-      setKategoriOpts((kRes.data ?? []).map(x => ({ value: x.id, label: x.nama })))
       setBarangOpts((bRes.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       setLoading(false)
     }).catch(() => { setLoading(false); toast.error('Gagal memuat data awal') })
@@ -208,12 +202,6 @@ export default function TambahPoPage() {
     }
   }, [customerId, hasQuotation, top])
 
-  const handleKategoriSuccess = useCallback(async () => {
-    try {
-      const res = await apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/kategori-barang')
-      setKategoriOpts((res.data ?? []).map(x => ({ value: x.id, label: x.nama })))
-    } catch { /* ignore */ }
-  }, [])
 
   const toggleCheck = (key: string) => {
     setItems(prev => prev.map(i => i.key === key ? { ...i, save_to_master: !i.save_to_master } : i))
@@ -246,7 +234,6 @@ export default function TambahPoPage() {
     if (!tanggal) { toast.error('Tanggal harus diisi'); return }
     const validItems = items.filter(i => i.has_barang_id || i.save_to_master)
     if (validItems.length === 0) { toast.error('Minimal 1 item harus dipilih'); return }
-    if (hasNewItems && !kategoriBaruId) { toast.error('Pilih kategori untuk barang baru'); return }
 
     setSubmitting(true)
     try {
@@ -258,7 +245,6 @@ export default function TambahPoPage() {
         terms_of_payment: effectiveTop || undefined,
         waktu_pengiriman: waktuPengiriman ? Number(waktuPengiriman) : undefined,
         pic_customer_id: picCustomerId || undefined,
-        kategori_baru_id: kategoriBaruId || undefined,
         items: validItems.map(i => ({
           barang_id: i.has_barang_id ? i.barang_id : undefined,
           jumlah: i.jumlah,
@@ -403,23 +389,6 @@ export default function TambahPoPage() {
           <CardTitle className="text-base">Item Barang</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {hasNewItems && <>
-            <div className="flex items-end gap-4 pb-2 border-b">
-              <div className="flex-1">
-                <Label>Kategori untuk barang baru</Label>
-                <Select onValueChange={setKategoriBaruId} value={kategoriBaruId}>
-                  <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
-                  <SelectContent>
-                    {kategoriOpts.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => setKategoriDialogOpen(true)}>
-                <Settings2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <KelolaKategoriDialog open={kategoriDialogOpen} onOpenChange={setKategoriDialogOpen} onSuccess={handleKategoriSuccess} />
-          </>}
 
           {items.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">

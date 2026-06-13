@@ -35,6 +35,7 @@ interface CustomerPo {
   nama_penandatangan: string | null
   jabatan_penandatangan: string | null
   customer: { nama: string; kode: string } | null
+  quotation: { nomor: string } | null
   sales_order: { id: string; nomor: string; status: string } | null
   items: Array<{
     id: string
@@ -290,7 +291,7 @@ export default function CustomerPoDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">No. Quotation RRI</p>
-              <p className="font-medium">{po.nomor_quotation_rri ?? "-"}</p>
+              <p className="font-medium">{po.quotation?.nomor ?? po.nomor_quotation_rri ?? "-"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">No. PR Customer</p>
