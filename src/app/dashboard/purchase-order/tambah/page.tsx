@@ -19,7 +19,7 @@ export default function TambahPoPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/supplier'),
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/purchase-request'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([sup, pr, b]) => { setSupOpts((sup.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setPrOpts((pr.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false))
   }, [])
   const onSubmit = async (data: FV) => {

@@ -52,7 +52,7 @@ export default function TambahSoPage() {
   useEffect(() => {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/customer-po'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown'),
       apiFetch<Array<Record<string, unknown>>>('/api/v1/di'),
     ]).then(([po, b, diList]) => {
       setPoOpts((po.data ?? []).map(x => ({ value: x.id, label: x.nomor })))

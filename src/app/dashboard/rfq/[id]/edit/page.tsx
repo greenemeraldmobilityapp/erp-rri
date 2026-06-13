@@ -61,7 +61,7 @@ export default function EditRfqPage() {
 
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/supplier'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([suppliers, barang]) => {
       setSupplierOptions((suppliers.data ?? []).map(s => ({ value: s.id, label: `[${s.kode}] ${s.nama}` })))
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))

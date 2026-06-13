@@ -18,7 +18,7 @@ export default function TambahReceivingPage() {
   const selectedPoId = watch('purchase_order_id')
 
   useEffect(() => {
-    Promise.all([apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/purchase-order'), apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang')])
+    Promise.all([apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/purchase-order'), apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown')])
       .then(([po, b]) => {
         setPoOpts((po.data ?? []).map(x => ({ value: x.id, label: x.nomor })))
         const map: Record<string, { nama: string; kode: string }> = {}

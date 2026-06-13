@@ -56,7 +56,7 @@ export default function EditReturPenjualanPage() {
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
   useEffect(() => {
-    apiFetch<BarangData[]>('/api/v1/master/barang')
+    apiFetch<BarangData[]>('/api/v1/master/barang/dropdown')
       .then(b => {
         const bList = b.data ?? []
         setBarangOpts(bList.map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))

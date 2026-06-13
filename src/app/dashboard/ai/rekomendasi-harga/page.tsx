@@ -22,7 +22,7 @@ export default function RekomendasiHargaPage() {
   const form = useForm<FV>({ resolver: zodResolver(schema) });
 
   useEffect(() => {
-    apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang')
+    apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown')
       .then(r => setBarangOpts((r.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))).catch(() => toast.error('Gagal memuat data barang'))
   }, []);
 

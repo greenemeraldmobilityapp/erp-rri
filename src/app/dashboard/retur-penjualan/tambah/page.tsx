@@ -41,7 +41,7 @@ export default function TambahReturPenjualanPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/delivery-order'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<BarangData[]>('/api/v1/master/barang'),
+      apiFetch<BarangData[]>('/api/v1/master/barang/dropdown'),
     ]).then(([d, c, b]) => {
       setDoOpts((d.data ?? []).map(x => ({ value: x.id, label: x.nomor })))
       setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))

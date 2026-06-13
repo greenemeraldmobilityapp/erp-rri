@@ -29,7 +29,7 @@ export default function TambahInvoicePage() {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/sales-order'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([so, c, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setCustOpts((c.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal')).finally(() => setLoading(false))
   }, [])
 

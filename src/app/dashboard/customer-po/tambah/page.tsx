@@ -151,7 +151,7 @@ export default function TambahPoPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nomor: string; status: string; revisi?: number; customer?: { id: string; nama: string } }>>('/api/v1/quotation'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([cRes, qRes, bRes]) => {
       setCustOpts((cRes.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` })))
       const approved = (qRes.data ?? []).filter((x: { status: string }) => x.status === 'approved' || x.status === 'proses_negosiasi')

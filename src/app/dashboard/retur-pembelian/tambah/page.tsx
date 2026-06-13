@@ -19,7 +19,7 @@ export default function TambahReturPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/purchase-order'),
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/supplier'),
-      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([po, sup, b]) => { setPoOpts((po.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setSupOpts((sup.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
   }, [])
   const onSubmit = async (data: FV) => {

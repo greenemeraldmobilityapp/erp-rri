@@ -90,7 +90,7 @@ export default function TambahRfqCustomerPage() {
   useEffect(() => {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
-      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang'),
+      apiFetch<Array<{ id: string; nama: string; kode: string; satuan: string }>>('/api/v1/master/barang/dropdown'),
     ]).then(([customers, barang]) => {
       setCustomerOptions((customers.data ?? []).map(c => ({ value: c.id, label: `[${c.kode}] ${c.nama}` })))
       setBarangOptions((barang.data ?? []).map(b => ({ value: b.id, label: `[${b.kode}] ${b.nama}`, satuan: b.satuan })))
@@ -368,23 +368,26 @@ export default function TambahRfqCustomerPage() {
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium">Barang (Master)</label>
-                      <select
-                        {...register(`items.${index}.barang_id`, {
-                          onChange: (e) => {
-                            const selected = barangOptions.find(b => b.value === e.target.value)
-                            if (selected?.satuan) setValue(`items.${index}.satuan`, selected.satuan)
-                          }
-                        })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      >
-                        <option value="">- Pilih Barang -</option>
-                        {barangOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <FormField control={control} name={`items.${index}.barang_id`} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Barang (Master)</FormLabel>
+                        <Select onValueChange={(val) => {
+                          field.onChange(val)
+                          const selected = barangOptions.find(b => b.value === val)
+                          if (selected?.satuan) setValue(`items.${index}.satuan`, selected.satuan)
+                        }} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="- Pilih Barang -" /></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {barangOptions.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Nama Barang (Manual)</label>
                       <Input {...register(`items.${index}.nama_barang`)} placeholder="Jika tidak ada di master" />

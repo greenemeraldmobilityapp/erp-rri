@@ -59,7 +59,7 @@ export default function EditGrnCustomerPage() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch<BarangData[]>('/api/v1/master/barang'),
+      apiFetch<BarangData[]>('/api/v1/master/barang/dropdown'),
       apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/gudang'),
     ]).then(([b, g]) => {
       const bList = b.data ?? []

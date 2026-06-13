@@ -56,7 +56,7 @@ export default function TambahGrnCustomerPage() {
     Promise.all([
       apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/customer'),
       apiFetch<Array<{ id: string; nama: string }>>('/api/v1/master/gudang'),
-      apiFetch<BarangData[]>('/api/v1/master/barang'),
+      apiFetch<BarangData[]>('/api/v1/master/barang/dropdown'),
       apiFetch<DoOption[]>('/api/v1/delivery-order'),
       apiFetch<ReturOption[]>('/api/v1/retur-penjualan'),
     ]).then(([c, g, b, doRes, returRes]) => {

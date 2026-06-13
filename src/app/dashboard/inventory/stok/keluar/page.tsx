@@ -29,7 +29,7 @@ export default function StokKeluarPage() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch<BarangItem[]>('/api/v1/master/barang'),
+      apiFetch<BarangItem[]>('/api/v1/master/barang/dropdown'),
       apiFetch<GudangItem[]>('/api/v1/master/gudang'),
     ]).then(([b, g]) => {
       setBarangList(b.data ?? [])

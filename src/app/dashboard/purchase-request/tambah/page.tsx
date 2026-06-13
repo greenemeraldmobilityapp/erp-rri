@@ -16,7 +16,7 @@ export default function TambahPrPage() {
   const { register, handleSubmit, control } = form
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   useEffect(() => {
-    Promise.all([apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/sales-order'), apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang')])
+    Promise.all([apiFetch<Array<{ id: string; nomor: string }>>('/api/v1/sales-order'), apiFetch<Array<{ id: string; nama: string; kode: string }>>('/api/v1/master/barang/dropdown')])
       .then(([so, b]) => { setSoOpts((so.data ?? []).map(x => ({ value: x.id, label: x.nomor }))); setBarangOpts((b.data ?? []).map(x => ({ value: x.id, label: `[${x.kode}] ${x.nama}` }))) }).catch(() => toast.error('Gagal'))
   }, [])
   const onSubmit = async (data: FV) => {
