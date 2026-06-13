@@ -200,6 +200,7 @@ export async function POST(request: NextRequest) {
       const { data: existingBarang } = await supabaseAdmin
         .from('barang')
         .select('id, nama')
+        .eq('is_active', true)
         .ilike('kode', item.kode)
         .maybeSingle()
 

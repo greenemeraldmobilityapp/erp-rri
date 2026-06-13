@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
-import { supabase } from "@/lib/db/client"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/empty-state"
 import { BreadcrumbNav, BreadcrumbItem } from "@/components/breadcrumb-nav"
@@ -18,6 +17,8 @@ import { ExportButton } from "@/components/export-button"
 import { ImageLightbox } from "@/components/image-lightbox"
 import { PageTour } from '@/components/onboarding/page-tour'
 import { barangListSteps } from '@/components/onboarding/tour-steps/barang-list'
+import { Pagination } from "@/components/pagination"
+import { BarangFilter, BarangFilterValues } from "@/components/barang-filter"
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { label: "Dashboard", href: "/dashboard" },
@@ -31,7 +32,7 @@ interface Barang {
   kode: string
   image_url: string | null
   kategori_barang: { nama: string }
-  kontrak: { nomor_kontrak: string; tanggal_selesai: string | null } | null
+  kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null } | null
   satuan: string | null
   spesifikasi: string | null
   harga_beli_default: number | null
@@ -41,47 +42,87 @@ interface Barang {
   created_at: string
 }
 
+interface FilterOptions {
+  categories: { id: string; nama: string }[]
+  satuanList: string[]
+  namaKontrakList: string[]
+}
+
+interface ListResponse {
+  items: Barang[]
+  count: number
+  page: number
+  totalPages: number
+  filterOptions: FilterOptions
+}
+
+const defaultFilters: BarangFilterValues = {
+  search: "",
+  kategori_id: "__all__",
+  status: "all",
+  kontrak: "all",
+  satuan: "__all__",
+  nama_kontrak: "__all__",
+}
+
 export default function BarangPage() {
   const router = useRouter()
   const [data, setData] = useState<Barang[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [filters, setFilters] = useState<BarangFilterValues>(defaultFilters)
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({ categories: [], satuanList: [], namaKontrakList: [] })
 
-  useEffect(() => {
-    supabase
-      .from("barang")
-      .select(`
-        id,
-        nama,
-        kode,
-        image_url,
-        kategori_barang!inner(nama),
-        kontrak!left(nomor_kontrak, tanggal_selesai),
-        satuan,
-        spesifikasi,
-        harga_beli_default,
-        harga_jual_default,
-        stok_minimum,
-        is_active,
-        created_at
-      `)
-      .order("created_at", { ascending: false })
-      .then(({ data: result, error: err }) => {
-        if (err) setError(err.message)
-        else setData((Array.isArray(result) ? result : []) as unknown as Barang[])
-        setLoading(false)
-      })
+  const doFetch = useCallback(async (p: number, f: BarangFilterValues) => {
+    const params = new URLSearchParams()
+    params.set('page', String(p))
+    params.set('limit', '20')
+    if (f.search) params.set('search', f.search)
+    if (f.kategori_id !== '__all__') params.set('kategori_id', f.kategori_id)
+    if (f.status !== 'all') params.set('status', f.status)
+    if (f.kontrak !== 'all') params.set('kontrak', f.kontrak)
+    if (f.satuan !== '__all__') params.set('satuan', f.satuan)
+    if (f.nama_kontrak !== '__all__') params.set('nama_kontrak', f.nama_kontrak)
+
+    try {
+      const res = await apiFetch<ListResponse>(`/api/v1/master/barang?${params}`)
+      const d = res.data
+      setData(d.items)
+      setTotalCount(d.count)
+      setTotalPages(d.totalPages)
+      setFilterOptions(d.filterOptions)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Gagal memuat data')
+    }
   }, [])
 
-  const today = new Date().toISOString().split('T')[0]
-  const kontrakIsExpired = (kontrak: { tanggal_selesai: string | null } | null) => {
-    if (!kontrak?.tanggal_selesai) return false
-    return kontrak.tanggal_selesai < today
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    doFetch(page, filters).finally(() => setLoading(false))
+  }, [])
+
+  const handleFilterChange = (newFilters: BarangFilterValues) => {
+    setFilters(newFilters)
+    setPage(1)
+    setLoading(true)
+    setError(null)
+    doFetch(1, newFilters).finally(() => setLoading(false))
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    setLoading(true)
+    setError(null)
+    doFetch(newPage, filters).finally(() => setLoading(false))
   }
 
   const handleDelete = (id: string) => async () => {
     await apiFetch(`/api/v1/master/barang/${id}`, { method: "DELETE" })
     setData((prev) => prev.filter((item) => item.id !== id))
+    setTotalCount((prev) => prev - 1)
   }
 
   const formatCurrency = (value: number | null) => {
@@ -90,7 +131,10 @@ export default function BarangPage() {
   }
 
   const statusBadge = (item: Barang) => {
-    const active = item.is_active && !kontrakIsExpired(item.kontrak)
+    const kontrakIsExpired = item.kontrak?.tanggal_selesai
+      ? item.kontrak.tanggal_selesai < new Date().toISOString().split('T')[0]
+      : false
+    const active = item.is_active && !kontrakIsExpired
     return (
       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
         active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
@@ -144,13 +188,13 @@ export default function BarangPage() {
     </div>
   )
 
-  if (loading) return (
+  if (loading && data.length === 0) return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <BreadcrumbNav items={breadcrumbItems} />
       <PageHeader title="Data Barang" />
-      <TableSkeleton 
-        rows={5} 
-        cols={8} 
+      <TableSkeleton
+        rows={5}
+        cols={8}
         actionsCols={3}
         headerHidden
       />
@@ -174,7 +218,13 @@ export default function BarangPage() {
     { header: "Kode", accessor: (item) => item.kode, sortKey: "kode" },
     { header: "Nama Barang", accessor: (item) => item.nama, sortKey: "nama" },
     { header: "Kategori", accessor: (item) => item.kategori_barang?.nama || "-" },
-    { header: "No. Kontrak", accessor: (item) => item.kontrak?.nomor_kontrak || "tidak ada" },
+    { header: "Kontrak", accessor: (item) => {
+      const k = item.kontrak
+      if (!k?.nomor_kontrak) return "tidak ada"
+      const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+      const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit" }) : "..."
+      return `${k.nama || k.nomor_kontrak} (${tglMulai} - ${tglSelesai})`
+    } },
     { header: "Satuan", accessor: (item) => item.satuan || "-", sortKey: "satuan" },
     { header: "Harga Beli", accessor: (item) => formatCurrency(item.harga_beli_default), sortKey: "harga_beli_default" },
     { header: "Harga Jual", accessor: (item) => formatCurrency(item.harga_jual_default), sortKey: "harga_jual_default" },
@@ -188,28 +238,44 @@ export default function BarangPage() {
       <div data-tour="barang-header">
         <BreadcrumbNav items={breadcrumbItems} />
         <PageHeader
-        title="Data Barang"
-        description={`${data.length} barang terdaftar`}
-        actions={
-          <>
-            <ExportButton table="barang" />
-            <PageTour pageKey="barang-list" steps={barangListSteps} />
-            <Link href="/dashboard/master/barang/tambah" data-tour="btn-tambah-barang">
-              <Button>Tambah Barang</Button>
-            </Link>
-          </>
-        }
-      />
+          title="Data Barang"
+          description={`${totalCount} barang terdaftar`}
+          actions={
+            <>
+              <ExportButton table="barang" />
+              <PageTour pageKey="barang-list" steps={barangListSteps} />
+              <Link href="/dashboard/master/barang/tambah" data-tour="btn-tambah-barang">
+                <Button>Tambah Barang</Button>
+              </Link>
+            </>
+          }
+        />
       </div>
-      {!data.length ? (
+
+      <BarangFilter
+        options={filterOptions}
+        values={filters}
+        onChange={handleFilterChange}
+      />
+
+      {loading ? (
+        <TableSkeleton rows={5} cols={8} actionsCols={3} headerHidden />
+      ) : !data.length ? (
         <EmptyState title="Belum ada data barang" description="Tambahkan barang pertama Anda untuk memulai." />
       ) : (
-        <MasterDataTable
-          data={data}
-          columns={columns}
-          searchFields={["nama", "kode"]}
-          searchPlaceholder="Cari barang..."
-        />
+        <>
+          <MasterDataTable
+            data={data}
+            columns={columns}
+            searchFields={[]}
+            showRowNumber
+          />
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   )

@@ -97,6 +97,7 @@ import { customerPromptDi } from "./customer-prompt-di";
 import { emailLog } from "./email-log";
 import { emailTemplates } from "./email-templates";
 import { emailAttachments } from "./email-attachments";
+import { kontrakItemNotApprove } from "./kontrak-item-not-approve";
 
 export {
   users,
@@ -197,4 +198,5 @@ export {
   emailLog,
   emailTemplates,
   emailAttachments,
+  kontrakItemNotApprove,
 };

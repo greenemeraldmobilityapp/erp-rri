@@ -56,6 +56,7 @@ interface Barang {
   stok_minimum: number | null
   is_active: boolean
   created_at: string
+  kontrak: { nomor_kontrak: string; nama: string; tanggal_mulai: string | null; tanggal_selesai: string | null }[]
 }
 
 export default function DetailBarangPage() {
@@ -78,6 +79,7 @@ export default function DetailBarangPage() {
         kode,
         barcode,
         kategori_barang!inner(nama),
+        kontrak!left(nomor_kontrak, nama, tanggal_mulai, tanggal_selesai),
         satuan,
         spesifikasi,
         justification,
@@ -202,6 +204,28 @@ export default function DetailBarangPage() {
               <label className="block text-sm font-medium text-muted-foreground mb-1">Stok Minimum</label>
               <p className="text-sm font-medium">{data.stok_minimum ?? "-"}</p>
             </div>
+            {(() => {
+              const k = data.kontrak?.[0]
+              if (!k?.nomor_kontrak) return null
+              const tglMulai = k.tanggal_mulai ? new Date(k.tanggal_mulai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
+              const tglSelesai = k.tanggal_selesai ? new Date(k.tanggal_selesai).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"
+              return (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Nama Kontrak</label>
+                    <p className="text-sm font-medium">{k.nama || "-"}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">No. Kontrak</label>
+                    <p className="text-sm font-medium">{k.nomor_kontrak}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Periode Kontrak</label>
+                    <p className="text-sm font-medium">{tglMulai} — {tglSelesai}</p>
+                  </div>
+                </>
+              )
+            })()}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
               <p className="text-sm">{statusBadge(data.is_active)}</p>
